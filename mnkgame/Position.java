@@ -1,11 +1,11 @@
+package mnkgame;
+
 import java.lang.Cloneable;
 
-class Position implements Cloneable{
+class Position {
     private int x;
     private int y;
 
-     
-    
     Position(int x,int y){
         this.x=x;
         this.y=y;
@@ -23,8 +23,4 @@ class Position implements Cloneable{
         this.y = y;
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-
-    }
 }

@@ -1,20 +1,22 @@
+package mnkgame;
+
 import java.nio.file.DirectoryIteratorException;
 
-class CustomCell{
+class CCell{
     private UFNode ufNodes[];
     private MNKCellState state;
     private Position position;
 
-    CustomCell(Position pos){
+    CCell(int x,int y){
         ufNodes=new UFNode[4];
         state=MNKCellState.FREE;
-        position=pos;
+        position=new Position(x,y);
         initUFNode();
     }
 
     private void initUFNode(){
         for(int i=0;i<4;i++){
-            ufNodes[i]=new UFNode(this);
+            ufNodes[i]=new UFNode();
         }
     }
 
