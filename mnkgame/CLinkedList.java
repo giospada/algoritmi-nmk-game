@@ -18,7 +18,8 @@ class CLinkedList<T>{
     public void push(T data){
         CNode<T> newNode = new CNode<T>(data);
         newNode.next = head;
-        head.prev=newNode;
+        if(head!=null)
+            head.prev=newNode;
         head = newNode;
     }
 
@@ -26,11 +27,25 @@ class CLinkedList<T>{
     public void remove(CNode<T> t){
         if(t==head){
             head = head.next;
-            head.prev = null;
+            if(head!=null)
+                head.prev = null;
             return;
         }else{
             t.prev.next = t.next;
-            t.next.prev = t.prev; 
+            if(t.next!=null)
+                t.next.prev = t.prev; 
+        }
+    }
+
+    public void reinsert(CNode<T> t){
+        if(t.prev==null){
+            if(t.next!=null)
+                t.next.prev = t;
+            head = t;
+        }else{
+            t.prev.next = t;
+            if(t.next!=null)
+                t.next.prev = t;
         }
     }
 
@@ -38,7 +53,8 @@ class CLinkedList<T>{
     public T pop(){
         T data = head.getData();
         head = head.next;
-        head.prev = null;
+        if(head!=null)
+            head.prev = null;
         return data;
     }
 
