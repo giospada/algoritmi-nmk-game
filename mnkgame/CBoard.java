@@ -1,7 +1,6 @@
 package mnkgame;
 
 
-import java.util.LinkedList;
 
 import javax.naming.InitialContext;
 
@@ -11,7 +10,7 @@ class CBoard {
 
 
     private final CCell[][] Board;
-    protected final CLinkedList<CCell> MarkedCell;
+    protected CLinkedList<CNode<CCell>> MarkedCell;
     protected final CLinkedList<CCell> FreeCell; 
     private CLinkedList<CLinkedList<UnionHistoryRecord>> UnionHistory;
     protected final int M, N, K;
@@ -52,10 +51,23 @@ class CBoard {
 			return Board[i][j].getState();
 	}
 
+    public MNKGameState markCell(int i,int j){
+        CNode<CCell> head=FreeCell.getHead();
+        while(head!=null){
+            Position pos=head.getData().getPosition();
+            if(pos.getX()==i && pos.getY()==j){
+                return markCell(head);
+            }
+            head=head.next;
+        }
+        return MNKGameState.OPEN;
+    }
     public MNKGameState markCell(CNode<CCell> nodeCell){
-        CCell cell=nodeCell.getData();
         FreeCell.remove(nodeCell);
-        MarkedCell.push(cell);
+        MarkedCell.push(nodeCell);
+
+        CCell cell=nodeCell.getData();
+
         cell.setState(Player[currentPlayer]);
         Position pos=cell.getPosition();
         MNKGameState gameState=MNKGameState.OPEN;         
@@ -94,13 +106,13 @@ class CBoard {
     // delle linked List dovrebbero essere sempre in O(1)
 
     public void unmarkCell(){
-        CCell cell=MarkedCell.getHead().getData();
-        MarkedCell.pop();
-        FreeCell.push(cell);
+        CNode<CCell> nodeCell=MarkedCell.pop();
+        FreeCell.reinsert(nodeCell);
+        CCell cell=nodeCell.getData();
         cell.setState(MNKCellState.FREE);
 
         CLinkedList<UnionHistoryRecord> cellUnited=UnionHistory.pop();
-        while(!cellUnited.isEmpty()){
+        while(cellUnited.isEmpty()==false){
             UnionHistoryRecord record=cellUnited.pop();
             UFNode.rollback(record);
         }
@@ -109,9 +121,6 @@ class CBoard {
     } 
 
 
-    public CLinkedList<CCell> getMarkedCell() {
-        return MarkedCell;
-    }
     public CLinkedList<CCell> getFreeCell() {
         return FreeCell;
     }

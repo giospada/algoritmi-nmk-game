@@ -40,4 +40,7 @@ class CCell{
     public void setUfNodes(UFNode[] ufNodes) {
         this.ufNodes = ufNodes;
     }
+    public MNKCell toMNKCell(){
+        return new MNKCell(position.getX(),position.getY(),state);
+    }
 };

@@ -39,7 +39,7 @@ class UFNode{
         UFNode node1=unionHistory.getNode1();
         UFNode node2=unionHistory.getNode2();
         node1.setSize(node1.getSize()-node2.getSize()) ;
-        node2.setUfNode(node2);
+        node2.setUfNode(null);
         if(node1.getRank()==node2.getRank()+1){
             node1.setRank(node1.getRank()-1);
         }
@@ -62,5 +62,8 @@ class UFNode{
     }
     public void setUfNode(UFNode ufNode) {
         this.ufNode = ufNode;
+        if(ufNode==this){
+            throw new IllegalArgumentException("ufNode cannot be itself");
+        }
     }    
 }
