@@ -33,3 +33,17 @@ Command-line compile.  In the root directory run::
 
 
 	```java mnkgame.MNKPlayerTester 5 5 4 mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer -v -t 1 -r 10```
+
+
+## RUNNING THE TESTS
+- Export the CLASSPATH variable, this is used to find the compiled classes 
+```source classpath.env```
+  
+- Compile all java files in the class path 
+```javac ./mnkgame/*.java```
+
+- Run the tests
+```java -jar test/junit-platform-console-standalone-1.7.2.jar --class-path test --scan-class-path```
+
+- In one command, you can run 
+```make test```
