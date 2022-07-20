@@ -1,8 +1,6 @@
 package mnkgame;
 
-import java.nio.file.DirectoryIteratorException;
-
-class CCell{
+public class CCell{
     private UFNode ufNodes[];
     private MNKCellState state;
     private Position position;
