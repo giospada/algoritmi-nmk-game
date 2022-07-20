@@ -1,6 +1,8 @@
 {
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
-        "test/junit-4.10.jar"
+    ],
+    "java.project.sourcePaths": [
+        "./"
     ]
 }
