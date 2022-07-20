@@ -1,7 +1,5 @@
 package mnkgame;
 
-import java.util.Stack;
-
 public class CBoardPlayer implements MNKPlayer {
 	private CBoard Board;
 	private MNKGameState myWin;

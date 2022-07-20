@@ -1,8 +1,6 @@
 package mnkgame;
 
-import javax.swing.Popup;
-
-class CLinkedList<T>{
+public class CLinkedList<T>{
 
     private CNode<T> head;
 
