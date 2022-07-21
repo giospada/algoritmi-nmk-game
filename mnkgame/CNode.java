@@ -1,11 +1,11 @@
 
 package mnkgame;
 
-class CNode<T>{
+public class CNode<T>{
+    public CNode<T> next; // TODO(team): discutere se ha senso metterle publiche
+    public CNode<T> prev;
     private T data;
-    CNode<T> next;
-    CNode<T> prev;
-    CNode(T data) {
+    public CNode(T data) {
         this.data = data;
         this.next = null;
         this.prev = null;
