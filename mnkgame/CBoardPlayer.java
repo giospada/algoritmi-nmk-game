@@ -22,12 +22,8 @@ public class CBoardPlayer implements MNKPlayer {
     // il giocatore minimo 
     public int minPlayer( int alpha, int beta) {
         int v = kinf; 
-        
-        CNode<CCell> head = Board.getFreeCell().getHead();
-
-        while(head!=null) {
-            MNKGameState newState = MNKGameState.OPEN; 
-            newState = Board.markCell(head);
+        for(CCell cell : Board.getFreeCell()) {
+            MNKGameState newState = Board.markCell(cell.getPosition());
 
             if (newState != MNKGameState.OPEN) Board.unmarkCell();
             if (newState == myWin) {
@@ -44,8 +40,6 @@ public class CBoardPlayer implements MNKPlayer {
             Board.unmarkCell();
             if (v <= alpha) return v;
             beta = Math.min(beta, v);
-
-            head=head.next;
         }
         return v; 
     }
@@ -57,11 +51,11 @@ public class CBoardPlayer implements MNKPlayer {
     // il giocatore massimo 
     private int maxPlayer(int alpha, int beta) {
         int v = -kinf; 
-        CNode<CCell> head = Board.getFreeCell().getHead();
 
-        while(head!=null) {
+        for(CCell cell : Board.getFreeCell()) {
+            
             MNKGameState newState = MNKGameState.OPEN; 
-            newState = Board.markCell(head);
+            newState = Board.markCell(cell.getPosition());
             if (newState == myWin) {
                 v = Math.max(v, kMyWinValue);
                 Board.unmarkCell();
@@ -76,13 +70,11 @@ public class CBoardPlayer implements MNKPlayer {
             }
 
 
-            v = Math.max(v, minPlayer(alpha, beta)); 
+            v = Math.max(v, minPlayer( alpha, beta)); 
 
             Board.unmarkCell();
             if (v >= beta) return v;
             alpha = Math.max(alpha, v);
-
-            head=head.next;
         }
         return v;
     }
@@ -94,47 +86,45 @@ public class CBoardPlayer implements MNKPlayer {
 			Board.markCell(c.i,c.j);         // Save the last move in the local MNKBoard
 		}
 
-        CNode<CCell> head = Board.getFreeCell().getHead();
-        CNode<CCell> bestCell = head;
+        MNKCell bestCell = freeCells[0]; 
         int v = -kinf; 
         int alpha = -kinf;
         int beta = kinf;
 
         // questo è come se fosse un max player, ma tiene in conto anche della cella
-
-        while(head!=null) {
+        for (int i = 0; i < freeCells.length; i++) {
             MNKGameState newState = MNKGameState.OPEN; 
-            CCell currentCell=head.getData();
-            newState = Board.markCell(head);
 
+            newState = Board.markCell(freeCells[i].i, freeCells[i].j);
             if (newState == myWin) {
-                return currentCell.toMNKCell(); // vintoooo
+                return freeCells[i]; // vintoooo
             } else if (newState == MNKGameState.DRAW) {
                 if (kDrawValue > v) {
                     v = kDrawValue;
-                    bestCell = head;
+                    bestCell = freeCells[i];
                 }
                 Board.unmarkCell();
                 continue; 
             }
-            
+
             int minPlayerValue = minPlayer(alpha, beta);
             if (minPlayerValue > v) {
                 v = minPlayerValue; 
-                bestCell = head; 
+                bestCell = freeCells[i]; 
             }
 
             Board.unmarkCell();
-            if (v >= beta) return bestCell.getData().toMNKCell();
+            if (v >= beta) return bestCell;
             alpha = Math.max(alpha, v);
-
-            head=head.next;
         }
-        Board.markCell(bestCell);
-        return bestCell.getData().toMNKCell();
+        Board.markCell(bestCell.i, bestCell.j);
+        return bestCell;
 	}
+
+
 
 	public String playerName() {
-		return "CBoardPlayer";
+		return "CBoard";
 	}
 }
+
