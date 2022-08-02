@@ -13,12 +13,17 @@ class CCell{
         position=new Position(x,y);
         initUFNode();
     }
-
     private void initUFNode(){
         for(int i=0;i<4;i++){
             ufNodes[i]=new UFNode();
         }
     }
+
+    public MNKCell toMNKCell(){
+        return new MNKCell(position.getX(),position.getY(),state);
+    }
+
+    // getter and setter
 
     public UFNode[] getUfNodes() {
         return ufNodes;
@@ -40,7 +45,24 @@ class CCell{
     public void setUfNodes(UFNode[] ufNodes) {
         this.ufNodes = ufNodes;
     }
-    public MNKCell toMNKCell(){
-        return new MNKCell(position.getX(),position.getY(),state);
+    
+    // java methods override
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof CCell){
+            CCell cell=(CCell)obj;
+            return cell.getPosition().equals(position) && cell.getState()==state;
+        }
+        return false;
     }
+    @Override
+    public int hashCode() {
+        return position.getX()+70*position.getY();
+    }
+    @Override
+    public String toString() {
+        return "CCell{ position:"+position.toString()+" state:"+state+" }";
+    }
+   
 };
