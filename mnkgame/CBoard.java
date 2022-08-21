@@ -95,7 +95,6 @@ class CBoard {
         CCell cell = nodeCell.getData();
         cell.setState(player[currentPlayer]);
         MNKGameState gameState = updateUnionFindAndGameState(cell);
-        checkCorrectness();
         currentPlayer = 1 - currentPlayer;
 
         if (gameState == MNKGameState.OPEN && freeCell.isEmpty()) {
