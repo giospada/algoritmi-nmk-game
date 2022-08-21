@@ -1,24 +1,24 @@
 package mnkgame;
 
-public class CCell{
+public class CCell {
     private UFNode ufNodes[];
     private MNKCellState state;
     private Position position;
 
-    CCell(int x,int y){
-        ufNodes=new UFNode[4];
-        state=MNKCellState.FREE;
-        position=new Position(x,y);
+    CCell(int x, int y) {
+        ufNodes = new UFNode[4];
+        state = MNKCellState.FREE;
+        position = new Position(x, y);
         initUFNode();
     }
-    private void initUFNode(){
-        for(int i=0;i<4;i++){
-            ufNodes[i]=new UFNode();
+    private void initUFNode() {
+        for (int i = 0; i < 4; i++) {
+            ufNodes[i] = new UFNode();
         }
     }
 
-    public MNKCell toMNKCell(){
-        return new MNKCell(position.getX(),position.getY(),state);
+    public MNKCell toMNKCell() {
+        return new MNKCell(position.getX(), position.getY(), state);
     }
 
     // getter and setter
@@ -26,7 +26,7 @@ public class CCell{
     public UFNode[] getUfNodes() {
         return ufNodes;
     }
-    
+
     public Position getPosition() {
         return position;
     }
@@ -43,24 +43,23 @@ public class CCell{
     public void setUfNodes(UFNode[] ufNodes) {
         this.ufNodes = ufNodes;
     }
-    
+
     // java methods override
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof CCell){
-            CCell cell=(CCell)obj;
-            return cell.getPosition().equals(position) && cell.getState()==state;
+        if (obj instanceof CCell) {
+            CCell cell = (CCell) obj;
+            return cell.getPosition().equals(position) && cell.getState() == state;
         }
         return false;
     }
     @Override
     public int hashCode() {
-        return position.getX()+70*position.getY();
+        return position.getX() + 70 * position.getY();
     }
     @Override
     public String toString() {
-        return "CCell{ position:"+position.toString()+" state:"+state+" }";
+        return "CCell{ position:" + position.toString() + " state:" + state + " }";
     }
-   
 };

@@ -1,10 +1,10 @@
 package mnkgame;
 
-public class UnionHistoryRecord{
+public class UnionHistoryRecord {
     private UFNode node1;
     private UFNode node2;
 
-    UnionHistoryRecord(UFNode cell1,UFNode cell2) {
+    UnionHistoryRecord(UFNode cell1, UFNode cell2) {
         this.node1 = cell1;
         this.node2 = cell2;
     }
@@ -12,7 +12,7 @@ public class UnionHistoryRecord{
     public UFNode getNode1() {
         return node1;
     }
-     
+
     public UFNode getNode2() {
         return node2;
     }

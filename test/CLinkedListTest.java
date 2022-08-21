@@ -1,18 +1,18 @@
 package test;
+import static org.junit.Assert.assertEquals;
+
+import mnkgame.CLinkedList;
+import mnkgame.CNode;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
-
-import static org.junit.Assert.assertEquals;
-import mnkgame.CLinkedList; 
-import mnkgame.CNode;
 
 public class CLinkedListTest {
     private CLinkedList<Integer> list;
 
     @BeforeAll
     public void beforeAll() {
-        list = new CLinkedList<Integer>(); 
+        list = new CLinkedList<Integer>();
     }
 
     @Test
@@ -23,7 +23,7 @@ public class CLinkedListTest {
     }
 
     @Test
-    @DisplayName("should correctly pop elements") 
+    @DisplayName("should correctly pop elements")
     public void shouldCorretlyPopElements() {
         list.push(1);
         list.push(2);
@@ -62,7 +62,7 @@ public class CLinkedListTest {
         assertEquals(Integer.valueOf(2), list.getHead().getData());
     }
 
-    @Test 
+    @Test
     @DisplayName("should correctly remove the tail element")
     public void shouldCorrectlyRemoveTheTailElement() {
         list.push(1);
@@ -81,7 +81,7 @@ public class CLinkedListTest {
         list.push(3);
         list.remove(list.getHead().next);
         assertEquals(Integer.valueOf(3), list.getHead().getData());
-        list.pop(); 
+        list.pop();
         assertEquals(Integer.valueOf(1), list.getHead().getData());
     }
 
@@ -94,9 +94,9 @@ public class CLinkedListTest {
         CNode<Integer> toRemove = list.getHead().next;
         list.remove(list.getHead().next);
         list.reinsert(toRemove);
-        
+
         assertEquals(Integer.valueOf(3), list.getHead().getData());
-        list.pop(); 
+        list.pop();
         assertEquals(Integer.valueOf(2), list.getHead().getData());
         list.pop();
         assertEquals(Integer.valueOf(1), list.getHead().getData());
@@ -108,8 +108,6 @@ public class CLinkedListTest {
         list.remove(new CNode<Integer>(4));
     }
 
-
-
     // Ma se io avessi una linked list del tipo head->1->2->3->4->5->6->7->8->9->null
-    // rimovessi 8,9 e provassi a reinserire 8, mi inserisce in automatico anche il 9? 
+    // rimovessi 8,9 e provassi a reinserire 8, mi inserisce in automatico anche il 9?
 }

@@ -1,27 +1,25 @@
 package mnkgame;
 class CBoard {
-
-    private final CNode<CCell>[][]board;
-    protected final CRemoveReinsertList<CCell> freeCell; 
+    private final CNode<CCell>[][] board;
+    protected final CRemoveReinsertList<CCell> freeCell;
     protected final CStack<CNode<CCell>> markedCell;
     private final CStack<CStack<UnionHistoryRecord>> unionHistory;
     protected final int M, N, K;
-	private final MNKCellState[] player = {MNKCellState.P1,MNKCellState.P2};
+    private final MNKCellState[] player = {MNKCellState.P1, MNKCellState.P2};
     private int currentPlayer;
     private Position direction[] = {
-        new Position(0,1),
-        new Position(1,0),
-        new Position(1,1),
-        new Position(1,-1)
-    };
+        new Position(0, 1),
+        new Position(1, 0),
+        new Position(1, 1),
+        new Position(1, -1)};
 
     CBoard(int M, int N, int K) {
         this.M = M;
         this.N = N;
         this.K = K;
-        
+
         markedCell = new CStack<>();
-        freeCell=new CRemoveReinsertList<>();
+        freeCell = new CRemoveReinsertList<>();
         unionHistory = new CStack<>();
         board = (CNode<CCell>[][]) new CNode[M][N];
         currentPlayer = 0;
@@ -54,7 +52,7 @@ class CBoard {
             return board[i][j].getData().getState();
     }
     public MNKGameState markCell(Position pos) {
-        return markCell(pos.getX(),pos.getY());
+        return markCell(pos.getX(), pos.getY());
     }
 
     public MNKGameState markCell(int i, int j) {
@@ -64,7 +62,7 @@ class CBoard {
     public MNKGameState updateUnionFindAndGameState(CCell cell) {
         MNKGameState gameState = MNKGameState.OPEN;
         CStack<UnionHistoryRecord> cellUnited = new CStack<>();
-        int scalar[] = { 1, -1 };
+        int scalar[] = {1, -1};
 
         Position pos = cell.getPosition();
         int directionIndex = 0;
@@ -106,7 +104,6 @@ class CBoard {
         return gameState;
     }
 
-
     // questo dovrebbe eseguire in O(1) per la uf rollback e l'insert e il remove
     // delle linked List dovrebbero essere sempre in O(1)
 
@@ -129,16 +126,20 @@ class CBoard {
         return freeCell;
     }
 
-    private void  checkCorrectness(){
+    private void checkCorrectness() {
         boolean[][] visited = new boolean[M][N];
-        for(int i=0;i<M;i++) for(int j=0;j<N;j++) visited[i][j]=false;
-        for(CCell c:freeCell){
-            visited[c.getPosition().getX()][c.getPosition().getY()]=true;
+        for (int i = 0; i < M; i++)
+            for (int j = 0; j < N; j++) visited[i][j] = false;
+        for (CCell c : freeCell) {
+            visited[c.getPosition().getX()][c.getPosition().getY()] = true;
         }
-        for(CNode<CCell> t:markedCell){
-            CCell c=t.getData();
-            visited[c.getPosition().getX()][c.getPosition().getY()]=true;
+        for (CNode<CCell> t : markedCell) {
+            CCell c = t.getData();
+            visited[c.getPosition().getX()][c.getPosition().getY()] = true;
         }
-        for(int i=0;i<M;i++) for(int j=0;j<N;j++) if(!visited[i][j]) throw new RuntimeException("Errore");
+        for (int i = 0; i < M; i++)
+            for (int j = 0; j < N; j++)
+                if (!visited[i][j])
+                    throw new RuntimeException("Errore");
     }
 }
