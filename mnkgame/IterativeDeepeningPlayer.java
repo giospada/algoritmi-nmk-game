@@ -1,6 +1,6 @@
 package mnkgame;
 
-public class IterativeDeepening implements MNKPlayer {
+public class IterativeDeepeningPlayer implements MNKPlayer {
     private CBoard Board;
     private MNKGameState currGameState;
     private MNKGameState myWin;
@@ -12,7 +12,7 @@ public class IterativeDeepening implements MNKPlayer {
     private final int kYourWinValue = -1000000;
     private final int kDrawValue = 0;
 
-    public IterativeDeepening() {}
+    public IterativeDeepeningPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         Board = new CBoard(M, N, K);
