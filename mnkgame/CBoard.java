@@ -33,6 +33,16 @@ class CBoard {
         }
     }
 
+    public void print() {
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                System.out.print(board[i][j].getData().getState() + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
     public boolean isInside(int i, int j) {
         return i >= 0 && i < M && j >= 0 && j < N;
     }
@@ -89,6 +99,10 @@ class CBoard {
         MNKGameState gameState = updateUnionFindAndGameState(cell);
         checkCorrectness();
         currentPlayer = 1 - currentPlayer;
+
+        if (gameState == MNKGameState.OPEN && freeCell.isEmpty()) {
+            gameState = MNKGameState.DRAW;
+        }
         return gameState;
     }
 

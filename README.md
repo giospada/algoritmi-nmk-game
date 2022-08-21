@@ -5,7 +5,7 @@ This is the project for a course in the university of Bologna
 
 Command-line compile.  In the root directory run::
 
-```javac ./mnkgame/*.java```
+````javac ./mnkgame/*.java````
 
 
 ### MNKGame application:

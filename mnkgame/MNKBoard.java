@@ -112,6 +112,16 @@ public class MNKBoard {
 			return B[i][j];
 	}
 
+    public void print() {
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                System.out.print(B[i][j]);
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
 	/**
 	 * Returns the current state of the game.
    *
