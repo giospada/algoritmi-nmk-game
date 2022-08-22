@@ -6,11 +6,15 @@ public class CCell {
     private Position position;
 
     CCell(int x, int y) {
-        ufNodes = new UFNode[4];
+        // 4 per rappresentare le 4 direzioni in cui si può allineare
+        // ossia orizz, vert, diagonale maggiore e minore
+        ufNodes = new UFNode[4];  
+        
         state = MNKCellState.FREE;
         position = new Position(x, y);
         initUFNode();
     }
+
     private void initUFNode() {
         for (int i = 0; i < 4; i++) {
             ufNodes[i] = new UFNode();

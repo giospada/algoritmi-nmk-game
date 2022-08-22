@@ -1,5 +1,5 @@
 package mnkgame;
-class CBoard {
+public class CBoard {
     private final CNode<CCell>[][] board;
     protected final CRemoveReinsertList<CCell> freeCell;
     protected final CStack<CNode<CCell>> markedCell;
@@ -7,13 +7,13 @@ class CBoard {
     protected final int M, N, K;
     private final MNKCellState[] player = {MNKCellState.P1, MNKCellState.P2};
     private int currentPlayer;
-    private Position direction[] = {
+    private Position directions[] = {
         new Position(0, 1),
         new Position(1, 0),
         new Position(1, 1),
         new Position(1, -1)};
 
-    CBoard(int M, int N, int K) {
+    public CBoard(int M, int N, int K) {
         this.M = M;
         this.N = N;
         this.K = K;
@@ -65,11 +65,14 @@ class CBoard {
         int scalar[] = {1, -1};
 
         Position pos = cell.getPosition();
-        int directionIndex = 0;
-        for (Position position : direction) {
-            for (int i : scalar) {
-                int x = pos.getX() + position.getX() * i;
-                int y = pos.getY() + position.getY() * i;
+        int directionIndex = 0;  // mappa la direzione effettiva con l'index corrispondente
+
+        // direction = pair di {0, 1}, codificano una dei 4 direzioni per fare punti
+        for (Position direction : directions) {  
+            // scalar = {1, -1}, cambia solo la direzione, in totale abbiamo for costante di 8 checks
+            for (int i : scalar) {  
+                int x = pos.getX() + direction.getX() * i;
+                int y = pos.getY() + direction.getY() * i;
                 if (isInside(x, y) && board[x][y].getData().getState() == cell.getState()) {
                     UFNode node1 = cell.getUfNodes()[directionIndex];
                     UFNode node2 = board[x][y].getData().getUfNodes()[directionIndex];
@@ -97,7 +100,7 @@ class CBoard {
         MNKGameState gameState = updateUnionFindAndGameState(cell);
         currentPlayer = 1 - currentPlayer;
 
-        if (gameState == MNKGameState.OPEN && freeCell.isEmpty()) {
+        if (freeCell.isEmpty() && gameState == MNKGameState.OPEN) {
             gameState = MNKGameState.DRAW;
         }
         return gameState;

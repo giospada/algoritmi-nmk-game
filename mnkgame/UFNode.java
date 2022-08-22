@@ -34,12 +34,17 @@ class UFNode {
         node1.setSize(node1.getSize() + node2.getSize());
         return (new UnionHistoryRecord(node1, node2));
     }
+
     // tempo costatnte
     static public void rollback(UnionHistoryRecord unionHistory) {
         UFNode node1 = unionHistory.getNode1();
         UFNode node2 = unionHistory.getNode2();
         node1.setSize(node1.getSize() - node2.getSize());
         node2.setUfNode(null);
+        
+        // TODO(gio): questa parte di rollback è buggata perché può capitare
+        // che il rank di node2 sia già all'inizio node1.rank - 1, e non causato
+        // dal fatto che abbiano stesso rank.
         if (node1.getRank() == node2.getRank() + 1) {
             node1.setRank(node1.getRank() - 1);
         }
