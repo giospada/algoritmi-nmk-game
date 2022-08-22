@@ -1,0 +1,14 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Main tester",
+            "request": "launch",
+            "mainClass": "mnkgame.MNKPlayerTester",
+            "projectName": "mnk-game_30ce19ed",
+            "args": "3 3 3 mnkgame.RandomPlayer mnkgame.simpleheuristic.MinimaxPlayer -r 1 -t 10000000 -v"
+        },
+    ]
+}
