@@ -24,8 +24,8 @@ public class Board {
     protected int currentPlayer; // currentPlayer plays next move
     protected MNKGameState gameState; // game state
 
-    protected final MNKCellState OWNER;
-    protected final MNKCellState ENEMY;
+    protected MNKCellState ownerPlayer;
+    protected MNKCellState enemyPlayer;
 
     /**
      * Create a board of size MxN and initialize the game parameters
@@ -49,8 +49,8 @@ public class Board {
         this.K = K;
 
         B = new MNKCellState[M][N];
-        OWNER = playerCode;
-        ENEMY = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
+        ownerPlayer = playerCode;
+        enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
 
         // large HashSet, so that it should never reallocate.
         FC = new HashSet<MNKCell>(2 * M * N);
@@ -189,7 +189,7 @@ public class Board {
 
     // questa funzione aggiorna l'euristica contando solamente una singola linea
     // lineCode: 1 -> verticale, 2 -> orizzontale, 3 -> diagonale, 4 -> antidiagonale
-    public int getLineHeuristics(int i, int j, int lineCode) {
+    private int getLineHeuristics(int i, int j, int lineCode) {
         int x_multiplier = lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
         int y_multiplier = lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;
 
@@ -198,9 +198,9 @@ public class Board {
         int k = 1;
 
         while (k < K && isValidCell(i + k * y_multiplier, j + k * x_multiplier)) {
-            if (B[i + k * y_multiplier][j + k * x_multiplier] == OWNER) {
+            if (B[i + k * y_multiplier][j + k * x_multiplier] == ownerPlayer) {
                 myCells++;
-            } else if (B[i + k * y_multiplier][j + k * x_multiplier] == ENEMY) {
+            } else if (B[i + k * y_multiplier][j + k * x_multiplier] == enemyPlayer) {
                 break;
             }
             k++;
@@ -211,9 +211,9 @@ public class Board {
         for (int z = 0; z >= k; z--) {
             if (!isValidCell(i + z * y_multiplier, j + z * x_multiplier)) break;
 
-            if (B[i + z * y_multiplier][j + z * x_multiplier] == OWNER) {
+            if (B[i + z * y_multiplier][j + z * x_multiplier] == ownerPlayer) {
                 myCells++;
-            } else if (B[i + z * y_multiplier][j + z * x_multiplier] == ENEMY) {
+            } else if (B[i + z * y_multiplier][j + z * x_multiplier] == enemyPlayer) {
                 hasValidOtherPart = false;
                 break;
             }
@@ -221,9 +221,9 @@ public class Board {
 
         if (hasValidOtherPart) {
             while (k > -K && isValidCell(i + k * y_multiplier, j + k * x_multiplier)) {
-                if (B[i + k * y_multiplier][j + k * x_multiplier] == OWNER) {
+                if (B[i + k * y_multiplier][j + k * x_multiplier] == ownerPlayer) {
                     myCells++;
-                } else if (B[i + k * y_multiplier][j + k * x_multiplier] == ENEMY) {
+                } else if (B[i + k * y_multiplier][j + k * x_multiplier] == enemyPlayer) {
                     break;
                 }
                 heuristic++; // per la nuova posizione che posso avere che va da k, a k + K - 1
@@ -242,6 +242,24 @@ public class Board {
         if (B[i][j] != MNKCellState.FREE) throw new IllegalArgumentException("Cell " + i + "," + j + " is not free");
         int heuristic = 0;
         for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
+        return heuristic;
+    }
+
+    // ritorna i valori euristica per il nemico
+    public int getSwappedHeuristics(int i, int j) {
+        if (B[i][j] != MNKCellState.FREE) throw new IllegalArgumentException("Cell " + i + "," + j + " is not free");
+
+        MNKCellState tmp = ownerPlayer;
+        ownerPlayer = enemyPlayer;
+        enemyPlayer = tmp;
+
+        int heuristic = 0;
+        for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
+
+        tmp = ownerPlayer;
+        ownerPlayer = enemyPlayer;
+        enemyPlayer = tmp;
+
         return heuristic;
     }
 

@@ -1,32 +1,26 @@
 package mnkgame.mics;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
 public class MicsPlayer implements mnkgame.MNKPlayer {
-
-    private Random rand;
     private Board B;
     private MNKGameState myWin;
     private MNKGameState yourWin;
-    private MNKGameState gameState;
-    private long TIMEOUT;
-    private final int kinf = 1000000000;  // un miliardo
+    private ArrayList<CellPair> moves;
 
-    private long startTime;
     public MicsPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
-        rand = new Random(System.currentTimeMillis());
         MNKCellState myState = first ? MNKCellState.P1 : MNKCellState.P2;
         B = new Board(M, N, K, myState);
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
-        TIMEOUT = timeout_in_secs;
-        gameState = MNKGameState.OPEN;
+        moves = new ArrayList<CellPair>();
     }
 
     // time should never run out right? it's the first step!
@@ -61,7 +55,6 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
     }
 
     public MNKCell selectCell(MNKCell[] freeCells, MNKCell[] movedCells) {
-        startTime = System.currentTimeMillis();
         if (movedCells.length > 0) {
             MNKCell c = movedCells[movedCells.length - 1]; // Recover the last move from MC
             B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
@@ -73,15 +66,21 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
         MNKCell preventWinCell = findPreventWinCell(freeCells);
         if (preventWinCell != null) return preventWinCell;
 
+        for (int i = 0; i < freeCells.length; i++) {
+            int heuristic = 0;
+            heuristic += B.getHeuristic(freeCells[i].i, freeCells[i].j);    
+            heuristic += B.getSwappedHeuristics(freeCells[i].i, freeCells[i].j);    
+            moves.add(new CellPair(heuristic, freeCells[i]));
+        }
 
-        MNKCell bestCell = freeCells[0];
-
-        // TODO
+        Collections.sort(moves);
+        MNKCell bestCell = moves.get(0).cell;
         B.markCell(bestCell.i, bestCell.j);
+        moves.clear();
         return bestCell;
     }
 
     public String playerName() {
-        return "Heuristic Minimax";
+        return "Mics Player";
     }
 }
