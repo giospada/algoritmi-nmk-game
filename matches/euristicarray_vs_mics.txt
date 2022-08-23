@@ -1,0 +1,118 @@
+simulating prof. play between euristicarray and mics
+playing on the board: (3, 3, 3)
+score: 1, won: 0, lost: 0, draw: 1, error: 0
+score: 1, won: 0, lost: 0, draw: 1, error: 0
+score: 2, won: 0, lost: 0, draw: 2, error: 0
+score: 2, won: 0, lost: 0, draw: 2, error: 0
+playing on the board: (4, 3, 3)
+score: 2, won: 0, lost: 1, draw: 2, error: 0
+score: 5, won: 1, lost: 0, draw: 2, error: 0
+score: 2, won: 0, lost: 2, draw: 2, error: 0
+score: 7, won: 2, lost: 0, draw: 2, error: 0
+playing on the board: (4, 4, 3)
+score: 2, won: 0, lost: 3, draw: 2, error: 0
+score: 10, won: 3, lost: 0, draw: 2, error: 0
+score: 2, won: 0, lost: 4, draw: 2, error: 0
+score: 12, won: 4, lost: 0, draw: 2, error: 0
+playing on the board: (4, 4, 4)
+score: 3, won: 0, lost: 4, draw: 3, error: 0
+score: 13, won: 4, lost: 0, draw: 3, error: 0
+score: 4, won: 0, lost: 4, draw: 4, error: 0
+score: 14, won: 4, lost: 0, draw: 4, error: 0
+playing on the board: (5, 4, 4)
+score: 5, won: 0, lost: 4, draw: 5, error: 0
+score: 15, won: 4, lost: 0, draw: 5, error: 0
+score: 6, won: 0, lost: 4, draw: 6, error: 0
+score: 16, won: 4, lost: 0, draw: 6, error: 0
+playing on the board: (5, 5, 4)
+score: 6, won: 0, lost: 5, draw: 6, error: 0
+score: 19, won: 5, lost: 0, draw: 6, error: 0
+score: 6, won: 0, lost: 6, draw: 6, error: 0
+score: 21, won: 6, lost: 0, draw: 6, error: 0
+playing on the board: (5, 5, 5)
+score: 7, won: 0, lost: 6, draw: 7, error: 0
+score: 22, won: 6, lost: 0, draw: 7, error: 0
+score: 8, won: 0, lost: 6, draw: 8, error: 0
+score: 23, won: 6, lost: 0, draw: 8, error: 0
+playing on the board: (6, 4, 4)
+score: 9, won: 0, lost: 6, draw: 9, error: 0
+score: 24, won: 6, lost: 0, draw: 9, error: 0
+score: 9, won: 0, lost: 7, draw: 9, error: 0
+score: 26, won: 7, lost: 0, draw: 9, error: 0
+playing on the board: (6, 5, 4)
+score: 9, won: 0, lost: 8, draw: 9, error: 0
+score: 29, won: 8, lost: 0, draw: 9, error: 0
+score: 9, won: 0, lost: 9, draw: 9, error: 0
+score: 31, won: 9, lost: 0, draw: 9, error: 0
+playing on the board: (6, 6, 4)
+score: 9, won: 0, lost: 10, draw: 9, error: 0
+score: 34, won: 10, lost: 0, draw: 9, error: 0
+score: 9, won: 0, lost: 11, draw: 9, error: 0
+score: 36, won: 11, lost: 0, draw: 9, error: 0
+playing on the board: (6, 6, 5)
+score: 9, won: 0, lost: 12, draw: 9, error: 0
+score: 39, won: 12, lost: 0, draw: 9, error: 0
+score: 9, won: 0, lost: 13, draw: 9, error: 0
+score: 41, won: 13, lost: 0, draw: 9, error: 0
+playing on the board: (6, 6, 6)
+score: 10, won: 0, lost: 13, draw: 10, error: 0
+score: 42, won: 13, lost: 0, draw: 10, error: 0
+score: 11, won: 0, lost: 13, draw: 11, error: 0
+score: 43, won: 13, lost: 0, draw: 11, error: 0
+playing on the board: (7, 4, 4)
+score: 11, won: 0, lost: 14, draw: 11, error: 0
+score: 46, won: 14, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 15, draw: 11, error: 0
+score: 48, won: 15, lost: 0, draw: 11, error: 0
+playing on the board: (7, 5, 4)
+score: 11, won: 0, lost: 16, draw: 11, error: 0
+score: 51, won: 16, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 17, draw: 11, error: 0
+score: 53, won: 17, lost: 0, draw: 11, error: 0
+playing on the board: (7, 6, 4)
+score: 11, won: 0, lost: 18, draw: 11, error: 0
+score: 56, won: 18, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 19, draw: 11, error: 0
+score: 58, won: 19, lost: 0, draw: 11, error: 0
+playing on the board: (7, 7, 4)
+score: 11, won: 0, lost: 20, draw: 11, error: 0
+score: 61, won: 20, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 21, draw: 11, error: 0
+score: 63, won: 21, lost: 0, draw: 11, error: 0
+playing on the board: (7, 5, 5)
+score: 11, won: 0, lost: 22, draw: 11, error: 0
+score: 66, won: 22, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 23, draw: 11, error: 0
+score: 68, won: 23, lost: 0, draw: 11, error: 0
+playing on the board: (7, 6, 5)
+score: 11, won: 0, lost: 24, draw: 11, error: 0
+score: 71, won: 24, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 25, draw: 11, error: 0
+score: 73, won: 25, lost: 0, draw: 11, error: 0
+playing on the board: (7, 7, 5)
+score: 11, won: 0, lost: 26, draw: 11, error: 0
+score: 76, won: 26, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 27, draw: 11, error: 0
+score: 78, won: 27, lost: 0, draw: 11, error: 0
+playing on the board: (7, 7, 6)
+score: 11, won: 0, lost: 28, draw: 11, error: 0
+score: 81, won: 28, lost: 0, draw: 11, error: 0
+score: 11, won: 0, lost: 29, draw: 11, error: 0
+score: 83, won: 29, lost: 0, draw: 11, error: 0
+playing on the board: (7, 7, 7)
+score: 12, won: 0, lost: 29, draw: 12, error: 0
+score: 84, won: 29, lost: 0, draw: 12, error: 0
+score: 13, won: 0, lost: 29, draw: 13, error: 0
+score: 85, won: 29, lost: 0, draw: 13, error: 0
+playing on the board: (8, 8, 4)
+score: 13, won: 0, lost: 30, draw: 13, error: 0
+score: 88, won: 30, lost: 0, draw: 13, error: 0
+score: 13, won: 0, lost: 31, draw: 13, error: 0
+score: 90, won: 31, lost: 0, draw: 13, error: 0
+playing on the board: (10, 10, 5)
+score: 13, won: 0, lost: 32, draw: 13, error: 0
+score: 93, won: 32, lost: 0, draw: 13, error: 0
+score: 13, won: 0, lost: 33, draw: 13, error: 0
+score: 95, won: 33, lost: 0, draw: 13, error: 0
+player 1 final score: score: 13, won: 0, lost: 33, draw: 13, error: 0
+player 2 final score: score: 95, won: 33, lost: 0, draw: 13, error: 0
