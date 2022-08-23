@@ -24,8 +24,6 @@ public class Board {
     protected int currentPlayer; // currentPlayer plays next move
     protected MNKGameState gameState; // game state
 
-    protected int globalHeuristicCount;
-    protected final int[][] Heuristic;
     protected final MNKCellState OWNER;
     protected final MNKCellState ENEMY;
 
@@ -51,10 +49,8 @@ public class Board {
         this.K = K;
 
         B = new MNKCellState[M][N];
-        Heuristic = new int[M][N];
         OWNER = playerCode;
         ENEMY = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-        ENEMYlHeuristicCount = 0;
 
         // large HashSet, so that it should never reallocate.
         FC = new HashSet<MNKCell>(2 * M * N);
@@ -167,7 +163,6 @@ public class Board {
         } else {
             MNKCell oldc = MC.removeLast();
             MNKCell newc = new MNKCell(oldc.i, oldc.j, MNKCellState.FREE);
-            restoreHeuristic(oldc.i, oldc.j);
             B[oldc.i][oldc.j] = MNKCellState.FREE;
 
             FC.add(newc);
@@ -187,9 +182,14 @@ public class Board {
     boolean isValidCell(int i, int j) {
         return i >= 0 && i < M && j >= 0 && j < N;
     }
+
+    public void setCellState(int i, int j, MNKCellState state) {
+        B[i][j] = state;
+    }
+
     // questa funzione aggiorna l'euristica contando solamente una singola linea
     // lineCode: 1 -> verticale, 2 -> orizzontale, 3 -> diagonale, 4 -> antidiagonale
-    public int updateLineHeuristics(int i, int j, int lineCode) {
+    public int getLineHeuristics(int i, int j, int lineCode) {
         int x_multiplier = lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
         int y_multiplier = lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;
 
@@ -205,15 +205,10 @@ public class Board {
             }
             k++;
         }
-        // sono arrivato alla fine
-        if (k == K - 1) {
-            heuristic += myCells + 1; // miei contanti, + il bonus del poter piazzare
-            myCells = 0;
-        }
 
         k = k - K; // flippo dall'altra parte per iniziare a contare di nuovo
         boolean hasValidOtherPart = true;
-        for (int z = -1; z > k; z--) {  // z > k, perché vogliamo sapere se quelli prima di esso sono validi!
+        for (int z = 0; z >= k; z--) {
             if (!isValidCell(i + z * y_multiplier, j + z * x_multiplier)) break;
 
             if (B[i + z * y_multiplier][j + z * x_multiplier] == OWNER) {
@@ -243,10 +238,10 @@ public class Board {
     // Nathaniel Hayes and Teig Loge nel paper 2016, contando le mosse disponibili.
     // questa implementazione ricacola sempre l'euristica ogni step, si può migliorare
     // facendo Dinamic programming, ma per quanto esposto poi dovrebbe funzioanre ugualmente
-    public int updateHeuristic(int i, int j) {
+    public int getHeuristic(int i, int j) {
         if (B[i][j] != MNKCellState.FREE) throw new IllegalArgumentException("Cell " + i + "," + j + " is not free");
         int heuristic = 0;
-        for (int k = 1; k <= 4; k++) heuristic += updateLineHeuristics(i, j, k);
+        for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
         return heuristic;
     }
 
