@@ -4,11 +4,11 @@ public class MinimaxPlayer implements MNKPlayer {
     private MNKBoard Board;
     private MNKGameState myWin;
     private MNKGameState yourWin;
+    private MNKGameState gameState;
     private int TIMEOUT;
+    private long startTime;
+    private boolean has_timeout;
     private final int kinf = 2;
-    private final int kMyWinValue = 1;
-    private final int kYourWinValue = -1;
-    private final int kDrawValue = 0;
 
     public MinimaxPlayer() {}
 
@@ -17,75 +17,72 @@ public class MinimaxPlayer implements MNKPlayer {
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
         TIMEOUT = timeout_in_secs;
+        has_timeout = false;
+    }
+
+    public int getValue() {
+        if (gameState == myWin) {
+            return 1;
+        } else if (gameState == yourWin) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     // il giocatore minimo
     public int minPlayer(MNKCell[] actions, int alpha, int beta) {
-        int v = kinf;
-        for (int i = 0; i < actions.length; i++) {
-            MNKGameState newState = Board.markCell(actions[i].i, actions[i].j);
+        has_timeout = (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (99.0 / 100.0);
+        if (gameState != MNKGameState.OPEN || has_timeout) {
+            return getValue();
+        }
 
-            if (newState != MNKGameState.OPEN)
-                Board.unmarkCell();
-            if (newState == myWin) {
-                continue;
-            } else if (newState == yourWin) {
-                return kYourWinValue;
-            } else if (newState == MNKGameState.DRAW) {
-                v = Math.min(v, kDrawValue);
-                continue;
+        int v = kinf;
+        for (int i = 0; i < actions.length && !has_timeout; i++) {
+            gameState = Board.markCell(actions[i].i, actions[i].j);
+            MNKCell newActions[] = getFreeCellsAfterAction(actions, i);
+            int maxPlayerValue = maxPlayer(newActions, alpha, beta);
+            Board.unmarkCell();
+
+            if (maxPlayerValue < v) {
+                v = maxPlayerValue;
+                beta = Math.min(beta, v);
             }
 
-            MNKCell newActions[] = getFreeCellsAfterAction(actions, i);
-
-            v = Math.min(v, maxPlayer(newActions, alpha, beta));
-
-            Board.unmarkCell();
+            // TODO: sarebbe buono provare a fare una ordering, sul principio della late move reduction.
             if (v <= alpha)
                 return v;
-            beta = Math.min(beta, v);
         }
         return v;
     }
 
-    // nel minPlayer e maxPlayer sarebbe meglio sostituire MNKCELL[] action, con una linked list
-    // poichè il costo di scorrerla è n ma tanto bisogna farlo, e l'inserimento e la rimozione è O(1)
-    // che viene comodo quando la si passa da una funzione all'altra
-
-    // il giocatore massimo
     private int maxPlayer(MNKCell[] actions, int alpha, int beta) {
-        int v = -kinf;
+        has_timeout = (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (99.0 / 100.0);
+        if (gameState != MNKGameState.OPEN || has_timeout) {
+            return getValue();
+        }
 
-        for (int i = 0; i < actions.length; i++) {
-            MNKGameState newState = MNKGameState.OPEN;
-            newState = Board.markCell(actions[i].i, actions[i].j);
-            if (newState == myWin) {
-                v = Math.max(v, kMyWinValue);
-                Board.unmarkCell();
-                return kMyWinValue;
-            } else if (newState == yourWin) {
-                Board.unmarkCell();
-                continue;
-            } else if (newState == MNKGameState.DRAW) {
-                v = Math.max(v, kDrawValue);
-                Board.unmarkCell();
-                continue;
+        int v = -kinf;
+        for (int i = 0; i < actions.length && !has_timeout; i++) {
+            gameState = Board.markCell(actions[i].i, actions[i].j);
+            MNKCell newActions[] = getFreeCellsAfterAction(actions, i);
+            int minPlayerValue = minPlayer(newActions, alpha, beta);
+            Board.unmarkCell();
+
+            if (minPlayerValue > v) {
+                v = minPlayerValue;
+                alpha = Math.max(alpha, v);
             }
 
-            MNKCell newActions[] = getFreeCellsAfterAction(actions, i);
-
-            v = Math.max(v, minPlayer(newActions, alpha, beta));
-
-            Board.unmarkCell();
             if (v >= beta)
                 return v;
-            alpha = Math.max(alpha, v);
         }
         return v;
     }
 
     // utilizziamo la board globale per aggiungere e togliere e ci fermiamo quando uno vince
     public MNKCell selectCell(MNKCell[] freeCells, MNKCell[] movedCells) {
+        startTime = System.currentTimeMillis();
         if (movedCells.length > 0) {
             MNKCell c = movedCells[movedCells.length - 1]; // Recover the last move from MC
             Board.markCell(c.i, c.j); // Save the last move in the local MNKBoard
@@ -94,43 +91,28 @@ public class MinimaxPlayer implements MNKPlayer {
         MNKCell bestCell = freeCells[0];
         int v = -kinf;
         int alpha = -kinf;
-        int beta = kinf;
-
         // questo è come se fosse un max player, ma tiene in conto anche della cella
-        for (int i = 0; i < freeCells.length; i++) {
-            MNKGameState newState = MNKGameState.OPEN;
-
-            newState = Board.markCell(freeCells[i].i, freeCells[i].j);
-            if (newState == myWin) {
-                return freeCells[i]; // vintoooo
-            } else if (newState == MNKGameState.DRAW) {
-                if (kDrawValue > v) {
-                    v = kDrawValue;
-                    bestCell = freeCells[i];
-                }
-                Board.unmarkCell();
-                continue;
-            }
-
+        for (int i = 0; i < freeCells.length && !has_timeout; i++) {
+            gameState = Board.markCell(freeCells[i].i, freeCells[i].j);
             MNKCell newActions[] = getFreeCellsAfterAction(freeCells, i);
+            int minPlayerValue = minPlayer(newActions, alpha, kinf);
+            Board.unmarkCell();
 
-            int minPlayerValue = minPlayer(newActions, alpha, beta);
             if (minPlayerValue > v) {
                 v = minPlayerValue;
                 bestCell = freeCells[i];
+                alpha = Math.max(alpha, v);
             }
-
-            Board.unmarkCell();
-            if (v >= beta)
-                return bestCell;
-            alpha = Math.max(alpha, v);
+            // non faccio check sull'alpha beta al primo livello, perché tanto è impossibile
+            // che sia verificato, beta è sempre kinf
         }
         Board.markCell(bestCell.i, bestCell.j);
+        has_timeout = false;
         return bestCell;
     }
 
     public String playerName() {
-        return "Nostro";
+        return "MiniMaxPlayer";
     }
 
     private MNKCell[] getFreeCellsAfterAction(MNKCell[] oldFreeCells, int actionIdx) {
