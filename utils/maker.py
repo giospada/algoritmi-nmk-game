@@ -83,6 +83,8 @@ def name_to_classname(name):
         return 'simpleheuristic.MinimaxPlayer'
     elif name == 'euristicarray':
         return 'simpleheuristic.MinimaxPlayerArray'
+    elif name == 'mics':
+        return 'mics.MicsPlayer'
     else:
         raise Exception('Invalid player name')
 
