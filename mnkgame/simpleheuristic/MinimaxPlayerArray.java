@@ -18,7 +18,9 @@ public class MinimaxPlayerArray implements mnkgame.MNKPlayer {
     private MNKGameState yourWin;
     private MNKGameState gameState;
     private long TIMEOUT;
+    private boolean has_timeout;
     private final int kinf = 1000000000;  // un miliardo
+    private final int timeout_frac = 99; // su 100, decide quando deve fermarsi per timeout
 
     private long startTime;
     public MinimaxPlayerArray() {}
@@ -30,17 +32,19 @@ public class MinimaxPlayerArray implements mnkgame.MNKPlayer {
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
         TIMEOUT = timeout_in_secs;
+        has_timeout = false;
         gameState = MNKGameState.OPEN;
-    }
+    }   
 
     private int minPlayer(MNKCell[] actions, int alpha, int beta) {
-        if (gameState != MNKGameState.OPEN || (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
+        has_timeout = (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (timeout_frac / 100.0);
+        if (gameState != MNKGameState.OPEN || has_timeout) {
             return B.getHeuristicValue();
         }
 
         int best = kinf;
         
-        for (int i = 0; i < actions.length; i++) {
+        for (int i = 0; i < actions.length && !has_timeout; i++) {
             gameState = B.markCell(actions[i].i, actions[i].j);
             MNKCell newActions[] = getFreeCellsAfterAction(actions, i);
 
@@ -60,12 +64,13 @@ public class MinimaxPlayerArray implements mnkgame.MNKPlayer {
     }
 
     private int maxPlayer(MNKCell[] actions, int alpha, int beta) {
-        if (gameState != MNKGameState.OPEN || (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
+        has_timeout = (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (timeout_frac / 100.0);
+        if (gameState != MNKGameState.OPEN || has_timeout) {
             return B.getHeuristicValue();
         }
         int best = -kinf;
         
-        for (int i = 0; i < actions.length; i++) {
+        for (int i = 0; i < actions.length && !has_timeout; i++) {
             gameState = B.markCell(actions[i].i, actions[i].j);
             MNKCell newActions[] = getFreeCellsAfterAction(actions, i);
 
@@ -144,7 +149,7 @@ public class MinimaxPlayerArray implements mnkgame.MNKPlayer {
         int alpha = -kinf;
         MNKCell bestCell = freeCells[rand.nextInt(freeCells.length)];
         
-        for (int i = 0; i < freeCells.length; i++) {
+        for (int i = 0; i < freeCells.length && !has_timeout; i++) {
             gameState = B.markCell(freeCells[i].i, freeCells[i].j);
 
             MNKCell newActions[] = getFreeCellsAfterAction(freeCells, i);
@@ -159,6 +164,7 @@ public class MinimaxPlayerArray implements mnkgame.MNKPlayer {
             B.unmarkCell();
         }
         B.markCell(bestCell.i, bestCell.j);
+        has_timeout = false;
         return bestCell;
     }
 
