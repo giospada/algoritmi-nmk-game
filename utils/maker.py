@@ -85,6 +85,9 @@ def name_to_classname(name):
         return 'simpleheuristic.MinimaxPlayerArray'
     elif name == 'mics':
         return 'mics.MicsPlayer'
+    elif name == 'doublemics':
+        return 'mics.MicsDoubleCheckPlayer'
+    
 
     # seguenti sono file di altre persone, quindi bisogna scaricarli e impostarli per provarli
     elif name == 'notxia':
