@@ -146,9 +146,8 @@ public class TestBoard {
         assert board.getHeuristic(1, 1) == 0; // check che non conta la cella amica
 
         board.setCellState(3, 3, MNKCellState.FREE);
-        assert board.getHeuristic(1, 1) == 1 + 1;
-
-
+        int value = board.getHeuristic(1, 1);
+        assert value == 1 + 1; // 1 per le celle libere + 1 per la cella amica in (2, 2)
     }
 
     public static void main(String[] args) {

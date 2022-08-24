@@ -1,11 +1,11 @@
-
-
 package mnkgame.mics;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
 import java.util.HashSet;
 import java.util.LinkedList;
+
+import javax.swing.event.HyperlinkEvent;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
@@ -89,8 +89,12 @@ public class Board {
     public void print() {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                System.out.print(B[i][j]);
-                System.out.print(" ");
+                if (B[i][j] == MNKCellState.P1)
+                    System.out.print("1 ");
+                else if (B[i][j] == MNKCellState.P2)
+                    System.out.print("2 ");
+                else
+                    System.out.print("0 ");
             }
             System.out.println();
         }
@@ -190,44 +194,69 @@ public class Board {
         int x_multiplier = lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
         int y_multiplier = lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;
 
-        int heuristic = 0;
-        int myCells = 0;
-        int k = 1;
+        int heuristic = 0;  // heuristic value to return
+        int myCells = 0;  // number of myOwnCells in the window
 
-        while (k < K && isValidCell(i + k * y_multiplier, j + k * x_multiplier)) {
-            if (B[i + k * y_multiplier][j + k * x_multiplier] == ownerPlayer) {
+        // creazione dello sliding windows
+        int start = 0;
+        int end = 1;
+        while (end < K && isValidCell(i + end * y_multiplier, j + end * x_multiplier)) {
+            if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {
                 myCells++;
-            } else if (B[i + k * y_multiplier][j + k * x_multiplier] == enemyPlayer) {
+            } else if (B[i + end * y_multiplier][j + end * x_multiplier] == enemyPlayer) {
                 break;
             }
-            k++;
+            end++;
         }
-
-        k = k - K; // flippo dall'altra parte per iniziare a contare di nuovo
-        boolean hasValidOtherPart = true;
-        for (int z = 0; z >= k; z--) {
-            if (!isValidCell(i + z * y_multiplier, j + z * x_multiplier)) break;
-
-            if (B[i + z * y_multiplier][j + z * x_multiplier] == ownerPlayer) {
+        end--; // così rientra all'ultimo valido 
+        while (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && end - start < K) {
+            if (B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
                 myCells++;
-            } else if (B[i + z * y_multiplier][j + z * x_multiplier] == enemyPlayer) {
-                hasValidOtherPart = false;
+            } else if (B[i + start * y_multiplier][j + start * x_multiplier] == enemyPlayer) {
                 break;
             }
+            start--;
+        }
+        start++; // così rientra all'ultimo valido, stesso modo per end.
+
+        // fine creazione sliding window
+        if (end - start + 1 == K) {
+            heuristic = myCells + 1;  // +1 perché è una sliding window valida
+        } else {
+            return 0; // non è possibile nemmeno creare un singolo sliding window in questa direzione
         }
 
-        if (hasValidOtherPart) {
-            while (k > -K && isValidCell(i + k * y_multiplier, j + k * x_multiplier)) {
-                if (B[i + k * y_multiplier][j + k * x_multiplier] == ownerPlayer) {
-                    myCells++;
-                } else if (B[i + k * y_multiplier][j + k * x_multiplier] == enemyPlayer) {
-                    break;
-                }
-                heuristic++; // per la nuova posizione che posso avere che va da k, a k + K - 1
-                k--;
-            }
-            heuristic += myCells;
+        // go to next step
+        start--;
+        if (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
+            myCells++;
         }
+        if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {  // sempre valido finché start è valido, no check per contorno
+            myCells--;
+        }
+        end--;
+
+        while (start > -K && isValidCell(i + start * y_multiplier, j + start * x_multiplier)) {
+            if (B[i + start * y_multiplier][j + start * x_multiplier] == enemyPlayer) break;
+            
+            heuristic++;  // ossia ho un altro blocco da K valido
+
+            start--;
+            if (!isValidCell(i + start * y_multiplier, j + start * x_multiplier)) break;
+            if (B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
+                myCells++;
+            }
+            if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {
+                myCells--;
+            }
+            end--;
+            // ADD BONUS FOR NUMBER OF CELLS IN THE WINDOW
+            // if (myCells >= K - 1) {
+            //     System.out.print("adding bonus line code is: " + lineCode + "\n");
+            //     heuristic += 4;  // BONUS PERICOLOSITÀ
+            // }
+        }
+
         return heuristic;
     }
 
@@ -236,7 +265,10 @@ public class Board {
     // questa implementazione ricacola sempre l'euristica ogni step, si può migliorare
     // facendo Dinamic programming, ma per quanto esposto poi dovrebbe funzioanre ugualmente
     public int getHeuristic(int i, int j) {
-        if (B[i][j] != MNKCellState.FREE) throw new IllegalArgumentException("Cell " + i + "," + j + " is not free");
+        if (B[i][j] == enemyPlayer) {
+            return 0;
+        }
+        
         int heuristic = 0;
         for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
         return heuristic;
@@ -244,7 +276,9 @@ public class Board {
 
     // ritorna i valori euristica per il nemico
     public int getSwappedHeuristics(int i, int j) {
-        if (B[i][j] != MNKCellState.FREE) throw new IllegalArgumentException("Cell " + i + "," + j + " is not free");
+        if (B[i][j] == ownerPlayer) {
+            return 0;
+        }
 
         MNKCellState tmp = ownerPlayer;
         ownerPlayer = enemyPlayer;
