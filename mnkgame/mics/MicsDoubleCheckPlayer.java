@@ -15,6 +15,7 @@ public class MicsDoubleCheckPlayer implements mnkgame.MNKPlayer {
     private MNKCellState yourState;
     private ArrayList<CellPair> moves;
     private int K;
+    boolean isFirstMove = true;
     public MicsDoubleCheckPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
@@ -59,55 +60,54 @@ public class MicsDoubleCheckPlayer implements mnkgame.MNKPlayer {
     }
 
     private MNKCell findDoubleWinCell(MNKCell[] freeCells) {
-        MNKCell winnerCell = null;
         for (int i = 0; i < freeCells.length; i++) {
             B.setCellState(freeCells[i].i, freeCells[i].j, myState);
             for (int j = i + 1; j < freeCells.length; j++) {
                 if (B.markCell(freeCells[j].i, freeCells[j].j) == myWin) {
-                    if (getWholeHeuristics(freeCells[i]) > getWholeHeuristics(freeCells[j])) {
-                        winnerCell = freeCells[i];
+                    int first = getWholeHeuristics(freeCells[i]) + B.getAlmostKHeuristics(freeCells[i].i, freeCells[i].j);
+                    int second = getWholeHeuristics(freeCells[j]) + B.getAlmostKHeuristics(freeCells[j].i, freeCells[j].j);
+                    if (first > second) {
+                        moves.add(new CellPair(first, freeCells[i]));
                     } else {
-                        winnerCell = freeCells[j];
+                        moves.add(new CellPair(second, freeCells[j]));
                     }
                 } 
                 B.unmarkCell();
-                if (winnerCell != null) break;
             }
             B.setCellState(freeCells[i].i, freeCells[i].j, MNKCellState.FREE);
-
-            if (winnerCell != null) {
-                return winnerCell;
-            }
+        }
+        
+        if (moves.size() > 0) {
+            Collections.sort(moves);
+            return moves.get(0).cell;
         }
         return null;
     }
 
     private MNKCell findPreventDoubleWinCell(MNKCell[] freeCells) {
-        MNKCell winnerCell = null;
         for (int i = 0; i < freeCells.length; i++) {
             B.setCellState(freeCells[i].i, freeCells[i].j, yourState);
             for (int j = i + 1; j < freeCells.length; j++) {
                 if (B.markCell(freeCells[j].i, freeCells[j].j) == yourWin) {
+                    int first = getWholeHeuristics(freeCells[i]) + B.getAlmostKHeuristics(freeCells[i].i, freeCells[i].j);
+                    int second = getWholeHeuristics(freeCells[j]) + B.getAlmostKHeuristics(freeCells[j].i, freeCells[j].j);
                     // DEBUG, remember to delete me later
-                    System.out.print(freeCells[i] + " " + freeCells[j] + " ");
-                    int first = getWholeHeuristics(freeCells[i]);
-                    System.out.println();
-                    int second = getWholeHeuristics(freeCells[j]);
-                    System.out.print(first + " " + second + " ");
+                    // System.out.print(freeCells[i] + " " + freeCells[j] + " ");
+                    // System.out.print(first + " " + second + " ");
+                    // System.out.println(B.getAlmostKHeuristics(freeCells[i].i, freeCells[i].j) + " " + B.getAlmostKHeuristics(freeCells[j].i, freeCells[j].j));
                     if (first > second) {
-                        winnerCell = freeCells[i];
+                        moves.add(new CellPair(first, freeCells[i]));
                     } else {
-                        winnerCell = freeCells[j];
+                        moves.add(new CellPair(second, freeCells[j]));
                     }
                 } 
                 B.unmarkCell();
-                if (winnerCell != null) break;
             }
             B.setCellState(freeCells[i].i, freeCells[i].j, MNKCellState.FREE);
-
-            if (winnerCell != null) {
-                return winnerCell;
-            }
+        }
+        if (moves.size() > 0) {
+            Collections.sort(moves);
+            return moves.get(0).cell;
         }
         return null;
     }
@@ -123,6 +123,14 @@ public class MicsDoubleCheckPlayer implements mnkgame.MNKPlayer {
             B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
         }
         
+        // solo per gomoku, da togliere alla consegna TODO:
+        if (isFirstMove && myState == MNKCellState.P1) {
+            isFirstMove = false;
+            MNKCell cell = new MNKCell(7, 7);
+            B.markCell(cell.i, cell.j);
+            return cell;
+        }
+
         B.setPlayer(myState);
         MNKCell winCell = findWinCell(freeCells);
         if (winCell != null) return winCell;
@@ -136,6 +144,7 @@ public class MicsDoubleCheckPlayer implements mnkgame.MNKPlayer {
             MNKCell doubleWinCell = findDoubleWinCell(freeCells);
             if (doubleWinCell != null) {
                 B.markCell(doubleWinCell.i, doubleWinCell.j);
+                moves.clear();
                 return doubleWinCell;
             }
     
@@ -144,6 +153,7 @@ public class MicsDoubleCheckPlayer implements mnkgame.MNKPlayer {
             if (preventDoubleWin != null) {
                 B.setPlayer(myState);
                 B.markCell(preventDoubleWin.i, preventDoubleWin.j);
+                moves.clear();
                 return preventDoubleWin;
             }
         }
