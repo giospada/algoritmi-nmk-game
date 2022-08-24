@@ -85,6 +85,10 @@ def name_to_classname(name):
         return 'simpleheuristic.MinimaxPlayerArray'
     elif name == 'mics':
         return 'mics.MicsPlayer'
+
+    # seguenti sono file di altre persone, quindi bisogna scaricarli e impostarli per provarli
+    elif name == 'notxia':
+        return 'github.notxia.OurPlayer'
     else:
         raise Exception('Invalid player name')
 
