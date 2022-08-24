@@ -289,6 +289,18 @@ public class Board {
         currentPlayer = (currentPlayer + 1) % 2;
     }
 
+    public boolean isFree(int i, int j) {
+        return B[i][j] == MNKCellState.FREE;
+    }
+
+    public boolean isMine(int i, int j) {
+        return B[i][j] == ownerPlayer;
+    }
+
+    public boolean isEnemy(int i, int j) {
+        return B[i][j] == enemyPlayer;
+    }
+
     // Check winning state from cell i, j
     private boolean isWinningCell(int i, int j) {
         MNKCellState s = B[i][j];
