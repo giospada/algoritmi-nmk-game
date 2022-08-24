@@ -51,6 +51,7 @@ public class Board {
         B = new MNKCellState[M][N];
         ownerPlayer = playerCode;
         enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
+        currentPlayer = playerCode == MNKCellState.P1 ? 0 : 1;
 
         // large HashSet, so that it should never reallocate.
         FC = new HashSet<MNKCell>(2 * M * N);
@@ -63,7 +64,6 @@ public class Board {
      * Resets the MNKBoard
      */
     public void reset() {
-        currentPlayer = 0;
         gameState = MNKGameState.OPEN;
         initBoard();
         initFreeCellList();
@@ -141,8 +141,6 @@ public class Board {
             FC.remove(oldc);
             MC.add(newc);
 
-            currentPlayer = (currentPlayer + 1) % 2;
-
             if (isWinningCell(i, j))
                 gameState = B[i][j] == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
             else if (FC.isEmpty())
@@ -166,7 +164,6 @@ public class Board {
             B[oldc.i][oldc.j] = MNKCellState.FREE;
 
             FC.add(newc);
-            currentPlayer = (currentPlayer + 1) % 2;
             gameState = MNKGameState.OPEN;
         }
     }
@@ -282,11 +279,8 @@ public class Board {
         this.MC.clear();
     }
 
-    // this could be used for another heuristic evaluation?
-    // ha senso che sia pubblico? per ora lo uso per fare un filtro iniziale
-    // nel minimax player
-    public void togglePlayer() {
-        currentPlayer = (currentPlayer + 1) % 2;
+    public void setPlayer(MNKCellState player) {
+        currentPlayer = player == MNKCellState.P1 ? 0 : 1;
     }
 
     // Check winning state from cell i, j
