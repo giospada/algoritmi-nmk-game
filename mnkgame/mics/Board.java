@@ -5,8 +5,6 @@ import java.lang.IndexOutOfBoundsException;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import javax.swing.event.HyperlinkEvent;
-
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import mnkgame.MNKCell;
@@ -257,6 +255,50 @@ public class Board {
             // }
         }
 
+        return heuristic;
+    }
+
+    // checks if the cell has K - 2 samekind in a row
+    // the concept is the same as markCell, so it could be implemented there,
+    // but for clarity i make it his own function
+    public int getAlmostKHeuristics(int i, int j) {
+        if (B[i][j] == MNKCellState.FREE) return 0;
+        final int almostKGain = 8; // dovrebbe essere diverso a seconda della grandezza della board
+        int heuristic = 0;
+        MNKCellState state = B[i][j];
+        // Horizontal check
+        int n = 1;
+        for (int k = 1; j - k >= 0 && B[i][j - k] == state; k++) n++; // backward check
+        if (n == K - 1) heuristic += almostKGain;
+        n = 1;
+        for (int k = 1; j + k < N && B[i][j + k] == state; k++) n++; // forward check
+        if (n == K - 1) heuristic += almostKGain;
+
+        // Vertical check
+        n = 1;
+        for (int k = 1; i - k >= 0 && B[i - k][j] == state; k++) n++; // backward check
+        if (n == K - 1) heuristic += almostKGain;
+        n = 1;
+        for (int k = 1; i + k < M && B[i + k][j] == state; k++) n++; // forward check
+        if (n == K - 1) heuristic += almostKGain;
+        n = 1;
+
+        // Diagonal check
+        n = 1;
+        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k] == state; k++) n++; // backward check
+        if (n == K - 1) heuristic += almostKGain;
+        n = 1;
+        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k] == state; k++) n++; // forward check
+        if (n == K - 1) heuristic += almostKGain;
+
+        // Anti-diagonal check
+        n = 1;
+        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k] == state; k++) n++; // backward check
+        if (n == K - 1) heuristic += almostKGain;
+        n = 1;
+        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k] == state; k++) n++; // backward check
+        if (n == K - 1) heuristic += almostKGain;
+        
         return heuristic;
     }
 
