@@ -87,6 +87,8 @@ def name_to_classname(name):
         return 'mics.MicsPlayer'
     elif name == 'doublemics':
         return 'mics.MicsDoubleCheckPlayer'
+    elif name == 'bigiterative':
+        return 'bigheuristics.IterativePlayer'
     
 
     # seguenti sono file di altre persone, quindi bisogna scaricarli e impostarli per provarli
