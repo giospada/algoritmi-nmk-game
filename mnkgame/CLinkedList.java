@@ -22,6 +22,8 @@ public class CLinkedList<T> {
 
     // O(1)
     public void remove(CNode<T> t) {
+        if (t == null) throw new IllegalArgumentException("t is null when removing item");
+
         if (t == head) {
             head = head.next;
             if (head != null)
