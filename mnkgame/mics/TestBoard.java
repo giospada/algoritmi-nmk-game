@@ -1,11 +1,14 @@
 package mnkgame.mics;
 
 import mnkgame.MNKCellState;
+import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
 
 public class TestBoard {
 
-    // tests if correcly counts for 3x3 board in all angles
-    public static void testEmpty() {
+    @Test
+    @DisplayName("tests if correcly counts for 3x3 board in all angles")
+    public void testEmpty() {
         Board board = new Board(3, 3, 3, MNKCellState.P1);
         int angleValues[] = new int[4];
         angleValues[0] = board.getHeuristic(0, 0);
@@ -29,8 +32,10 @@ public class TestBoard {
         assert center == 4;
     }
 
-    // tests bigger cases
-    public static void testFiveByFive() {
+    // 
+    @Test
+    @DisplayName("tests if correcly counts for 5x5 board in all angles except middle")
+    public void testFiveByFive() {
         // O O O O O
         // O O O O O
         // O O O O O
@@ -79,7 +84,9 @@ public class TestBoard {
         // se quelli sopra sono andati bene i restanti al centro non dovrebbero essere un problema
     }
 
-    public static void testObstacles() {
+    @Test
+    @DisplayName("test if correctly counts for obstacles")
+    public void testObstacles() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
         board.setCellState(2, 2, MNKCellState.P2);
 
@@ -127,7 +134,9 @@ public class TestBoard {
         }
     }
 
-    public static void countOwnPieces() {
+    @Test
+    @DisplayName("test if correctly counts for own pieces and obstacles")
+    public void countOwnPieces() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
         board.setCellState(2, 2, MNKCellState.P1);
         assert board.getHeuristic(1, 1) == (7 + 1);  // + 1 per la cella amica
@@ -148,12 +157,5 @@ public class TestBoard {
         board.setCellState(3, 3, MNKCellState.FREE);
         int value = board.getHeuristic(1, 1);
         assert value == 1 + 1; // 1 per le celle libere + 1 per la cella amica in (2, 2)
-    }
-
-    public static void main(String[] args) {
-        testEmpty();
-        testFiveByFive();
-        testObstacles();
-        countOwnPieces();
     }
 }
