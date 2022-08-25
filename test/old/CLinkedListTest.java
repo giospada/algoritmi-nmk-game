@@ -1,63 +1,67 @@
 package test.old;
-import static org.junit.Assert.assertEquals;
 
-import mnkgame.CLinkedList;
+import mnkgame.CRemoveReinsertList;
+
+
 import mnkgame.CNode;
-import org.junit.Test;
+
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CLinkedListTest {
-    private CLinkedList<Integer> list;
+    private static CRemoveReinsertList<Integer> list;
 
     @BeforeAll
-    public void beforeAll() {
-        list = new CLinkedList<Integer>();
+    static public void beforeAll() {
+        list = new CRemoveReinsertList<Integer>();
     }
 
     @Test
-    @DisplayName("should correctly push an element to the list")
-    public void shouldCorrectlyPushAnElementToTheList() {
-        list.push(1);
+    @DisplayName("should correctly pushHead an element to the list")
+    public void shouldCorrectlypushHeadAnElementToTheList() {
+        list.pushHead(1);
         assertEquals(Integer.valueOf(1), list.getHead().getData());
     }
 
     @Test
-    @DisplayName("should correctly pop elements")
-    public void shouldCorretlyPopElements() {
-        list.push(1);
-        list.push(2);
-        list.push(3);
-        assertEquals(Integer.valueOf(3), list.pop());
-        assertEquals(Integer.valueOf(2), list.pop());
-        assertEquals(Integer.valueOf(1), list.pop());
+    @DisplayName("should correctly popHead elements")
+    public void shouldCorretlypopHeadElements() {
+        list.pushHead(1);
+        list.pushHead(2);
+        list.pushHead(3);
+        list.popHead();
+        assertEquals(Integer.valueOf(2), list.getHead().getData());
+        list.popHead();
+        assertEquals(Integer.valueOf(1), list.getHead().getData());
+        list.popHead();
     }
 
     @Test(expected = NullPointerException.class)
-    @DisplayName("should return error when popping empty list")
-    public void popEmpty() {
-        list.pop();
+    @DisplayName("should return error when popHeadping empty list")
+    public void popHeadEmpty() {
+        list.popHead();
     }
 
     @Test
-    @DisplayName("should push multiple elements to the list")
-    public void shouldPushMultipleElementsToTheList() {
+    @DisplayName("should pushHead multiple elements to the list")
+    public void shouldpushHeadMultipleElementsToTheList() {
         for (int i = 0; i < 10; i++) {
-            list.push(i);
+            list.pushHead(i);
         }
 
         for (int i = 9; i >= 0; i--) {
             assertEquals(Integer.valueOf(i), list.getHead().getData());
-            list.pop();
+            list.popHead();
         }
     }
 
     @Test
     @DisplayName("should correctly remove the head element")
     public void shouldCorrectlyRemoveAnElement() {
-        list.push(1);
-        list.push(2);
-        list.push(3);
+        list.pushHead(1);
+        list.pushHead(2);
+        list.pushHead(3);
         list.remove(list.getHead());
         assertEquals(Integer.valueOf(2), list.getHead().getData());
     }
@@ -65,40 +69,40 @@ public class CLinkedListTest {
     @Test
     @DisplayName("should correctly remove the tail element")
     public void shouldCorrectlyRemoveTheTailElement() {
-        list.push(1);
-        list.push(2);
-        list.push(3);
+        list.pushHead(1);
+        list.pushHead(2);
+        list.pushHead(3);
         list.remove(list.getHead().next.next);
-        list.pop();
+        list.popHead();
         assertEquals(Integer.valueOf(2), list.getHead().getData());
     }
 
     @Test
     @DisplayName("should correctly remove the middle element")
     public void shouldCorrectlyRemoveTheMiddleElement() {
-        list.push(1);
-        list.push(2);
-        list.push(3);
+        list.pushHead(1);
+        list.pushHead(2);
+        list.pushHead(3);
         list.remove(list.getHead().next);
         assertEquals(Integer.valueOf(3), list.getHead().getData());
-        list.pop();
+        list.popHead();
         assertEquals(Integer.valueOf(1), list.getHead().getData());
     }
 
     @Test
     @DisplayName("should reinsert the middle element")
     public void shouldReinsertTheMiddleElement() {
-        list.push(1);
-        list.push(2);
-        list.push(3);
+        list.pushHead(1);
+        list.pushHead(2);
+        list.pushHead(3);
         CNode<Integer> toRemove = list.getHead().next;
         list.remove(list.getHead().next);
         list.reinsert(toRemove);
 
         assertEquals(Integer.valueOf(3), list.getHead().getData());
-        list.pop();
+        list.popHead();
         assertEquals(Integer.valueOf(2), list.getHead().getData());
-        list.pop();
+        list.popHead();
         assertEquals(Integer.valueOf(1), list.getHead().getData());
     }
 
