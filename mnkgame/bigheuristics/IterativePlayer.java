@@ -18,6 +18,7 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
 
     private PriorityQueue<SearchNode> queue;
     private SearchNode[] moves;  // contiene solamente i root nodes, fra cui poi andare a scegliere
+    private int timeoutFrac;  // frazione di 100 per cui checkare il timeout
     int moves_counter;
 
     // ho bisogno di ciclare...
@@ -36,22 +37,13 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
         TIMEOUT = timeout_in_secs;
-        // B.markCell(5, 4);
-        // B.markCell(4, 3);
-        // B.markCell(5, 5);
-        // B.markCell(5, 3);
-        // B.markCell(4, 5);
-        // B.markCell(3, 5);
-        // B.markCell(6, 6);
-        // B.markCell(4, 4);
-        // B.markCell(6, 2);
-        // B.markCell(6, 3);
-        // B.markCell(3, 3);
-        // B.markCell(4, 2);
+
+        // supponendo che 1 <= TIMEOUT <= 10
+        timeoutFrac = 89 + TIMEOUT;
     }
 
     private boolean hasTimeRunOut() {
-        return (System.currentTimeMillis() - timeStart) / 1000.0 > TIMEOUT * (97.0 / 100.0);
+        return (System.currentTimeMillis() - timeStart) / 1000.0 > TIMEOUT * (timeoutFrac / 100.0);
     }
 
     private MNKCell findWinCellAndCreateQueue(MNKCell[] freeCells) {
@@ -114,6 +106,7 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
             final MNKCell[] FC = B.getFreeCells();
 
             for (MNKCell cell : FC) {
+                if (hasTimeRunOut()) break;
                 MNKGameState state = B.markCell(cell.i, cell.j);
                 int value = B.getHeuristic(cell.i, cell.j) + B.getSwappedHeuristics(cell.i, cell.j);
                 if (state == myWin) {
