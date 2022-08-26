@@ -3,3 +3,5 @@
 mnkgame/github/*
 sources.txt
 build/
+ignore/*
+subroutine/*

@@ -8,7 +8,7 @@
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
             "projectName": "mnk-game_30ce19ed",
-            "args": "3 3 3 mnkgame.RandomPlayer mnkgame.simpleheuristic.MinimaxPlayer -r 1 -t 10000000 -v"
+            "args": "10 10 5 mnkgame.bigheuristics.IterativePlayer mnkgame.github.notxia.OurPlayer -r 1 -t 10 -v"
         },
     ]
 }

@@ -78,30 +78,32 @@ def name_to_classname(name):
     Converte un nome di file in un nome del file
     """
     if name == 'random':
-        return 'RandomPlayer'
+        return 'mnkgame.RandomPlayer'
     elif name == 'qrandom':
-        return 'QuasiRandomPlayer'
+        return 'mnkgame.QuasiRandomPlayer'
     elif name == 'iterative':
-        return 'IterativeDeepeningPlayer'
+        return 'mnkgame.IterativeDeepeningPlayer'
     elif name == 'minimax':
-        return 'MinimaxPlayer'
+        return 'mnkgame.MinimaxPlayer'
     elif name == 'boardminimax':
-        return 'BoardMinimaxPlayer'
+        return 'mnkgame.BoardMinimaxPlayer'
     elif name == 'euristic':
-        return 'simpleheuristic.MinimaxPlayer'
+        return 'mnkgame.simpleheuristic.MinimaxPlayer'
     elif name == 'euristicarray':
-        return 'simpleheuristic.MinimaxPlayerArray'
+        return 'mnkgame.simpleheuristic.MinimaxPlayerArray'
     elif name == 'mics':
-        return 'mics.MicsPlayer'
+        return 'mnkgame.mics.MicsPlayer'
     elif name == 'doublemics':
-        return 'mics.MicsDoubleCheckPlayer'
+        return 'mnkgame.mics.MicsDoubleCheckPlayer'
+    elif name == 'bigiterative':
+        return 'mnkgame.bigheuristics.IterativePlayer'
     
 
     # seguenti sono file di altre persone, quindi bisogna scaricarli e impostarli per provarli
     elif name == 'notxia':
-        return 'github.notxia.OurPlayer'
-    else:
-        raise Exception('Invalid player name')
+        return 'mnkgame.github.notxia.OurPlayer'
+    elif name == 'campemanu':
+        return 'subroutine.GroupPlayer'
 
 def make_command(args):
     if len(args.board) != 3:

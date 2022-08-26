@@ -84,6 +84,20 @@ public class MNKPlayerTester {
         if (VERBOSE)
             System.out.println("Initializing " + M + "," + N + "," + K + " board");
         B = new MNKBoard(M, N, K);
+        
+        // B.markCell(5, 4);
+        // B.markCell(4, 3);
+        // B.markCell(5, 5);
+        // B.markCell(5, 3);
+        // B.markCell(4, 5);
+        // B.markCell(3, 5);
+        // B.markCell(6, 6);
+        // B.markCell(4, 4);
+        // B.markCell(6, 2);
+        // B.markCell(6, 3);
+        // B.markCell(3, 3);
+        // B.markCell(4, 2);
+        
         // Timed-out initializaton of the MNKPlayers
         for (int k = 0; k < 2; k++) {
             if (VERBOSE)
