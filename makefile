@@ -6,8 +6,7 @@
 .PHONY: test
 test: SHELL:=/bin/bash
 test: compile
-	java -cp classes:lib/* org.junit.platform.console.ConsoleLauncher  --class-path build  --scan-class-path
-
+	java -cp classes:lib/junit-platform-console-standalone-1.9.0.jar org.junit.platform.console.ConsoleLauncher  --class-path build  --scan-class-path
 clean:
 	rm -R build
 
