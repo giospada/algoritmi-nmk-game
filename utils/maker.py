@@ -70,30 +70,32 @@ def name_to_classname(name):
     Converte un nome di file in un nome del file
     """
     if name == 'random':
-        return 'RandomPlayer'
+        return 'mnkgame.RandomPlayer'
     elif name == 'qrandom':
-        return 'QuasiRandomPlayer'
+        return 'mnkgame.QuasiRandomPlayer'
     elif name == 'iterative':
-        return 'IterativeDeepeningPlayer'
+        return 'mnkgame.IterativeDeepeningPlayer'
     elif name == 'minimax':
-        return 'MinimaxPlayer'
+        return 'mnkgame.MinimaxPlayer'
     elif name == 'boardminimax':
-        return 'BoardMinimaxPlayer'
+        return 'mnkgame.BoardMinimaxPlayer'
     elif name == 'euristic':
-        return 'simpleheuristic.MinimaxPlayer'
+        return 'mnkgame.simpleheuristic.MinimaxPlayer'
     elif name == 'euristicarray':
-        return 'simpleheuristic.MinimaxPlayerArray'
+        return 'mnkgame.simpleheuristic.MinimaxPlayerArray'
     elif name == 'mics':
-        return 'mics.MicsPlayer'
+        return 'mnkgame.mics.MicsPlayer'
     elif name == 'doublemics':
-        return 'mics.MicsDoubleCheckPlayer'
+        return 'mnkgame.mics.MicsDoubleCheckPlayer'
     elif name == 'bigiterative':
-        return 'bigheuristics.IterativePlayer'
+        return 'mnkgame.bigheuristics.IterativePlayer'
     
 
     # seguenti sono file di altre persone, quindi bisogna scaricarli e impostarli per provarli
     elif name == 'notxia':
-        return 'github.notxia.OurPlayer'
+        return 'mnkgame.github.notxia.OurPlayer'
+    elif name == 'campemanu':
+        return 'subroutine.GroupPlayer'
     else:
         raise Exception('Invalid player name')
 
@@ -104,10 +106,10 @@ def make_command(args):
     player1 = name_to_classname(args.player1)
     player2 = name_to_classname(args.player2)
     if args.human:
-        return f"java mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} mnkgame.{player1}"
+        return f"java mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} {player1}"
     else:
         verbose = "-v" if args.verbose else ""
-        return f"java mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} mnkgame.{player1} mnkgame.{player2} -r {args.rounds} -t {args.time} {verbose}"
+        return f"java mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} {player1} {player2} -r {args.rounds} -t {args.time} {verbose}"
 
 
 # BEGIN FORMAT OUTPUT ZONE :D
