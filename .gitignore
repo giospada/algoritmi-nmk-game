@@ -1,5 +1,7 @@
 *.class
 .vscode
 mnkgame/github/*
+sources.txt
+build/
 ignore/*
 subroutine/*

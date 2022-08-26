@@ -20,6 +20,10 @@ public class CRemoveReinsertList<T> implements Iterable<T> {
         head = newNode;
     }
 
+    public void popHead(){
+        remove(head);
+    }
+
     public void remove(CNode<T> t) {
         if (t == head) {
             head = head.next;

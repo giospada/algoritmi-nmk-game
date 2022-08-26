@@ -46,24 +46,32 @@ def main():
 def get_src_dir():
     return os.path.join(os.getcwd(), "mnkgame")
 
+
 def remove_all_class():
     """
     Rimuove tutti i file .class
-    """
+    
+    old:
     source = get_src_dir()
     for file in os.listdir(source):
         if file.endswith(".class"):
             os.remove(os.path.join("mnkgame", file))
+    """
+    os.system("make clean")
 
 def compile_all_java():
     """
     Compila tutti i file .java
     NON MI WORKA SU WINDOWS BOH
     """
+    """
     source = get_src_dir()
     for file in os.listdir(source):
         if file.endswith(".java"):
             os.system(os.path.join("mnkgame", file))
+    """
+    os.system("make compile")
+    
 
 def name_to_classname(name):
     """
@@ -96,8 +104,6 @@ def name_to_classname(name):
         return 'mnkgame.github.notxia.OurPlayer'
     elif name == 'campemanu':
         return 'subroutine.GroupPlayer'
-    else:
-        raise Exception('Invalid player name')
 
 def make_command(args):
     if len(args.board) != 3:
@@ -106,10 +112,10 @@ def make_command(args):
     player1 = name_to_classname(args.player1)
     player2 = name_to_classname(args.player2)
     if args.human:
-        return f"java mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} {player1}"
+        return f"java -cp build mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} mnkgame.{player1}"
     else:
         verbose = "-v" if args.verbose else ""
-        return f"java mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} {player1} {player2} -r {args.rounds} -t {args.time} {verbose}"
+        return f"java -cp build mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} mnkgame.{player1} mnkgame.{player2} -r {args.rounds} -t {args.time} {verbose}"
 
 
 # BEGIN FORMAT OUTPUT ZONE :D
