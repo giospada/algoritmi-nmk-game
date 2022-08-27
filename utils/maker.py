@@ -112,10 +112,10 @@ def make_command(args):
     player1 = name_to_classname(args.player1)
     player2 = name_to_classname(args.player2)
     if args.human:
-        return f"java -cp build mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} mnkgame.{player1}"
+        return f"java -cp build mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} {player1}"
     else:
         verbose = "-v" if args.verbose else ""
-        return f"java -cp build mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} mnkgame.{player1} mnkgame.{player2} -r {args.rounds} -t {args.time} {verbose}"
+        return f"java -cp build mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} {player1} {player2} -r {args.rounds} -t {args.time} {verbose}"
 
 
 # BEGIN FORMAT OUTPUT ZONE :D
