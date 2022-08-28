@@ -36,6 +36,7 @@ public class SearchNode implements Comparable<SearchNode>  {
         for (int k = 0; k < moves.length; k++) {
             newMoves[k] = new Cell(moves[k]);
         }
+        newMoves[moves.length] = new Cell(i, j);
         return new SearchNode(newMoves, value, !minimize, this, alpha, beta);
     }
 
@@ -86,6 +87,23 @@ public class SearchNode implements Comparable<SearchNode>  {
         String s = "";
         for (int i = 0; i < moves.length; i++) {
             s += moves[i].toString() + ' ' + this.value + " |";
+        }
+        return s;
+     }
+
+    @Override
+    public int hashCode() {
+        return this.getStringForHash().hashCode();
+    }
+
+     /**
+      * Molto simile alla funzione {@link #toString()}, ma non tiene conto del valore.
+      * @return la stringa utilizzata per fare hashing
+      */
+     private String getStringForHash() {
+        String s = "";
+        for (int i = 0; i < moves.length; i++) {
+            s += moves[i].toString() + ' ';
         }
         return s;
      }

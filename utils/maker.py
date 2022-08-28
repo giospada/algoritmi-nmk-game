@@ -97,6 +97,8 @@ def name_to_classname(name):
         return 'mnkgame.mics.MicsDoubleCheckPlayer'
     elif name == 'bigiterative':
         return 'mnkgame.bigheuristics.IterativePlayer'
+    elif name == 'bigiterative2':
+        return 'mnkgame.bigheuristics.IterativePlayerV2'
     
 
     # seguenti sono file di altre persone, quindi bisogna scaricarli e impostarli per provarli

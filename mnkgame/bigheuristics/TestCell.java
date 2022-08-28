@@ -2,8 +2,10 @@ package mnkgame.bigheuristics;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 
 public class TestCell {
+    @Disabled("Questo Metodo non è proprio utilizzato")
     @Test
     @DisplayName("Correctly equals two cells")
     public void testEquals() {

@@ -23,7 +23,7 @@ public class Cell {
 
     @Override
     public String toString() {
-        return "[" + this.i + "," + this.j + "]";
+        return this.i + "," + this.j;
     }
 
     public MNKCell getCell() {

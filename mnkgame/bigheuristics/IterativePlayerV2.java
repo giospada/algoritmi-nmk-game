@@ -1,13 +1,13 @@
 package mnkgame.bigheuristics;
 
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import mnkgame.MNKCellState;
 
-public class IterativePlayer implements mnkgame.MNKPlayer {
+public class IterativePlayerV2 implements mnkgame.MNKPlayer {
     private Board B;
     private MNKGameState myWin;
     private MNKGameState yourWin;
@@ -17,18 +17,12 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
     private MNKCellState yourState;
 
     private PriorityQueue<SearchNode> queue;
+    private HashMap<SearchNode, SearchNode> registeredNodes;
     private SearchNode[] moves;  // contiene solamente i root nodes, fra cui poi andare a scegliere
     private int timeoutFrac;  // frazione di 100 per cui checkare il timeout
     int moves_counter;
 
-    // ho bisogno di ciclare...
-    // fammi scrivere l'algo molto generale 
-    // 1. aggiorna la tabella.
-    // ottieni euristica per ogni mossa libera.
-    // Poi una cosa è che io non ho bisogno delle free cells, se mi tengo un array di freecells dentro qui, ma faccio una fatica boia a CachingJupiterConfiguration
-    // quanto valgano, forse non mi conviene???
-    // 2. comunque l'iterative deepening iterativo come primo step bisogna farlo.
-    public IterativePlayer() {}
+    public IterativePlayerV2() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         myState = first ? MNKCellState.P1 : MNKCellState.P2;
@@ -85,6 +79,7 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
         timeStart = System.currentTimeMillis();
         moves = new SearchNode[freeCells.length];
         queue = new PriorityQueue<SearchNode>();
+        registeredNodes = new HashMap<SearchNode, SearchNode>(freeCells.length * 10);
         moves_counter = 0;
 
         if (movedCells.length > 0) {
@@ -118,8 +113,22 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
                 } else if (state == MNKGameState.DRAW) {
                     curr.backtrack(value);
                 } else {
-                    // log(size(queue)) + 2 * O(K) + cose costanti
-                    queue.add(curr.expand(cell.i, cell.j, value));
+                    SearchNode child = curr.expand(cell.i, cell.j, value);
+                    // essendo inserita nella queue, allora è necessariamente contenuto
+                    if (registeredNodes.containsKey(child)) {  // O(1) check
+                        SearchNode childNode = registeredNodes.get(child);  // O(1) retrieval
+                        if (value > childNode.value) {
+                            childNode.value = value;
+                            childNode.backtrack(value);
+
+                            // update the queue, O(log(size of queue))
+                            queue.remove(childNode);
+                            queue.add(childNode);
+                        }  // else do nothing
+                    } else {
+                        registeredNodes.put(child, child);
+                        queue.add(child);
+                    }       
                 }
                 B.unmarkCell();
             }
@@ -137,19 +146,13 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
             }
         }
 
-        // print first 5 best moves:
-        // for (int i = 0; i < 5 && i < moves.length; i++) {
-        //     System.out.println(moves[i]);
-        // }
-        // System.out.println();
         B.markCell(best.i, best.j);
-        queue = null;  // free with Garbage Collector
         return best;
     }
 
     @Override
     public String playerName() {
-        return "IterativePlayer LTM";  // LTM = Late Move Reduction
+        return "IterativePlayer LTM v2";  // LTM = Late Move Reduction
     }
     
 }
