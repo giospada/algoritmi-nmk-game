@@ -127,8 +127,15 @@ public class IterativePlayer implements mnkgame.MNKPlayer {
             B.resetMove(curr);  // lineare sulla depth del nodo
         }
 
-        Arrays.sort(moves);
-        MNKCell best = moves[0].moves[0].getCell();
+        // find best move in O(n), with n size of moves = size of freecells
+        MNKCell best = null;
+        int bestValue = 0;
+        for (SearchNode m : moves) {
+            if (m.value > bestValue) {
+                best = new MNKCell(m.moves[0].i, m.moves[0].j);
+                bestValue = m.value;
+            }
+        }
 
         // print first 5 best moves:
         // for (int i = 0; i < 5 && i < moves.length; i++) {
