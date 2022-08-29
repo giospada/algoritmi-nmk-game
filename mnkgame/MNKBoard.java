@@ -154,6 +154,9 @@ public class MNKBoard {
      * @throws IndexOutOfBoundsException If <code>i,j</code> are out of matrix bounds
      * @throws IllegalStateException If the game already ended or if <code>i,j</code> is not a free cell
      */
+    public MNKGameState markCell(MNKCell cell) throws IndexOutOfBoundsException, IllegalStateException {
+        return markCell(cell.i,cell.j)
+    }
     public MNKGameState markCell(int i, int j) throws IndexOutOfBoundsException, IllegalStateException {
         if (gameState != MNKGameState.OPEN) {
             throw new IllegalStateException("Game ended!");
