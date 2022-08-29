@@ -1,4 +1,4 @@
-package mnkgame;
+package mnkgame.cboard;
 
 import java.lang.Iterable;
 import java.util.Iterator;

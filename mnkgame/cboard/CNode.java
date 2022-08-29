@@ -1,5 +1,5 @@
 
-package mnkgame;
+package mnkgame.cboard;
 
 public class CNode<T> {
     public CNode<T> next; // TODO(team): discutere se ha senso metterle publiche

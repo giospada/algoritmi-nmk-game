@@ -1,4 +1,4 @@
-package mnkgame;
+package mnkgame.cboard;
 
 public class UnionHistoryRecord {
     private UFNode node1;

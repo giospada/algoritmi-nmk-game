@@ -1,4 +1,8 @@
-package mnkgame;
+package mnkgame.cboard;
+
+import mnkgame.MNKCell;
+import mnkgame.MNKGameState;
+import mnkgame.MNKPlayer;
 
 public class BoardMinimaxPlayer implements MNKPlayer {
     private CBoard Board;

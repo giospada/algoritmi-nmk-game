@@ -1,4 +1,8 @@
-package mnkgame;
+package mnkgame.cboard;
+
+import mnkgame.MNKCellState;
+import mnkgame.MNKGameState;
+
 public class CBoard {
     private final CNode<CCell>[][] board;
     protected final CRemoveReinsertList<CCell> freeCell;

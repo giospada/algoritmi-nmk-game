@@ -1,4 +1,4 @@
-package mnkgame;
+package mnkgame.cboard;
 
 class UFNode {
     private int rank;

@@ -1,5 +1,8 @@
 package mnkgame;
 
+import mnkgame.cboard.CBoard;
+import mnkgame.cboard.CCell;
+
 public class IterativeDeepeningPlayer implements MNKPlayer {
     private CBoard Board;
     private MNKGameState currGameState;

@@ -1,9 +1,10 @@
 package test;
 
-import mnkgame.CRemoveReinsertList;
-import mnkgame.CNode;
-
 import org.junit.jupiter.api.BeforeAll;
+
+import mnkgame.cboard.CNode;
+import mnkgame.cboard.CRemoveReinsertList;
+
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

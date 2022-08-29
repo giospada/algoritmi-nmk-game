@@ -1,4 +1,7 @@
-package mnkgame;
+package mnkgame.cboard;
+
+import mnkgame.MNKCell;
+import mnkgame.MNKCellState;
 
 public class CCell {
     private UFNode ufNodes[];

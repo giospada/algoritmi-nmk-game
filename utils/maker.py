@@ -84,7 +84,7 @@ def name_to_classname(name):
     elif name == 'iterative':
         return 'mnkgame.IterativeDeepeningPlayer'
     elif name == 'minimax':
-        return 'mnkgame.MinimaxPlayer'
+        return 'mnkgame.cboard.MinimaxPlayer'
     elif name == 'boardminimax':
         return 'mnkgame.BoardMinimaxPlayer'
     elif name == 'euristic':

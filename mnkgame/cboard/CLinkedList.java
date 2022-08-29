@@ -1,4 +1,4 @@
-package mnkgame;
+package mnkgame.cboard;
 
 public class CLinkedList<T> {
     private CNode<T> head;

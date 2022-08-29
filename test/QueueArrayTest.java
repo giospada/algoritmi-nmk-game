@@ -15,7 +15,7 @@ public class QueueArrayTest {
         1000000
     };
 
-    public static int max = 10000000; // 10 million
+    public static int max = 1000000; // 10 million
 
     public static void testQueueSpeed(Queue<Integer> queue) {
         int first = queue.poll();
