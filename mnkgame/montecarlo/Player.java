@@ -2,20 +2,35 @@ package mnkgame.montecarlo;
 
 import java.util.PriorityQueue;
 
+import javax.management.RuntimeErrorException;
+
 import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
-import mnkgame.MNKCellState;
-import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
 
 public class Player implements MNKPlayer {
-
     private MNKBoard B; // TODO make board
     private long startTime;
+    private int TIMEOUT;
+    private TreeNode[] possibleMoves;
+    int possibleMovesLenght;
+    TreeNode root;
+
+
+    public Player() {}
+
+    @Override
+    public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
+        myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
+        yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+        TIMEOUT = timeout_in_secs;
+        B = new MNKBoard(M, N, K);
+        root = null;  // TODO spostamento della root a seconda delle mosse.
+    }
 
     private boolean hasTimeRunOut() {
-        return (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (99.0 / 100.0);
+        return (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (50.0 / 100.0);
     }
 
     void applyCurrNodeMoves(TreeNode currNode) {
@@ -23,76 +38,147 @@ public class Player implements MNKPlayer {
             return;
         }
         applyCurrNodeMoves(currNode.parent);
-        B.markCell(currNode.currMove.i, currNode.currMove.j);
+        B.markCell(currNode.currMove.i, currNode.currMove.j);  // TODO fallo tempo costante
     }
 
     public MNKGameState myWin;
     public MNKGameState yourWin;
+    TreeNode select(TreeNode curNode) {
+        // if (curNode == root) {
+        //     curNode = curNode.children.peek();
+        // }
+        while (!curNode.isLeaf && !curNode.isFinished) {
+            curNode = curNode.children.peek();
+            B.markCell(curNode.currMove);
+        }
 
-    TreeNode expand(TreeNode parentNode) {
-        // TODO: Fai con l'eursitica per ora facciamo random
-        MNKCell selectedCell = B.getFreeCells()[0];
-        return new TreeNode(parentNode, selectedCell);
+        return curNode;
+    }
+    /**
+     * @brief suppongo che curNode sia una foglia
+     * @param curNode
+     * @return
+     */
+    TreeNode expand(TreeNode curNode) {
+        // non abbiamo mosse da farci unmark con la root
+        if (curNode != root && (curNode.tries == 0 || curNode.isFinished)) {
+            // rollout with current node
+            B.unmarkCell();  // non vogliamo mandare in simulate un nodo finisced
+            return curNode;
+        }
+
+        // sono sicuro ora di essere in una foglia che si può espandere
+        curNode.createChilds(B.getFreeCells());
+
+        // prende il miglior child da ritornare
+        TreeNode bestNode = curNode.children.peek();
+        return bestNode;
     }
 
     MNKGameState simulate(TreeNode curNode) {
         MNKCell nextCell = curNode.currMove;
-        int numMoves=1;
-        MNKGameState lastState;
-        while((lastState = B.markCell(nextCell))==MNKGameState.OPEN){
-            numMoves++;
-            nextCell = B.getFreeCells()[0];
+        int numMoves = 1;
+        MNKGameState lastState = B.markCell(nextCell);
+        if (lastState != MNKGameState.OPEN) {  // marca come cella finale non espandibile
+            curNode.isFinished = true;
         }
-        for(int i=0;i<numMoves;i++){
+
+        while(lastState == MNKGameState.OPEN){
+            MNKCell[] freeCells = B.getFreeCells();
+            numMoves++;
+            nextCell = freeCells[(int) (Math.random() * freeCells.length)];
+            lastState = B.markCell(nextCell);
+        }
+
+        // si può ottimizzare??? da guardare
+        for(int i = 1; i < numMoves; i++){
             B.unmarkCell();
         }
+
         return lastState;
     }
+
     void backpropagate(MNKGameState state, TreeNode curNode) {
-        if (curNode.parent == null) {
-            return;
+        int addingValue = 0;
+        if (state == myWin) {
+            addingValue = 2;
+        } else if (state == MNKGameState.DRAW) {
+            addingValue = 1;
         }
-        backpropagate(state, curNode.parent);
 
-        if (myWin == state) {
-            curNode.goodTries += 2 ;
-        }else if(state == MNKGameState.DRAW){
-            curNode.goodTries += 1;
+        while (curNode.parent != null) {
+            curNode.goodTries += addingValue;
+
+            curNode.tries += 2;
+            curNode.parent.children.remove(curNode);
+            curNode.parent.children.add(curNode);  // riaggiorna la posizione del nodo nella priority
+
+            B.unmarkCell();
+
+            curNode = curNode.parent;
         }
+
+        // aggiorna valori della ROOT
+        curNode.goodTries += addingValue;
         curNode.tries += 2;
+    }
+    private TreeNode searchChildren(TreeNode curNode,MNKCell cell) {
+        if (cell == null) return null;
+        if (curNode.isLeaf) {
+            return new TreeNode();
+        }
 
+        for (TreeNode child : curNode.children) {
+            if (child.currMove.i == cell.i && child.currMove.j == cell.j) {
+                return child;
+            }
+        }
+        throw new RuntimeErrorException(null, "updateRoot: cell not found");
     }
 
-    @Override
-    public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
-        myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
-        yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+    private void updateRoot(TreeNode cell) {
+        if (cell == null) {  // 
+            root = new TreeNode();
+            return;
+        }
+        root = cell;
+        root.parent = null;  // scollego la root dal padre
+        B.markCell(cell.currMove);
     }
 
     @Override
     public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
         startTime = System.currentTimeMillis();
-        if (MC.length > 0) {
-            MNKCell c = MC[MC.length - 1]; // Recover the last move from MC
-            B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
-        }
+        MNKCell c = MC.length > 0 ? MC[MC.length - 1] : null;
+        updateRoot(searchChildren(root, c));
 
-        TreeNode root = new TreeNode();
-        PriorityQueue<TreeNode> queue = new PriorityQueue<TreeNode>();
-        queue.add(root);
+        // queue = new PriorityQueue<TreeNode>();
 
-        while (!hasTimeRunOut() && !queue.isEmpty()) {
+        // queue.add(root);
+
+        while (!hasTimeRunOut()) {
             // this is pseudo code
-            TreeNode leaf = queue.poll();  // with the board state, or initTree
-            applyCurrNodeMoves(leaf);
-
+            // TreeNode leaf = queue.peek();  // with the board state, or initTree
+            // if (leaf.parent == root) {
+            //     possibleMoves[possibleMovesLenght] = leaf;
+            //     possibleMovesLenght++;
+            // }
+            TreeNode leaf = select(root);
             TreeNode child = expand(leaf);
-            MNKGameState result = simulate(child);
-            backpropagate(result, leaf);
+            MNKGameState result = simulate(child);  // rollout
+            backpropagate(result, child);
+            // System.out.println(root);
+            // if (!child.isFinished) {
+            //     queue.add(child);
+            // }
         }
 
         // TODO: return the best cell, highest number of playouts.
-        return null;
+        TreeNode bestNode = root.children.peek();
+        if(FC.length > 7)
+            System.err.println(root);
+        updateRoot(bestNode);
+        return bestNode.currMove;
     }
 
     @Override
