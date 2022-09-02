@@ -14,9 +14,9 @@ public class Board {
     public final int N;
     public final int K;
 
-    protected final MNKCellState[][] B;
-    protected final LinkedList<MNKCell> MC; // Marked Cells
-    protected final HashSet<MNKCell> FC; // Free Cells
+    protected final HeuristicCell[][] B;
+    protected final HeuristicCell[] freeCells;
+    protected int freeCellsCount;
 
     private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
     protected int currentPlayer; // currentPlayer plays next move
@@ -24,6 +24,7 @@ public class Board {
 
     protected MNKCellState ownerPlayer;
     protected MNKCellState enemyPlayer;
+    
 
     /**
      * Create a board of size MxN and initialize the game parameters
@@ -46,26 +47,19 @@ public class Board {
         this.N = N;
         this.K = K;
 
-        B = new MNKCellState[M][N];
+        B = new HeuristicCell[M][N];
+        freeCells = new HeuristicCell[M*N];
+        freeCellsCount = M * N;
+        
         ownerPlayer = playerCode;
         enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
         currentPlayer = playerCode == MNKCellState.P1 ? 0 : 1;
-
-        // large HashSet, so that it should never reallocate.
-        FC = new HashSet<MNKCell>(2 * M * N);
-        MC = new LinkedList<MNKCell>();
-
-        reset();
-    }
-
-    /**
-     * Resets the MNKBoard
-     */
-    public void reset() {
-        gameState = MNKGameState.OPEN;
-        initBoard();
-        initFreeCellList();
-        initMarkedCellList();
+        for(int i = 0; i < M; i++) {
+            for(int j = 0; j < N; j++) {
+                B[i][j] = new HeuristicCell(i, j, i*N+j);
+                freeCells[i*N + j] = B[i][j];
+            }
+        }
     }
 
     /**
@@ -135,19 +129,11 @@ public class Board {
         } else if (B[i][j] != MNKCellState.FREE) {
             throw new IllegalStateException("Cell " + i + "," + j + " is not free");
         } else {
-            MNKCell oldc = new MNKCell(i, j, B[i][j]);
-            MNKCell newc = new MNKCell(i, j, Player[currentPlayer]);
 
-            B[i][j] = Player[currentPlayer];
-
-            FC.remove(oldc);
-            MC.add(newc);
-
-            if (isWinningCell(i, j))
-                gameState = B[i][j] == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
-            else if (FC.isEmpty())
-                gameState = MNKGameState.DRAW;
-
+            B[i][j].state = Player[currentPlayer];
+            swap(freeCells[B[i][j].index], freeCells[freeCellsCount - 1]);
+            freeCells[freeCellsCount - 1].index = B[i][j].index;
+            freeCellsCount--;
             return gameState;
         }
     }
@@ -158,14 +144,14 @@ public class Board {
      * @throws IllegalStateException If there is no move to undo
      */
     public void unmarkCell() throws IllegalStateException {
-        if (MC.size() == 0) {
+        if (freeCellsCount == M * N) {
             throw new IllegalStateException("No move to undo");
         } else {
-            MNKCell oldc = MC.removeLast();
-            MNKCell newc = new MNKCell(oldc.i, oldc.j, MNKCellState.FREE);
-            B[oldc.i][oldc.j] = MNKCellState.FREE;
-
-            FC.add(newc);
+            // freeCellsCount punta all'ultimo elemento moved
+            int oldIndex = freeCells[freeCellsCount].index;
+            swap(freeCells[oldIndex], freeCells[freeCellsCount]);
+            freeCells[freeCellsCount].index=freeCellsCount;
+            freeCellsCount++;
             gameState = MNKGameState.OPEN;
         }
     }
@@ -174,8 +160,11 @@ public class Board {
         return MC.toArray(new MNKCell[MC.size()]);
     }
 
-    public MNKCell[] getFreeCells() {
-        return FC.toArray(new MNKCell[FC.size()]);
+    public MNKCell thFreeCell(int i) {
+        return freeCells[i];
+    }
+    public MNKCell thUsedCell(int i) {
+        return freeCells[freeCellsCount+i];
     }
 
     boolean isValidCell(int i, int j) {

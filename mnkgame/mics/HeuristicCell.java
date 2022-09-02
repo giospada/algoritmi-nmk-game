@@ -17,7 +17,9 @@ import mnkgame.MNKCell;
 class HeuristicCell implements Comparable<HeuristicCell>{
     private final int i;
     private final int j; 
+    public int index;  // l'index all'interno dell'array della board
     public int heuristicValue;
+    public MNKCellState state;
     // le direzioni sono
     // 0 - sopra
     // 1 - sotto
@@ -37,11 +39,13 @@ class HeuristicCell implements Comparable<HeuristicCell>{
 
     
 
-    public HeuristicCell(int i, int j) {
+    public HeuristicCell(int i, int j, int index) {
         this.i = i;
         this.j = j;
+        this.index = index;
         depthDirection = new int[8];
         numberCrossedCell = new int[8];
+        state = MNKCellState.FREE;
         updateHeuristicValue();
     }
 
