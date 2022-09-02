@@ -1,8 +1,5 @@
 package mnkgame.mics;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
@@ -13,7 +10,6 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
     private MNKCellState myState;
     private MNKCellState yourState;
     private MNKGameState yourWin;
-    private ArrayList<CellPair> moves;
 
     public MicsPlayer() {}
 
@@ -23,8 +19,6 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
         B = new Board(M, N, K, myState);
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
-
-        moves = new ArrayList<CellPair>();
     }
 
     // time should never run out right? it's the first step!
@@ -55,10 +49,6 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
         return null;
     }
 
-    private int getWholeHeuristics(MNKCell freeCell) {
-        return B.getHeuristic(freeCell.i, freeCell.j) + B.getSwappedHeuristics(freeCell.i, freeCell.j);
-    }
-
     public MNKCell selectCell(MNKCell[] freeCells, MNKCell[] movedCells) {
         B.setPlayer(yourState);
         if (movedCells.length > 0) {
@@ -66,26 +56,30 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
             B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
         }
 
+        // Priority 1: Win
         B.setPlayer(myState);
         MNKCell winCell = findWinCell(freeCells);
         if (winCell != null) return winCell;
 
+        // Priority 2, prevent the opponent from winning
         B.setPlayer(yourState);
         MNKCell preventWinCell = findPreventWinCell(freeCells);
         if (preventWinCell != null) return preventWinCell;
 
-        for (int i = 0; i < freeCells.length; i++)
-            moves.add(new CellPair(getWholeHeuristics(freeCells[i]), freeCells[i]));
+        // Priority 3, find the best cell to fork (two or more winning ways)
 
-        Collections.sort(moves);
-        MNKCell bestCell = moves.get(0).cell;
+        // Priority 4, find the best cell to block the opponent's fork
+
+        // Priority 5, find the best cell to win in the most number of possible ways
+        // Probably using minimax
+
+        MNKCell bestCell = freeCells[0];  // temporaneo
         B.setPlayer(myState);
         B.markCell(bestCell.i, bestCell.j);
-        moves.clear();
         return bestCell;
     }
 
     public String playerName() {
-        return "Mics Player";
+        return "Mics Player v2";
     }
 }

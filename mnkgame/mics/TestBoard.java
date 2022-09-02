@@ -48,6 +48,25 @@ public class TestBoard {
         assert B.gameState() == MNKGameState.OPEN;
     }
 
+    @Test
+    @DisplayName("Should correctly evaluate the Value of the cell without moves")
+    public void testCellValue() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        Value value = B.getCellValue(0, 0, MNKCellState.P1);
+        System.out.print(value.horiz.bestWin());
+        System.out.flush();
+        assert value.horiz.bestWin() == 3;
+        assert value.vert.bestWin() == 3;
+        assert value.diag1.bestWin() == 3;
+        assert value.diag2.bestWin() == -1;  // guardando l'angolo non posso vincere
+
+        value = B.getCellValue(1, 1, MNKCellState.P2);
+        assert value.horiz.bestWin() == 3;
+        assert value.vert.bestWin() == 3;
+        assert value.diag2.bestWin() == 3;
+        assert value.diag1.bestWin() == 3;
+    }
+
 
     @Test
     @DisplayName("tests if correcly counts for 3x3 board in all angles")

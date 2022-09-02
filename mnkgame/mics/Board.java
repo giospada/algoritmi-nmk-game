@@ -26,7 +26,7 @@ public class Board {
     private int currentPlayer; // currentPlayer plays next move
     private MNKGameState gameState; // game state
 
-    private MNKCellState ownerPlayer;
+    private MNKCellState allyPlayer;  // alleato di sé stesso
     private MNKCellState enemyPlayer;
     
 
@@ -57,13 +57,21 @@ public class Board {
         
         gameState = MNKGameState.OPEN;
 
-        ownerPlayer = playerCode;
+        allyPlayer = playerCode;
         enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
         currentPlayer = playerCode == MNKCellState.P1 ? 0 : 1;
         for(int i = 0; i < M; i++) {
             for(int j = 0; j < N; j++) {
-                B[i][j] = new HeuristicCell(i, j, i*N+j);
+                B[i][j] = new HeuristicCell(i, j, i * N + j);
                 allCells[i*N + j] = B[i][j];
+            }
+        }
+
+        // deve essere in for separato perché vuole prima avere una board inizializzata
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                B[i][j].allyValue = computeCellValue(i, j, allyPlayer);
+                B[i][j].enemyValue = computeCellValue(i, j, enemyPlayer);
             }
         }
     }
@@ -185,7 +193,7 @@ public class Board {
         int start = 0;
         int end = 1;
         while (end < K && isValidCell(i + end * y_multiplier, j + end * x_multiplier)) {
-            if (B[i + end * y_multiplier][j + end * x_multiplier].state == ownerPlayer) {
+            if (B[i + end * y_multiplier][j + end * x_multiplier].state == allyPlayer) {
                 myCells++;
             } else if (B[i + end * y_multiplier][j + end * x_multiplier].state == enemyPlayer) {
                 break;
@@ -194,7 +202,7 @@ public class Board {
         }
         end--; // così rientra all'ultimo valido 
         while (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && end - start < K) {
-            if (B[i + start * y_multiplier][j + start * x_multiplier].state == ownerPlayer) {
+            if (B[i + start * y_multiplier][j + start * x_multiplier].state == allyPlayer) {
                 myCells++;
             } else if (B[i + start * y_multiplier][j + start * x_multiplier].state == enemyPlayer) {
                 break;
@@ -212,10 +220,10 @@ public class Board {
 
         // go to next step
         start--;
-        if (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && B[i + start * y_multiplier][j + start * x_multiplier].state == ownerPlayer) {
+        if (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && B[i + start * y_multiplier][j + start * x_multiplier].state == allyPlayer) {
             myCells++;
         }
-        if (B[i + end * y_multiplier][j + end * x_multiplier].state == ownerPlayer) {  // sempre valido finché start è valido, no check per contorno
+        if (B[i + end * y_multiplier][j + end * x_multiplier].state == allyPlayer) {  // sempre valido finché start è valido, no check per contorno
             myCells--;
         }
         end--;
@@ -227,10 +235,10 @@ public class Board {
 
             start--;
             if (!isValidCell(i + start * y_multiplier, j + start * x_multiplier)) break;
-            if (B[i + start * y_multiplier][j + start * x_multiplier].state == ownerPlayer) {
+            if (B[i + start * y_multiplier][j + start * x_multiplier].state == allyPlayer) {
                 myCells++;
             }
-            if (B[i + end * y_multiplier][j + end * x_multiplier].state == ownerPlayer) {
+            if (B[i + end * y_multiplier][j + end * x_multiplier].state == allyPlayer) {
                 myCells--;
             }
             end--;
@@ -304,19 +312,19 @@ public class Board {
 
     // ritorna i valori euristica per il nemico
     public int getSwappedHeuristics(int i, int j) {
-        if (B[i][j].state == ownerPlayer) {
+        if (B[i][j].state == allyPlayer) {
             return 0;
         }
 
-        MNKCellState tmp = ownerPlayer;
-        ownerPlayer = enemyPlayer;
+        MNKCellState tmp = allyPlayer;
+        allyPlayer = enemyPlayer;
         enemyPlayer = tmp;
 
         int heuristic = 0;
         for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
 
-        tmp = ownerPlayer;
-        ownerPlayer = enemyPlayer;
+        tmp = allyPlayer;
+        allyPlayer = enemyPlayer;
         enemyPlayer = tmp;
 
         return heuristic;
@@ -371,4 +379,144 @@ public class Board {
 
         return false;
     }
+
+    private int getHorizontalAdder(int lineCode) {
+        return lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
+    }
+
+    private int getVerticalAdder(int lineCode) {
+        return lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;
+    }
+
+    /**
+     * This should be O(K)
+     * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
+     * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
+     * @return the heuristics value for the current board for that cell.
+     */
+    public DirectionValue computeCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
+        MNKCellState opponentState = state == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
+        if (B[i][j].state == opponentState) {
+            throw new IllegalArgumentException("Cell is occupied by opponent");
+        }
+
+        int xAdd = getHorizontalAdder(lineCode);
+        int yAdd = getVerticalAdder(lineCode);
+        DirectionValue dirValue = new DirectionValue(B[i][j].state == state ? 0 : 1);
+
+        int right = 1, left = 1;
+        int numberOfOwnCells = B[i][j].state == state ? 1 : 0;
+        while (right < K) {
+            int rightIidx = i + right * yAdd;
+            int rightJidx = j + right * xAdd;
+            if (!isValidCell(rightIidx, rightJidx) || B[rightIidx][rightJidx].state == opponentState) {
+                dirValue.right = -1;
+                break;
+            }
+    
+            if (B[rightIidx][rightJidx].state == MNKCellState.FREE) {
+                dirValue.right++;
+            }  else {
+                numberOfOwnCells++;
+            }
+            right++;
+        }
+        right--;
+
+        // set the first possible value for the center
+        if (dirValue.right != -1) {
+            dirValue.center = dirValue.right;
+            dirValue.centerRight = right;
+            dirValue.centerLeft = 0;
+        }
+
+        // scorrimento a sinistra con la sliding window
+        while (left < K) {
+            int leftIidx = i - left * yAdd;
+            int leftJidx = j - left * xAdd;
+            if (!isValidCell(leftIidx, leftJidx) || B[leftIidx][leftJidx].state == opponentState) {
+                dirValue.left = -1;
+                break;
+            }
+            
+            if (right + left == K) {
+                if (B[i + right * yAdd][j + right * xAdd].state == state) {
+                    numberOfOwnCells--;
+                }
+                right--;
+            }
+
+            if (B[leftIidx][leftJidx].state == MNKCellState.FREE) {
+                dirValue.left++;
+            }  else {
+                numberOfOwnCells++;
+            }
+
+            // calcola il centro solo se la slinding window ha lunghezza già adeguata (K)
+            if (right + left == K - 1) {
+                int centerToFill = K - numberOfOwnCells;
+                if (centerToFill < dirValue.center) {
+                    dirValue.center = centerToFill;
+                    dirValue.centerLeft = left;
+                    dirValue.centerRight = right;
+                }
+            }
+            left++;
+        }
+
+        if (dirValue.center == Integer.MAX_VALUE) dirValue.center = -1;
+
+        return dirValue;
+    }
+
+    public Value computeCellValue(int i, int j, MNKCellState state) {
+        Value cellValue = new Value();
+        cellValue.horiz = computeCellDirectionValue(i, j, 1, state);
+        cellValue.vert = computeCellDirectionValue(i, j, 2, state);
+        cellValue.diag1 = computeCellDirectionValue(i, j, 3, state);
+        cellValue.diag2 = computeCellDirectionValue(i, j, 4, state);
+        return cellValue;
+    }
+
+    public Value getCellValue(int i, int j, MNKCellState state) {
+        if (state == allyPlayer) {
+            return allCells[i * N + j].allyValue;
+        } else {
+            return allCells[i * N + j].enemyValue;
+        }
+    }
+
+    /**
+     * Updated the value of all the cells touched by a positioning of a cell <code> state </code>
+     * @param i, j the cell index
+     * @param state
+     */
+    public void updateCellValue(int i, int j, MNKCellState state) {
+        updateCellDirectionValue(i, j, 1, state);
+        updateCellDirectionValue(i, j, 2, state);
+        updateCellDirectionValue(i, j, 3, state);
+        updateCellDirectionValue(i, j, 4, state);
+    }
+
+    private void updateCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
+        int xAdd = getHorizontalAdder(lineCode);
+        int yAdd = getVerticalAdder(lineCode);
+
+        // TODO
+        // le cose difficili da fare è gestire il nuovo valore migliore per il middle, che probabilmente
+        // devi ancora andare a fare una scansione lineare
+        // invece per tutte le altre celle di interesse basta cambiare un valore
+        // esempio
+        // metto una croce in 0,0 allora, prendiamo per esempio le direzioni orizzontali.
+        // Mi basta togliere un 1 per l'orizzontale da una parte, mentre il centro lo devo aggiornare
+        // Invece per il cerchio, ora non può più fare nessuna combo da questa parte, quindi dobbiamo settare un -1
+        // nella direzione indicata e andare a ricalcolarci il middle.
+        // Questa cosa credo abbia complessità K^2, perché devo farlo per O(K) nodi e nel peggiore dei casi vado
+        // a fare una scansione lungo una direzione di K, ma se forse storiamo altri valori, probabilmente non avremo più bisogno di questo K in più
+        // ma dovremo avere un array lungo K che stori il numero di cosi contenuti nella sliding window o simile... 
+    }
+
+    // private void updateFriendlyCellValue(int i, int j, int lineCode, MNKCellState friendCell) {
+    //     allCells[i * N + j].allyValue = computeCellValue(i, j, state);
+    // }
 }
