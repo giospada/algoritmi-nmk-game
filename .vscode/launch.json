@@ -7,8 +7,7 @@
             "name": "Launch Main tester",
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
-            "projectName": "mnk-game_30ce19ed",
-            "args": "10 10 5 mnkgame.bigheuristics.IterativePlayer mnkgame.github.notxia.OurPlayer -r 1 -t 10 -v"
+            "args": "3 3 3 mnkgame.montecarlo.Player mnkgame.RandomPlayer -r 1 -t 1 -v"
         },
     ]
 }

@@ -6,11 +6,12 @@ import javax.management.RuntimeErrorException;
 
 import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
+import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
 
 public class Player implements MNKPlayer {
-    private MNKBoard B; // TODO make board
+    private Board B; // TODO make board
     private long startTime;
     private int TIMEOUT;
     private TreeNode[] possibleMoves;
@@ -24,8 +25,10 @@ public class Player implements MNKPlayer {
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+        MNKCellState myState = first ? MNKCellState.P1 : MNKCellState.P2;
+        MNKCellState yourState = first ? MNKCellState.P2 : MNKCellState.P1;
         TIMEOUT = timeout_in_secs;
-        B = new MNKBoard(M, N, K);
+        B = new Board(M, N, K, myState);
         root = null;  // TODO spostamento della root a seconda delle mosse.
     }
 
@@ -84,10 +87,17 @@ public class Player implements MNKPlayer {
         }
 
         while(lastState == MNKGameState.OPEN){
-            MNKCell[] freeCells = B.getFreeCells();
             numMoves++;
-            nextCell = freeCells[(int) (Math.random() * freeCells.length)];
-            lastState = B.markCell(nextCell);
+            MNKCell best = null;
+            int bestScore = -1;
+            for(MNKCell cell : B.getFreeCells()){
+                int heuristics = B.getHeuristic(cell.i, cell.j) + B.getSwappedHeuristics(cell.i, cell.j);  // O(K)
+                if (heuristics > bestScore) {
+                    bestScore = heuristics;
+                    best = cell;
+                }
+            }
+            lastState = B.markCell(best);
         }
 
         // si può ottimizzare??? da guardare
