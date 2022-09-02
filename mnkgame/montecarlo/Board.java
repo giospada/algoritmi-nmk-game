@@ -189,8 +189,26 @@ public class Board {
         B[i][j] = state;
     }
 
+    /**
+     * Sets the cell cell for current player and swaps
+     */
+    public void setCellState(int i, int j) {
+        setCellState(i, j, Player[currentPlayer]);
+        togglePlayer();
+    }
+
+    public void togglePlayer() {
+        currentPlayer = (currentPlayer + 1) % 2;
+    }
+
     // questa funzione aggiorna l'euristica contando solamente una singola linea
+    
     // lineCode: 1 -> verticale, 2 -> orizzontale, 3 -> diagonale, 4 -> antidiagonale
+
+    // cosa serve nell'euristica della board?
+    //
+
+
     private int getLineHeuristics(int i, int j, int lineCode) {
         int x_multiplier = lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
         int y_multiplier = lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;

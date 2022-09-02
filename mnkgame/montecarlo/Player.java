@@ -52,7 +52,7 @@ public class Player implements MNKPlayer {
         // }
         while (!curNode.isLeaf && !curNode.isFinished) {
             curNode = curNode.children.peek();
-            B.markCell(curNode.currMove);
+            B.setCellState(curNode.currMove.i, curNode.currMove.j);
         }
 
         return curNode;
@@ -67,6 +67,7 @@ public class Player implements MNKPlayer {
         if (curNode != root && (curNode.tries == 0 || curNode.isFinished)) {
             // rollout with current node
             B.unmarkCell();  // non vogliamo mandare in simulate un nodo finisced
+            B.togglePlayer();
             return curNode;
         }
 
@@ -82,6 +83,8 @@ public class Player implements MNKPlayer {
         MNKCell nextCell = curNode.currMove;
         int numMoves = 1;
         MNKGameState lastState = B.markCell(nextCell);
+        B.togglePlayer();
+
         if (lastState != MNKGameState.OPEN) {  // marca come cella finale non espandibile
             curNode.isFinished = true;
         }
@@ -98,11 +101,13 @@ public class Player implements MNKPlayer {
                 }
             }
             lastState = B.markCell(best);
+            B.togglePlayer();
         }
 
         // si può ottimizzare??? da guardare
         for(int i = 1; i < numMoves; i++){
             B.unmarkCell();
+            B.togglePlayer();
         }
 
         return lastState;
@@ -185,8 +190,8 @@ public class Player implements MNKPlayer {
 
         // TODO: return the best cell, highest number of playouts.
         TreeNode bestNode = root.children.peek();
-        if(FC.length > 7)
-            System.err.println(root);
+        //if(FC.length > 7)
+        //    System.err.println(root);
         updateRoot(bestNode);
         return bestNode.currMove;
     }

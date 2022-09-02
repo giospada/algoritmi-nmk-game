@@ -1,4 +1,4 @@
-package mnkgame.mics;
+/*package mnkgame.mics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -172,4 +172,4 @@ public class MicsDoubleCheckPlayer implements mnkgame.MNKPlayer {
     public String playerName() {
         return "Mics DoubleCheck Player";
     }
-}
+} */

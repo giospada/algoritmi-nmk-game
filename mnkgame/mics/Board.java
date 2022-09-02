@@ -359,43 +359,4 @@ public class Board {
         currentPlayer = player == MNKCellState.P1 ? 0 : 1;
     }
 
-    // Check winning state from cell i, j
-    private boolean isWinningCell(int i, int j) {
-        MNKCellState s = B[i][j];
-        int n;
-
-        // Useless pedantic check
-        if (s == MNKCellState.FREE)
-            return false;
-
-        // Horizontal check
-        n = 1;
-        for (int k = 1; j - k >= 0 && B[i][j - k] == s; k++) n++; // backward check
-        for (int k = 1; j + k < N && B[i][j + k] == s; k++) n++; // forward check
-        if (n >= K)
-            return true;
-
-        // Vertical check
-        n = 1;
-        for (int k = 1; i - k >= 0 && B[i - k][j] == s; k++) n++; // backward check
-        for (int k = 1; i + k < M && B[i + k][j] == s; k++) n++; // forward check
-        if (n >= K)
-            return true;
-
-        // Diagonal check
-        n = 1;
-        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k] == s; k++) n++; // backward check
-        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k] == s; k++) n++; // forward check
-        if (n >= K)
-            return true;
-
-        // Anti-diagonal check
-        n = 1;
-        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k] == s; k++) n++; // backward check
-        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k] == s; k++) n++; // backward check
-        if (n >= K)
-            return true;
-
-        return false;
-    }
 }
