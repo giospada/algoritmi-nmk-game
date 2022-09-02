@@ -2,28 +2,32 @@ package mnkgame.mics;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
-import java.util.HashSet;
-import java.util.LinkedList;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import mnkgame.MNKCell;
 
 public class Board {
     public final int M;
     public final int N;
     public final int K;
 
-    protected final HeuristicCell[][] B;
-    protected final HeuristicCell[] freeCells;
-    protected int freeCellsCount;
+    private final HeuristicCell[][] B;
+
+    /**
+     * tutte le celle in allCells minori di freeCellsCount
+     * devono soddisfare l'invariante che puntino al proprio index all'interno dell'array
+     * mentre tutte le celle mosse (quelle maggiori o uguali) devonon puntare all'index
+     * in cui devono tornare per ristabilire l'ordine
+     */
+    public final HeuristicCell[] allCells;
+    public int freeCellsCount;
 
     private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
-    protected int currentPlayer; // currentPlayer plays next move
-    protected MNKGameState gameState; // game state
+    private int currentPlayer; // currentPlayer plays next move
+    private MNKGameState gameState; // game state
 
-    protected MNKCellState ownerPlayer;
-    protected MNKCellState enemyPlayer;
+    private MNKCellState ownerPlayer;
+    private MNKCellState enemyPlayer;
     
 
     /**
@@ -48,16 +52,18 @@ public class Board {
         this.K = K;
 
         B = new HeuristicCell[M][N];
-        freeCells = new HeuristicCell[M*N];
+        allCells = new HeuristicCell[M * N];
         freeCellsCount = M * N;
         
+        gameState = MNKGameState.OPEN;
+
         ownerPlayer = playerCode;
         enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
         currentPlayer = playerCode == MNKCellState.P1 ? 0 : 1;
         for(int i = 0; i < M; i++) {
             for(int j = 0; j < N; j++) {
                 B[i][j] = new HeuristicCell(i, j, i*N+j);
-                freeCells[i*N + j] = B[i][j];
+                allCells[i*N + j] = B[i][j];
             }
         }
     }
@@ -69,21 +75,17 @@ public class Board {
      * @param j j-th column
      *
      * @return State of the <code>i,j</code> cell (FREE,P1,P2)
-     * @throws IndexOutOfBoundsException If <code>i,j</code> are out of matrix bounds
      */
-    public MNKCellState cellState(int i, int j) throws IndexOutOfBoundsException {
-        if (i < 0 || i >= M || j < 0 || j >= N)
-            throw new IndexOutOfBoundsException("Indexes " + i + "," + j + " are out of matrix bounds");
-        else
-            return B[i][j];
+    public MNKCellState getState(int i, int j) {
+        return B[i][j].state;
     }
 
     public void print() {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                if (B[i][j] == MNKCellState.P1)
+                if (B[i][j].state == MNKCellState.P1)
                     System.out.print("1 ");
-                else if (B[i][j] == MNKCellState.P2)
+                else if (B[i][j].state == MNKCellState.P2)
                     System.out.print("2 ");
                 else
                     System.out.print("0 ");
@@ -92,6 +94,7 @@ public class Board {
         }
         System.out.println();
     }
+
     /**
      * Returns the current state of the game.
      *
@@ -126,16 +129,20 @@ public class Board {
             throw new IllegalStateException("Game ended!");
         } else if (i < 0 || i >= M || j < 0 || j >= N) {
             throw new IndexOutOfBoundsException("Indexes " + i + "," + j + " out of matrix bounds");
-        } else if (B[i][j] != MNKCellState.FREE) {
+        } else if (B[i][j].toMNKCell().state != MNKCellState.FREE) {
             throw new IllegalStateException("Cell " + i + "," + j + " is not free");
-        } else {
-
-            B[i][j].state = Player[currentPlayer];
-            swap(freeCells[B[i][j].index], freeCells[freeCellsCount - 1]);
-            freeCells[freeCellsCount - 1].index = B[i][j].index;
-            freeCellsCount--;
-            return gameState;
         }
+        B[i][j].state = Player[currentPlayer];
+        allCells[freeCellsCount - 1].index = B[i][j].index;  // setta in modo che l'indice di quello in fondo da spostare sia coerente con l'invariante
+        swapAllCells(B[i][j].index, freeCellsCount - 1);
+        freeCellsCount--;
+
+        if (isWinningCell(i, j))
+            gameState = B[i][j].state == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
+        else if (freeCellsCount == 0)
+            gameState = MNKGameState.DRAW;
+
+        return gameState;
     }
 
     /**
@@ -148,23 +155,13 @@ public class Board {
             throw new IllegalStateException("No move to undo");
         } else {
             // freeCellsCount punta all'ultimo elemento moved
-            int oldIndex = freeCells[freeCellsCount].index;
-            swap(freeCells[oldIndex], freeCells[freeCellsCount]);
-            freeCells[freeCellsCount].index=freeCellsCount;
+            allCells[freeCellsCount].state = MNKCellState.FREE;
+            int oldIndex = allCells[freeCellsCount].index;
+            swapAllCells(oldIndex, freeCellsCount);
+            allCells[freeCellsCount].index = freeCellsCount;  // punta ancora a oldindex
             freeCellsCount++;
             gameState = MNKGameState.OPEN;
         }
-    }
-
-    public MNKCell[] getMarkedCells() {
-        return MC.toArray(new MNKCell[MC.size()]);
-    }
-
-    public MNKCell thFreeCell(int i) {
-        return freeCells[i];
-    }
-    public MNKCell thUsedCell(int i) {
-        return freeCells[freeCellsCount+i];
     }
 
     boolean isValidCell(int i, int j) {
@@ -172,7 +169,7 @@ public class Board {
     }
 
     public void setCellState(int i, int j, MNKCellState state) {
-        B[i][j] = state;
+        B[i][j].state = state;
     }
 
     // questa funzione aggiorna l'euristica contando solamente una singola linea
@@ -188,18 +185,18 @@ public class Board {
         int start = 0;
         int end = 1;
         while (end < K && isValidCell(i + end * y_multiplier, j + end * x_multiplier)) {
-            if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {
+            if (B[i + end * y_multiplier][j + end * x_multiplier].state == ownerPlayer) {
                 myCells++;
-            } else if (B[i + end * y_multiplier][j + end * x_multiplier] == enemyPlayer) {
+            } else if (B[i + end * y_multiplier][j + end * x_multiplier].state == enemyPlayer) {
                 break;
             }
             end++;
         }
         end--; // così rientra all'ultimo valido 
         while (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && end - start < K) {
-            if (B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
+            if (B[i + start * y_multiplier][j + start * x_multiplier].state == ownerPlayer) {
                 myCells++;
-            } else if (B[i + start * y_multiplier][j + start * x_multiplier] == enemyPlayer) {
+            } else if (B[i + start * y_multiplier][j + start * x_multiplier].state == enemyPlayer) {
                 break;
             }
             start--;
@@ -215,25 +212,25 @@ public class Board {
 
         // go to next step
         start--;
-        if (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
+        if (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && B[i + start * y_multiplier][j + start * x_multiplier].state == ownerPlayer) {
             myCells++;
         }
-        if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {  // sempre valido finché start è valido, no check per contorno
+        if (B[i + end * y_multiplier][j + end * x_multiplier].state == ownerPlayer) {  // sempre valido finché start è valido, no check per contorno
             myCells--;
         }
         end--;
 
         while (start > -K && isValidCell(i + start * y_multiplier, j + start * x_multiplier)) {
-            if (B[i + start * y_multiplier][j + start * x_multiplier] == enemyPlayer) break;
+            if (B[i + start * y_multiplier][j + start * x_multiplier].state == enemyPlayer) break;
             
             heuristic++;  // ossia ho un altro blocco da K valido
 
             start--;
             if (!isValidCell(i + start * y_multiplier, j + start * x_multiplier)) break;
-            if (B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
+            if (B[i + start * y_multiplier][j + start * x_multiplier].state == ownerPlayer) {
                 myCells++;
             }
-            if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {
+            if (B[i + end * y_multiplier][j + end * x_multiplier].state == ownerPlayer) {
                 myCells--;
             }
             end--;
@@ -251,41 +248,41 @@ public class Board {
     // the concept is the same as markCell, so it could be implemented there,
     // but for clarity i make it his own function
     public int getAlmostKHeuristics(int i, int j) {
-        if (B[i][j] == MNKCellState.FREE) return 0;
+        if (B[i][j].state == MNKCellState.FREE) return 0;
         final int almostKGain = 8; // dovrebbe essere diverso a seconda della grandezza della board
         int heuristic = 0;
-        MNKCellState state = B[i][j];
+        MNKCellState state = B[i][j].state;
         // Horizontal check
         int n = 1;
-        for (int k = 1; j - k >= 0 && B[i][j - k] == state; k++) n++; // backward check
+        for (int k = 1; j - k >= 0 && B[i][j - k].state == state; k++) n++; // backward check
         if (n == K - 1) heuristic += almostKGain;
         n = 1;
-        for (int k = 1; j + k < N && B[i][j + k] == state; k++) n++; // forward check
+        for (int k = 1; j + k < N && B[i][j + k].state == state; k++) n++; // forward check
         if (n == K - 1) heuristic += almostKGain;
 
         // Vertical check
         n = 1;
-        for (int k = 1; i - k >= 0 && B[i - k][j] == state; k++) n++; // backward check
+        for (int k = 1; i - k >= 0 && B[i - k][j].state == state; k++) n++; // backward check
         if (n == K - 1) heuristic += almostKGain;
         n = 1;
-        for (int k = 1; i + k < M && B[i + k][j] == state; k++) n++; // forward check
+        for (int k = 1; i + k < M && B[i + k][j].state == state; k++) n++; // forward check
         if (n == K - 1) heuristic += almostKGain;
         n = 1;
 
         // Diagonal check
         n = 1;
-        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k] == state; k++) n++; // backward check
+        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k].state == state; k++) n++; // backward check
         if (n == K - 1) heuristic += almostKGain;
         n = 1;
-        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k] == state; k++) n++; // forward check
+        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k].state == state; k++) n++; // forward check
         if (n == K - 1) heuristic += almostKGain;
 
         // Anti-diagonal check
         n = 1;
-        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k] == state; k++) n++; // backward check
+        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k].state == state; k++) n++; // backward check
         if (n == K - 1) heuristic += almostKGain;
         n = 1;
-        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k] == state; k++) n++; // backward check
+        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k].state == state; k++) n++; // backward check
         if (n == K - 1) heuristic += almostKGain;
         
         return heuristic;
@@ -296,7 +293,7 @@ public class Board {
     // questa implementazione ricacola sempre l'euristica ogni step, si può migliorare
     // facendo Dinamic programming, ma per quanto esposto poi dovrebbe funzioanre ugualmente
     public int getHeuristic(int i, int j) {
-        if (B[i][j] == enemyPlayer) {
+        if (B[i][j].state == enemyPlayer) {
             return 0;
         }
         
@@ -307,7 +304,7 @@ public class Board {
 
     // ritorna i valori euristica per il nemico
     public int getSwappedHeuristics(int i, int j) {
-        if (B[i][j] == ownerPlayer) {
+        if (B[i][j].state == ownerPlayer) {
             return 0;
         }
 
@@ -325,27 +322,53 @@ public class Board {
         return heuristic;
     }
 
-    private void initBoard() {
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                B[i][j] = MNKCellState.FREE;
-            }
-        }
-    }
-
-    private void initFreeCellList() {
-        this.FC.clear();
-        for (int i = 0; i < M; i++)
-            for (int j = 0; j < N; j++)
-                this.FC.add(new MNKCell(i, j));
-    }
-
-    private void initMarkedCellList() {
-        this.MC.clear();
-    }
-
     public void setPlayer(MNKCellState player) {
         currentPlayer = player == MNKCellState.P1 ? 0 : 1;
     }
 
+    private void swapAllCells(int i, int j) {
+        HeuristicCell cell = allCells[i];
+        allCells[i] = allCells[j];
+        allCells[j] = cell;
+    }
+
+    // Check winning state from cell i, j
+    private boolean isWinningCell(int i, int j) {
+        MNKCellState state = B[i][j].state;
+        int n;
+
+        // Useless pedantic check
+        if (state == MNKCellState.FREE)
+            return false;
+
+        // Horizontal check
+        n = 1;
+        for (int k = 1; j - k >= 0 && B[i][j - k].state == state; k++) n++; // backward check
+        for (int k = 1; j + k < N && B[i][j + k].state == state; k++) n++; // forward check
+        if (n >= K)
+            return true;
+
+        // Vertical check
+        n = 1;
+        for (int k = 1; i - k >= 0 && B[i - k][j].state == state; k++) n++; // backward check
+        for (int k = 1; i + k < M && B[i + k][j].state == state; k++) n++; // forward check
+        if (n >= K)
+            return true;
+
+        // Diagonal check
+        n = 1;
+        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k].state == state; k++) n++; // backward check
+        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k].state == state; k++) n++; // forward check
+        if (n >= K)
+            return true;
+
+        // Anti-diagonal check
+        n = 1;
+        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k].state == state; k++) n++; // backward check
+        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k].state == state; k++) n++; // backward check
+        if (n >= K)
+            return true;
+
+        return false;
+    }
 }

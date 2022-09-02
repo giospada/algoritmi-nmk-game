@@ -1,10 +1,53 @@
 package mnkgame.mics;
 
 import mnkgame.MNKCellState;
+import mnkgame.MNKGameState;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class TestBoard {
+
+    @Test
+    @DisplayName("Should correctly mark and unmark a single cell")
+    public void testMarkUnmark() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        B.markCell(0, 0);
+        assert B.getState(0, 0) == MNKCellState.P1;
+        B.unmarkCell();
+        assert B.getState(0, 0) == MNKCellState.FREE;
+    }
+
+    @Test
+    @DisplayName("Should correctly mark and unmark multiple cells")
+    public void testMarkUnmarkMultiple() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        B.markCell(0, 0);
+        B.markCell(1, 1);
+        B.markCell(2, 2);
+        assert B.getState(0, 0) == MNKCellState.P1;
+        assert B.getState(1, 1) == MNKCellState.P1;
+        assert B.getState(2, 2) == MNKCellState.P1;
+        B.unmarkCell();
+        assert B.getState(2, 2) == MNKCellState.FREE;
+        B.unmarkCell();
+        assert B.getState(1, 1) == MNKCellState.FREE;
+        B.unmarkCell();
+        assert B.getState(0, 0) == MNKCellState.FREE;
+    }
+
+    @Test
+    @DisplayName("Should correctly return end state of board")
+    public void testBoardEndState() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        B.markCell(0, 0);
+        B.markCell(1, 1);
+        B.markCell(2, 2);
+        assert B.gameState() == MNKGameState.WINP1;
+        B.unmarkCell();
+        assert B.gameState() == MNKGameState.OPEN;
+    }
+
 
     @Test
     @DisplayName("tests if correcly counts for 3x3 board in all angles")
