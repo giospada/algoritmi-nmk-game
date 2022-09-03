@@ -18,7 +18,12 @@ public class DirectionValue {
         right = same;
         center = Integer.MAX_VALUE;
     }
-
+    
+    public static DirectionValue getInvalidDirectionValue() {
+        DirectionValue dirVal = new DirectionValue(-1);
+        dirVal.center = -1;
+        return dirVal;
+    }
     /**
      * @return if it's possible to win (i.e. if there is at least one way to win in this direction)
      */

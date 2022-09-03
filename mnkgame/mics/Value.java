@@ -13,4 +13,6 @@ public class Value {
     public DirectionValue vert;
     public DirectionValue diag1;
     public DirectionValue diag2;
+
+    // TODO fare i checks per i doppi giochi
 }
