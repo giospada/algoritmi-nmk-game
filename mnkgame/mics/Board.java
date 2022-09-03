@@ -171,59 +171,56 @@ public class Board {
 
 
 
-    private int[] computeNumberOfCellInADirection(int i, int j, int lineCode, MNKCellState state){
-        MNKCellState opponentState = state == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-        int xAdd = getHorizontalAdder(lineCode);
-        int yAdd = getVerticalAdder(lineCode);
-
-        int rightValue=0;
-        int right = 1;
-        int numberOfOwnCells = B[i][j].state == state ? 1 : 0;
-        while (right < K) {
-            int rightIidx = i + right * yAdd;
-            int rightJidx = j + right * xAdd;
-            if (!isValidCell(rightIidx, rightJidx) || B[rightIidx][rightJidx].state == opponentState) {
-                rightValue = -1;
-                break;
-            }
-    
-            if (B[rightIidx][rightJidx].state == MNKCellState.FREE) {
-                rightValue++;
-            }  else {
-                numberOfOwnCells++;
-            }
-            right++;
-        }
-        return new int[]{right,rightValue,numberOfOwnCells};
-    }
-
-
     /**
      * This should be O(K)
      * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
      * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
      */
-    public void computeCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
-        MNKCellState opponentState = state == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-        DirectionValue dirValue = (enemyPlayer==state ? B[i][j].enemyValue:B[i][j].allyValue).directions[lineCode];
+    public void computeCellDirectionValue(int i, int j, int lineCode) {
+        DirectionValue dirValueAlly = B[i][j].allyValue.directions[lineCode];
+        DirectionValue dirValueEnemy = B[i][j].enemyValue.directions[lineCode]
 
-        if (B[i][j].state == opponentState) {
-            dirValue.setInvalidDirectionValue();
-            return;
+        int jAdd = getHorizontalAdder(lineCode);
+        int iAdd = getVerticalAdder(lineCode);
+        int iPos= i - iAdd * (K - 1);
+        int jPos= j - jAdd * (K - 1);
+        int enemyInWindow = 0;
+        int allyInWindow = 0;
+        for(int steps = 0; steps < K * 2 - 1; steps++){
+            if(isValidCell(iPos, jPos)){
+                if(B[iPos][jPos].state == enemyPlayer){
+                    enemyInWindow++;
+                }else if(B[iPos][jPos].state==allyPlayer){
+                    allyInWindow++;
+                }
+                if(steps>=K){
+                    //Gestisci la slidingWindows (quindi il fatto di andare a checkare K - 1 steps indietro per aggiornare
+                    // quanto scorre )
+                }
+                // quando arrivi al centro cioè a K step aggiorna il left e 
+                // quando arrivi a K*2 - 2  step  aggiorna il rightu
+
+            }
+            jPos+=jAdd;
+            iPos+=iAdd;
         }
 
-        int xAdd = getHorizontalAdder(lineCode);
-        int yAdd = getVerticalAdder(lineCode);
+
+        
+        // vai da destra a sinitra 
+        // creare la sliding window verso una singola direzione (non ce ne frega se è invalida o meno)
+        // iniziare a scorrerla aumentando di 1 e aggiornando i valori
+        // if (cella destra è amico)
+        //   decrementa conto amico
+        //   decrementa conto nemico per nemico
+        // else if cella destra è nemico
+        // else non decremento niente
+        // la sliding window è attiva quando al suo interno non ci sono celle dell'altro player, e quando i suoi 
+        // estremi sono all'interno della board.
 
         // se la cella iniziale è già occupata da me
         // ho una cella in medo da dover riempire, quindi 0
-        if (B[i][j].state == state) {
-            dirValue.right = 0;
-            dirValue.left = 0;
-        } else {
-            dirValue.right = 1;
-            dirValue.left = 1;
-        }
+        
         dirValue.center = Integer.MAX_VALUE;
         int [] output=computeNumberOfCellInADirection(i, j, lineCode, state);
 
@@ -285,10 +282,8 @@ public class Board {
     
 
     public void computeCellValue(int i, int j) {
-        MNKCellState allstate[]= {MNKCellState.P1,MNKCellState.P2};
-        for(MNKCellState player:allstate)
-            for (int k = 0; k < 4; k++) 
-                computeCellDirectionValue(i, j, k, player);
+        for (int k = 0; k < 4; k++) 
+            computeCellDirectionValue(i, j, k);
     }
 
     public Value getCellValue(int i, int j, MNKCellState state) {
