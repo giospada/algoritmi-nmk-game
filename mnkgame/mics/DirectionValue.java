@@ -1,13 +1,14 @@
 package mnkgame.mics;
 
+import mnkgame.MNKCellState;
+
 public class DirectionValue {
     public int left;
     public int right;
     public int center;
 
-    // if center is invalid these two's values are invalid
-    public int centerLeft;  // offset of the best-center-value to the left
-    public int centerRight;  // offset of the best-center-value to the right
+    public boolean leftIsFree;  // leftmost cell
+    public boolean rightIsFree; // rightmost cell
     
     DirectionValue() {
         this(0);
@@ -19,10 +20,11 @@ public class DirectionValue {
         center = Integer.MAX_VALUE;
     }
     
-    public static DirectionValue getInvalidDirectionValue() {
-        DirectionValue dirVal = new DirectionValue(-1);
-        dirVal.center = -1;
-        return dirVal;
+
+    public void setInvalidDirectionValue() {
+        this.left = -1;
+        this.right = -1;
+        this.center = -1;
     }
     /**
      * @return if it's possible to win (i.e. if there is at least one way to win in this direction)
@@ -45,5 +47,13 @@ public class DirectionValue {
         } else {
             return Math.min(Math.min(left, right), center);
         }
+    }
+
+    //
+    public boolean isInLineDoublePlay() {
+        if (left <= 2 && leftIsFree) return true;
+        if (right <= 2 && rightIsFree) return true;
+
+        return false;
     }
 }

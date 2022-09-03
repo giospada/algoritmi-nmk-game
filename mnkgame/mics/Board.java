@@ -70,8 +70,9 @@ public class Board {
         // deve essere in for separato perché vuole prima avere una board inizializzata
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                B[i][j].allyValue = computeCellValue(i, j, allyPlayer);
-                B[i][j].enemyValue = computeCellValue(i, j, enemyPlayer);
+                B[i][j].allyValue = new Value();
+                B[i][j].enemyValue = new Value();
+                computeCellValue(i, j );
             }
         }
     }
@@ -127,25 +128,6 @@ public class Board {
             gameState = MNKGameState.OPEN;
         }
     }
-
-    boolean isValidCell(int i, int j) {
-        return i >= 0 && i < M && j >= 0 && j < N;
-    }
-
-    public void setCellState(int i, int j, MNKCellState state) {
-        B[i][j].state = state;
-    }
-
-    public void setPlayer(MNKCellState player) {
-        currentPlayer = player == MNKCellState.P1 ? 0 : 1;
-    }
-
-    private void swapAllCells(int i, int j) {
-        HeuristicCell cell = allCells[i];
-        allCells[i] = allCells[j];
-        allCells[j] = cell;
-    }
-
     // Check winning state from cell i, j
     private boolean isWinningCell(int i, int j) {
         MNKCellState state = B[i][j].state;
@@ -186,55 +168,79 @@ public class Board {
         return false;
     }
 
-    private int getHorizontalAdder(int lineCode) {
-        return lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
-    }
 
-    private int getVerticalAdder(int lineCode) {
-        return lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;
-    }
 
-    /**
-     * This should be O(K)
-     * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
-     * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
-     * @return the heuristics value for the current board for that cell.
-     */
-    public DirectionValue computeCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
+
+    private int[] computeNumberOfCellInADirection(int i, int j, int lineCode, MNKCellState state){
         MNKCellState opponentState = state == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-        if (B[i][j].state == opponentState) {
-            return DirectionValue.getInvalidDirectionValue();
-        }
-
         int xAdd = getHorizontalAdder(lineCode);
         int yAdd = getVerticalAdder(lineCode);
-        DirectionValue dirValue = new DirectionValue(B[i][j].state == state ? 0 : 1);
 
-        int right = 1, left = 1;
+        int rightValue=0;
+        int right = 1;
         int numberOfOwnCells = B[i][j].state == state ? 1 : 0;
         while (right < K) {
             int rightIidx = i + right * yAdd;
             int rightJidx = j + right * xAdd;
             if (!isValidCell(rightIidx, rightJidx) || B[rightIidx][rightJidx].state == opponentState) {
-                dirValue.right = -1;
+                rightValue = -1;
                 break;
             }
     
             if (B[rightIidx][rightJidx].state == MNKCellState.FREE) {
-                dirValue.right++;
+                rightValue++;
             }  else {
                 numberOfOwnCells++;
             }
             right++;
         }
+        return new int[]{right,rightValue,numberOfOwnCells};
+    }
+
+
+    /**
+     * This should be O(K)
+     * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
+     * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
+     */
+    public void computeCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
+        MNKCellState opponentState = state == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
+        DirectionValue dirValue = (enemyPlayer==state ? B[i][j].enemyValue:B[i][j].allyValue).directions[lineCode];
+
+        if (B[i][j].state == opponentState) {
+            dirValue.setInvalidDirectionValue();
+            return;
+        }
+
+        int xAdd = getHorizontalAdder(lineCode);
+        int yAdd = getVerticalAdder(lineCode);
+
+        // se la cella iniziale è già occupata da me
+        // ho una cella in medo da dover riempire, quindi 0
+        if (B[i][j].state == state) {
+            dirValue.right = 0;
+            dirValue.left = 0;
+        } else {
+            dirValue.right = 1;
+            dirValue.left = 1;
+        }
+        dirValue.center = Integer.MAX_VALUE;
+        int [] output=computeNumberOfCellInADirection(i, j, lineCode, state);
+
+        int right=output[0];
+        int left= 1;
+        dirValue.right+=output[1];
+        int numberOfOwnCells=output[2];
+
+        if (!isValidCell(i + right * yAdd, j + right * xAdd) || B[i + right * yAdd][j + right * xAdd].state == opponentState) {
+            dirValue.rightIsFree = false;
+        } else {
+            dirValue.rightIsFree = true;
+        }
         right--;
 
         // set the first possible value for the center
-        if (dirValue.right != -1) {
-            dirValue.center = dirValue.right;
-            dirValue.centerRight = right;
-            dirValue.centerLeft = 0;
-        }
+        if (dirValue.right != -1) dirValue.center = dirValue.right;
 
         // scorrimento a sinistra con la sliding window
         while (left < K) {
@@ -261,27 +267,28 @@ public class Board {
             // calcola il centro solo se la slinding window ha lunghezza già adeguata (K)
             if (right + left == K - 1) {
                 int centerToFill = K - numberOfOwnCells;
-                if (centerToFill < dirValue.center) {
-                    dirValue.center = centerToFill;
-                    dirValue.centerLeft = left;
-                    dirValue.centerRight = right;
-                }
+                if (centerToFill < dirValue.center) dirValue.center = centerToFill;
             }
             left++;
         }
-
+        if (!isValidCell(i - left * yAdd, j - left * xAdd) || // fuori dalla board
+            B[i - left * yAdd][j - left * xAdd].state == opponentState || 
+            !isValidCell(i + yAdd, j + xAdd) || // fuori dalla board dall'altra parte
+            B[i + yAdd][j + xAdd].state == opponentState) { // c'è un ostacolo anche dall'altra parte
+            dirValue.leftIsFree = false;
+        } else {
+            dirValue.leftIsFree = true;
+        }
+        
         if (dirValue.center == Integer.MAX_VALUE) dirValue.center = -1;
-
-        return dirValue;
     }
+    
 
-    public Value computeCellValue(int i, int j, MNKCellState state) {
-        Value cellValue = new Value();
-        cellValue.horiz = computeCellDirectionValue(i, j, 1, state);
-        cellValue.vert = computeCellDirectionValue(i, j, 2, state);
-        cellValue.diag1 = computeCellDirectionValue(i, j, 3, state);
-        cellValue.diag2 = computeCellDirectionValue(i, j, 4, state);
-        return cellValue;
+    public void computeCellValue(int i, int j) {
+        MNKCellState allstate[]= {MNKCellState.P1,MNKCellState.P2};
+        for(MNKCellState player:allstate)
+            for (int k = 0; k < 4; k++) 
+                computeCellDirectionValue(i, j, k, player);
     }
 
     public Value getCellValue(int i, int j, MNKCellState state) {
@@ -298,16 +305,14 @@ public class Board {
      * @param state
      * Runs in O(K^2)
      */
-    public void updateCellValue(int i, int j, MNKCellState state) {
-        updateCellDirectionValue(i, j, 1, state);
-        updateCellDirectionValue(i, j, 2, state);
-        updateCellDirectionValue(i, j, 3, state);
-        updateCellDirectionValue(i, j, 4, state);
+    public void updateCellValue(int i, int j) {
+        for(int dir = 0; dir < 4; dir++)
+            updateCellDirectionValue(i, j, dir);
     }
 
-    private void updateCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
-        int xAdd = getHorizontalAdder(lineCode);
-        int yAdd = getVerticalAdder(lineCode);
+    private void updateCellDirectionValue(int i, int j, int dirCode) {
+        int xAdd = getHorizontalAdder(dirCode);
+        int yAdd = getVerticalAdder(dirCode);
 
         // TODO
         // le cose difficili da fare è gestire il nuovo valore migliore per il middle, che probabilmente
@@ -324,21 +329,13 @@ public class Board {
 
         // attualmente è una versione lenta che aggiorna tutte le celle toccate
         int start = 0;
-
         while (start > -K && isValidCell(i + start * yAdd, j + start * xAdd)) {
             start--;
         }
 
         while (start < K && isValidCell(i + start * yAdd, j + start * xAdd)) {
-            if (lineCode == 1) {
-                computeCellDirectionValue(i, j, lineCode, state);
-            } else if (lineCode == 2) {
-                computeCellDirectionValue(i, j, lineCode, state);
-            } else if (lineCode == 3) {
-                B[i][j].allyValue computeCellDirectionValue(i, j, lineCode, state);
-            } else if (lineCode == 4) {
-                computeCellDirectionValue(i, j, lineCode, state);
-            }
+            B[i][j].allyValue.directions[dirCode] = computeCellDirectionValue(i, j, dirCode, allyPlayer);
+            B[i][j].enemyValue.directions[dirCode] = computeCellDirectionValue(i, j, dirCode, enemyPlayer);
             start++;
         }
     }
@@ -374,6 +371,14 @@ public class Board {
         System.out.println();
     }
 
+    private int getHorizontalAdder(int dirCode) {
+        return dirCode == 0 ? 1 : dirCode == 1 ? 0 : dirCode == 2 ? 1 : 1;
+    }
+
+    private int getVerticalAdder(int dirCode) {
+        return dirCode == 0 ? 0 : dirCode == 1 ? 1 : dirCode == 2 ? 1 : -1;
+    }
+
     /**
      * Returns the current state of the game.
      *
@@ -382,6 +387,25 @@ public class Board {
     public MNKGameState gameState() {
         return gameState;
     }
+
+    boolean isValidCell(int i, int j) {
+        return i >= 0 && i < M && j >= 0 && j < N;
+    }
+
+    public void setCellState(int i, int j, MNKCellState state) {
+        B[i][j].state = state;
+    }
+
+    public void setPlayer(MNKCellState player) {
+        currentPlayer = player == MNKCellState.P1 ? 0 : 1;
+    }
+
+    private void swapAllCells(int i, int j) {
+        HeuristicCell cell = allCells[i];
+        allCells[i] = allCells[j];
+        allCells[j] = cell;
+    }
+
 
     /**
      * Returns the id of the player allowed to play next move.
