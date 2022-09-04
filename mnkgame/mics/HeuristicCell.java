@@ -27,6 +27,8 @@ class HeuristicCell implements Comparable<HeuristicCell> {
         this.i = i;
         this.j = j;
         this.index = index;
+        allyValue = new Value();
+        enemyValue = new Value();
         state = MNKCellState.FREE;
     }
     

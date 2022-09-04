@@ -1,12 +1,12 @@
 package mnkgame.mics;
 
-import mnkgame.MNKCellState;
-
 public class DirectionValue {
     public int left;
     public int right;
     public int center;
 
+    public boolean adiacentLeftIsFree; // left cell from the current
+    public boolean adiacentRightIsFree; // right cell from the current
     public boolean leftIsFree;  // leftmost cell
     public boolean rightIsFree; // rightmost cell
     
@@ -19,7 +19,12 @@ public class DirectionValue {
         right = same;
         center = Integer.MAX_VALUE;
     }
-    
+
+    public void resetTo(int same) {
+        left = same;
+        right = same;
+        center = Integer.MAX_VALUE;
+    }
 
     public void setInvalidDirectionValue() {
         this.left = -1;
@@ -49,11 +54,18 @@ public class DirectionValue {
         }
     }
 
-    //
+    /**
+     * @return if it's possible to have a trivial double play win
+     */
     public boolean isInLineDoublePlay() {
-        if (left <= 2 && leftIsFree) return true;
-        if (right <= 2 && rightIsFree) return true;
+        if (left >= 0 && left <= 2 && leftIsFree && adiacentLeftIsFree) return true;
+        if (right >= 0 && right <= 2 && rightIsFree && adiacentRightIsFree) return true;
 
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%d, %d, %d)", left, center, right);
     }
 }

@@ -49,33 +49,81 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
         return null;
     }
 
+    private MNKCell findMyDoublePlay(MNKCell[] freCells) {
+        MNKCell winningCell = null;
+        for (MNKCell d : freCells) {
+            Value value = B.getCellValue(d.i, d.j, myState);
+            if (value.isDoublePlay()) {
+                winningCell = d;
+            }
+
+            if (winningCell != null) break;
+        }
+        return winningCell;
+    }
+
+    private MNKCell findEnemyDoublePlay(MNKCell[] freCells) {
+        MNKCell winningCell = null;
+        for (MNKCell d : freCells) {
+            Value value = B.getCellValue(d.i, d.j, yourState);
+            if (value.isDoublePlay()) {
+                winningCell = d;
+            }
+
+            if (winningCell != null) break;
+        }
+        return winningCell;
+    }
+
     public MNKCell selectCell(MNKCell[] freeCells, MNKCell[] movedCells) {
         B.setPlayer(yourState);
         if (movedCells.length > 0) {
             MNKCell c = movedCells[movedCells.length - 1]; // Recover the last move from MC
             B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
+            B.updateCellValue(c.i, c.j);
         }
+        System.out.println("Playing");
 
         // Priority 1: Win
         B.setPlayer(myState);
         MNKCell winCell = findWinCell(freeCells);
-        if (winCell != null) return winCell;
+        if (winCell != null) {
+            System.out.println("Winning cell found");
+            return winCell;
+        }
 
         // Priority 2, prevent the opponent from winning
         B.setPlayer(yourState);
         MNKCell preventWinCell = findPreventWinCell(freeCells);
-        if (preventWinCell != null) return preventWinCell;
+        if (preventWinCell != null) {
+            System.out.println("Preventing win cell found");
+            return preventWinCell;
+        }
 
         // Priority 3, find the best cell to fork (two or more winning ways)
+        B.setPlayer(myState);
+        winCell = findMyDoublePlay(freeCells);
+        if (winCell != null) {
+            System.out.println("Double play cell found");
+            return winCell;
+        }
 
         // Priority 4, find the best cell to block the opponent's fork
+        B.setPlayer(yourState);
+        preventWinCell = findEnemyDoublePlay(freeCells);
+        if (preventWinCell != null) {
+            System.out.println("Preventing double play cell found");
+            return preventWinCell;
+        }
 
         // Priority 5, find the best cell to win in the most number of possible ways
-        // Probably using minimax
-
-        MNKCell bestCell = freeCells[0];  // temporaneo
+        // TODO: Probably using minimax
         B.setPlayer(myState);
+
+        System.out.println("No winning cell found, selecting a random one");
+        MNKCell bestCell = freeCells[0];  // temporaneo
         B.markCell(bestCell.i, bestCell.j);
+        B.updateCellValue(bestCell.i, bestCell.j);
         return bestCell;
     }
 

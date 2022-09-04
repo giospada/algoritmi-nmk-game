@@ -70,9 +70,7 @@ public class Board {
         // deve essere in for separato perché vuole prima avere una board inizializzata
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                B[i][j].allyValue = new Value();
-                B[i][j].enemyValue = new Value();
-                computeCellValue(i, j );
+                computeCellValue(i, j);
             }
         }
     }
@@ -176,80 +174,84 @@ public class Board {
      * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
      * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
      */
-    public void computeCellDirectionValue(int i, int j, int lineCode) {
-        DirectionValue dirValueAlly = B[i][j].allyValue.directions[lineCode];
-        DirectionValue dirValueEnemy = B[i][j].enemyValue.directions[lineCode]
+    /**
+     * This should be O(K)
+     * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
+     * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
+     * @return INPLACE: the heuristics value for the current board for that cell.
+     */
+    public void computeCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
+        DirectionValue dirValue = state == allyPlayer ? B[i][j].allyValue.directions[lineCode] : B[i][j].enemyValue.directions[lineCode];
+        MNKCellState opponentState = state == allyPlayer ? enemyPlayer : allyPlayer;
+        
+        if (B[i][j].state == opponentState) {
+            dirValue.setInvalidDirectionValue();
+            return;
+        }
 
         int jAdd = getHorizontalAdder(lineCode);
         int iAdd = getVerticalAdder(lineCode);
-        int iPos= i - iAdd * (K - 1);
-        int jPos= j - jAdd * (K - 1);
-        int enemyInWindow = 0;
-        int allyInWindow = 0;
-        for(int steps = 0; steps < K * 2 - 1; steps++){
-            if(isValidCell(iPos, jPos)){
-                if(B[iPos][jPos].state == enemyPlayer){
-                    enemyInWindow++;
-                }else if(B[iPos][jPos].state==allyPlayer){
-                    allyInWindow++;
-                }
-                if(steps>=K){
-                    //Gestisci la slidingWindows (quindi il fatto di andare a checkare K - 1 steps indietro per aggiornare
-                    // quanto scorre )
-                }
-                // quando arrivi al centro cioè a K step aggiorna il left e 
-                // quando arrivi a K*2 - 2  step  aggiorna il rightu
+        dirValue.resetTo(B[i][j].state == state ? 0 : 1);
 
-            }
-            jPos+=jAdd;
-            iPos+=iAdd;
+        int right = 1, left = 1;
+        int numberOfOwnCells = B[i][j].state == state ? 1 : 0;
+
+        // ### Updata flag per le celle adiacenti al centro
+        if (!isValidCell(i + right * iAdd, j + right * jAdd) || B[i + right * iAdd][j + right * jAdd].state == opponentState) {
+            dirValue.adiacentRightIsFree = false;
+        } else {
+            dirValue.adiacentRightIsFree = true;
         }
 
+        if (!isValidCell(i - left * iAdd, j - left * jAdd) || B[i - left * iAdd][j - left * jAdd].state == opponentState) {
+            dirValue.adiacentLeftIsFree = false;
+        } else {
+            dirValue.adiacentLeftIsFree = true;
+        }
+        // ### Fine update flag per le celle adiacenti al centro
 
-        
-        // vai da destra a sinitra 
-        // creare la sliding window verso una singola direzione (non ce ne frega se è invalida o meno)
-        // iniziare a scorrerla aumentando di 1 e aggiornando i valori
-        // if (cella destra è amico)
-        //   decrementa conto amico
-        //   decrementa conto nemico per nemico
-        // else if cella destra è nemico
-        // else non decremento niente
-        // la sliding window è attiva quando al suo interno non ci sono celle dell'altro player, e quando i suoi 
-        // estremi sono all'interno della board.
+        // ### Raggiungi la massima cella raggiungibile a destra, contando le celle amiche.
+        while (right < K) {
+            int rightIidx = i + right * iAdd;
+            int rightJidx = j + right * jAdd;
+            if (!isValidCell(rightIidx, rightJidx) || B[rightIidx][rightJidx].state == opponentState) {
+                dirValue.right = -1;
+                break;
+            }
 
-        // se la cella iniziale è già occupata da me
-        // ho una cella in medo da dover riempire, quindi 0
-        
-        dirValue.center = Integer.MAX_VALUE;
-        int [] output=computeNumberOfCellInADirection(i, j, lineCode, state);
-
-        int right=output[0];
-        int left= 1;
-        dirValue.right+=output[1];
-        int numberOfOwnCells=output[2];
-
-        if (!isValidCell(i + right * yAdd, j + right * xAdd) || B[i + right * yAdd][j + right * xAdd].state == opponentState) {
+            if (B[rightIidx][rightJidx].state == MNKCellState.FREE) {
+                dirValue.right++;
+            }  else {
+                numberOfOwnCells++;
+            }
+            right++;
+        }
+        right--;
+        if (!isValidCell(i + right * iAdd, j + right * jAdd) || B[i + right * iAdd][j + right * jAdd].state == opponentState) {
             dirValue.rightIsFree = false;
         } else {
             dirValue.rightIsFree = true;
         }
-        right--;
+        // ### Fine
+
 
         // set the first possible value for the center
-        if (dirValue.right != -1) dirValue.center = dirValue.right;
+        if (dirValue.right != -1) {
+            dirValue.center = dirValue.right;
+        }
 
-        // scorrimento a sinistra con la sliding window
+        // ### scorrimento a sinistra con la sliding window
         while (left < K) {
-            int leftIidx = i - left * yAdd;
-            int leftJidx = j - left * xAdd;
+            int leftIidx = i - left * iAdd;
+            int leftJidx = j - left * jAdd;
             if (!isValidCell(leftIidx, leftJidx) || B[leftIidx][leftJidx].state == opponentState) {
                 dirValue.left = -1;
                 break;
             }
             
+            // Se ho già raggiunto la grandezza giusta per la window, mantienila.
             if (right + left == K) {
-                if (B[i + right * yAdd][j + right * xAdd].state == state) {
+                if (B[i + right * iAdd][j + right * jAdd].state == state) {
                     numberOfOwnCells--;
                 }
                 right--;
@@ -264,33 +266,35 @@ public class Board {
             // calcola il centro solo se la slinding window ha lunghezza già adeguata (K)
             if (right + left == K - 1) {
                 int centerToFill = K - numberOfOwnCells;
-                if (centerToFill < dirValue.center) dirValue.center = centerToFill;
+                if (centerToFill < dirValue.center) {
+                    dirValue.center = centerToFill;
+                }
             }
             left++;
         }
-        if (!isValidCell(i - left * yAdd, j - left * xAdd) || // fuori dalla board
-            B[i - left * yAdd][j - left * xAdd].state == opponentState || 
-            !isValidCell(i + yAdd, j + xAdd) || // fuori dalla board dall'altra parte
-            B[i + yAdd][j + xAdd].state == opponentState) { // c'è un ostacolo anche dall'altra parte
+        left--;
+        if (!isValidCell(i - left * iAdd, j - left * jAdd) || B[i - left * iAdd][j - left * jAdd].state == opponentState) {
             dirValue.leftIsFree = false;
         } else {
             dirValue.leftIsFree = true;
         }
-        
+
         if (dirValue.center == Integer.MAX_VALUE) dirValue.center = -1;
     }
     
 
     public void computeCellValue(int i, int j) {
-        for (int k = 0; k < 4; k++) 
-            computeCellDirectionValue(i, j, k);
+        for (int k = 0; k < 4; k++) {
+            computeCellDirectionValue(i, j, k, allyPlayer);
+            computeCellDirectionValue(i, j, k, enemyPlayer);
+        }
     }
 
     public Value getCellValue(int i, int j, MNKCellState state) {
         if (state == allyPlayer) {
-            return allCells[i * N + j].allyValue;
+            return B[i][j].allyValue;
         } else {
-            return allCells[i * N + j].enemyValue;
+            return B[i][j].enemyValue;
         }
     }
 
@@ -306,8 +310,8 @@ public class Board {
     }
 
     private void updateCellDirectionValue(int i, int j, int dirCode) {
-        int xAdd = getHorizontalAdder(dirCode);
-        int yAdd = getVerticalAdder(dirCode);
+        int jAdd = getHorizontalAdder(dirCode);
+        int iAdd = getVerticalAdder(dirCode);
 
         // TODO
         // le cose difficili da fare è gestire il nuovo valore migliore per il middle, che probabilmente
@@ -323,16 +327,21 @@ public class Board {
         // ma dovremo avere un array lungo K che stori il numero di cosi contenuti nella sliding window o simile... 
 
         // attualmente è una versione lenta che aggiorna tutte le celle toccate
+
+        // Trova il punto d'inizio per aggiornare le celle
         int start = 0;
-        while (start > -K && isValidCell(i + start * yAdd, j + start * xAdd)) {
+        while (start > -K && isValidCell(i + start * iAdd, j + start * jAdd)) {
             start--;
         }
+        start++;  // restore to first valid.
 
-        while (start < K && isValidCell(i + start * yAdd, j + start * xAdd)) {
-            B[i][j].allyValue.directions[dirCode] = computeCellDirectionValue(i, j, dirCode, allyPlayer);
-            B[i][j].enemyValue.directions[dirCode] = computeCellDirectionValue(i, j, dirCode, enemyPlayer);
+        do {
+            int iIdx = i + start * iAdd;
+            int jIdx = j + start * jAdd;
+            computeCellDirectionValue(iIdx, jIdx, dirCode, allyPlayer);
+            computeCellDirectionValue(iIdx, jIdx, dirCode, enemyPlayer);
             start++;
-        }
+        } while (start < K && isValidCell(i + start * iAdd, j + start * jAdd));
     }
 
     // private void updateFriendlyCellValue(int i, int j, int lineCode, MNKCellState friendCell) {

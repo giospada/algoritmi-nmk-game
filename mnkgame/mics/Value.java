@@ -32,14 +32,23 @@ public class Value {
      * 1. ho due celle libere all'inizio e in fondo
      * 2. Ho una combo in due direzioni differenti.
      */
-    public boolean isDoubleGame() {
+    public boolean isDoublePlay() {
         for (int i = 0; i < 4; i++) {
             if (directions[i].isInLineDoublePlay()) return true;
-            if (directions[i].bestWin() != 2) continue;  // 
+            if (directions[i].bestWin() != 2) continue;
             for (int j = i + 1; j < 4; j++) {
                 if (directions[j].bestWin() == 2) return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        for (int i = 0; i < 4; i++) {
+            s += directions[i].toString() + " ";
+        }
+        return s;
     }
 }

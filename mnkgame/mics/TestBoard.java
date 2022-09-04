@@ -1,9 +1,11 @@
 package mnkgame.mics;
 
 import mnkgame.MNKCellState;
+import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 
 public class TestBoard {
@@ -42,8 +44,8 @@ public class TestBoard {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(0, 0);
         B.markCell(1, 1);
-        B.markCell(2, 2);
-        assert B.gameState() == MNKGameState.WINP1;
+        MNKGameState state = B.markCell(2, 2);
+        assert state == MNKGameState.WINP1;
         B.unmarkCell();
         assert B.gameState() == MNKGameState.OPEN;
     }
@@ -53,22 +55,115 @@ public class TestBoard {
     public void testCellValue() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         Value value = B.getCellValue(0, 0, MNKCellState.P1);
-        System.out.print(value.horiz.bestWin());
-        System.out.flush();
-        assert value.horiz.bestWin() == 3;
-        assert value.vert.bestWin() == 3;
-        assert value.diag1.bestWin() == 3;
-        assert value.diag2.bestWin() == -1;  // guardando l'angolo non posso vincere
+
+        assert value.directions[0].bestWin() == 3;
+        assert value.directions[1].bestWin() == 3;
+        assert value.directions[2].bestWin() == 3;
+        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
 
         value = B.getCellValue(1, 1, MNKCellState.P2);
-        assert value.horiz.bestWin() == 3;
-        assert value.vert.bestWin() == 3;
-        assert value.diag2.bestWin() == 3;
-        assert value.diag1.bestWin() == 3;
+        for (int i = 0; i < 4; i++)
+            assert value.directions[i].bestWin() == 3;
+    }
+    
+    @Test
+    @DisplayName("bestwin should update when player moves at center")
+    public void testCellValueAfterMove() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        B.markCell(1, 1);
+        B.updateCellValue(1, 1);
+        Value value = B.getCellValue(1, 1, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 2;
+        assert value.directions[1].bestWin() == 2;
+        assert value.directions[2].bestWin() == 2;
+        assert value.directions[3].bestWin() == 2;
+    }
+
+    @Test
+    @DisplayName("bestwin should update when player moves in multiple places")
+    public void testCellValueAfterMultipleMoves() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        B.markCell(0, 0);
+        B.updateCellValue(0, 0);
+        Value value = B.getCellValue(0, 0, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 2;
+        assert value.directions[1].bestWin() == 2;
+        assert value.directions[2].bestWin() == 2;
+        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+
+        B.markCell(1, 1);
+        B.updateCellValue(1, 1);
+        value = B.getCellValue(0, 0, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 2;
+        assert value.directions[1].bestWin() == 2;
+        assert value.directions[2].bestWin() == 1;
+        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+
+        B.markCell(2, 2);
+        B.updateCellValue(2, 2);
+        value = B.getCellValue(0, 0, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 2;
+        assert value.directions[1].bestWin() == 2;
+        assert value.directions[2].bestWin() == 0;
+        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+    }
+
+    @Test
+    @DisplayName("Correctly recognizes a line double play at angle when it's present")
+    public void testDoubleWin() {
+        Board B = new Board(10, 10, 5, MNKCellState.P1);
+        B.markCell(1, 1);
+        B.markCell(2, 2);
+        B.markCell(3, 3);
+        B.updateCellValue(4, 4);
+        Value value = B.getCellValue(3, 3, MNKCellState.P1);
+        assert value.directions[2].bestWin() == 2;
+        assert value.isDoublePlay();
+
+        value = B.getCellValue(9, 9, MNKCellState.P1);
+        assert value.directions[2].bestWin() == 5;
+        assert !value.isDoublePlay();
+    }
+
+    @Test
+    public void randomTest() {
+        Board B = new Board(4, 4, 3, MNKCellState.P1);
+        Value value = B.getCellValue(1, 1, MNKCellState.P1);
+        assert !value.isDoublePlay();
+    }
+
+    @Test
+    @Disabled("Non funzionano i check attuali per questo caso")
+    @DisplayName("Correctly recognizes a line double play in middle when it's not present")
+    public void testNoDoubleWin() {
+        Board B = new Board(10, 10, 5, MNKCellState.P1);
+        B.markCell(1, 1);
+        B.markCell(2, 2);
+        B.markCell(4, 4);
+        B.updateCellValue(3, 3);
+        Value value = B.getCellValue(3, 3, MNKCellState.P1);
+        assert value.directions[2].bestWin() == 2;
+        assert !value.isDoublePlay();  // buggato
+    }
+
+    @Test
+    @DisplayName("Correctly recognizes a multiline double play when it's present")
+    public void testMultiLineDoubleWin() {
+        Board B = new Board(10, 10, 5, MNKCellState.P1);
+        B.markCell(1, 1);
+        B.markCell(2, 2);
+        B.markCell(3, 3);
+        B.markCell(4, 5);
+        B.markCell(4, 6);
+        B.markCell(4, 7);
+        B.updateCellValue(4, 4);
+        Value value = B.getCellValue(4, 4, MNKCellState.P1);
+        assert value.isDoublePlay();
     }
 
 
     @Test
+    @Disabled("Old test, for MICS heuristics")
     @DisplayName("tests if correcly counts for 3x3 board in all angles")
     public void testEmpty() {
         Board board = new Board(3, 3, 3, MNKCellState.P1);
@@ -94,8 +189,8 @@ public class TestBoard {
         assert center == 4;
     }
 
-    // 
     @Test
+    @Disabled("Old test, for MICS heuristics")
     @DisplayName("tests if correcly counts for 5x5 board in all angles except middle")
     public void testFiveByFive() {
         // O O O O O
@@ -147,6 +242,7 @@ public class TestBoard {
     }
 
     @Test
+    @Disabled("Old test, for MICS heuristics")
     @DisplayName("test if correctly counts for obstacles")
     public void testObstacles() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
@@ -197,6 +293,7 @@ public class TestBoard {
     }
 
     @Test
+    @Disabled("Old test, for MICS heuristics")
     @DisplayName("test if correctly counts for own pieces and obstacles")
     public void countOwnPieces() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
