@@ -11,8 +11,7 @@ clean:
 	rm -R build
 
 compile:
-	find mnkgame -name "*.java" > sources.txt
-	find test -name "*.java" >> sources.txt
+	find mnkgame -name "*.java" -not -iname "*test*"> sources.txt
 	javac -cp lib/junit-jupiter-api-5.9.0-RC1.jar @sources.txt -d build
 
 lint:
