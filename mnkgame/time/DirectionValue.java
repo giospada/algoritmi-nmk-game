@@ -1,4 +1,4 @@
-package mnkgame.mics;
+package mnkgame.time;
 
 public class DirectionValue {
     public int left;

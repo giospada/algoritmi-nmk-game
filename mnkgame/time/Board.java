@@ -1,4 +1,4 @@
-package mnkgame.mics;
+package mnkgame.time;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;

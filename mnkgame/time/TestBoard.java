@@ -1,4 +1,4 @@
-package mnkgame.mics;
+package mnkgame.time;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGame;

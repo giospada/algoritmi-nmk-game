@@ -1,3 +1,4 @@
+package mnkgame.time;
 /**
  * Non bene perché ho fatto questa cosa, è abbastanz ainutile
  */
