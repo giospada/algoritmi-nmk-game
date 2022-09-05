@@ -24,6 +24,14 @@ public class Value {
         }
     }
 
+    public int getValue() {
+        int value = 0;
+        for (int i = 0; i < 4; i++) {
+            value += directions[i].getValue();
+        }
+        return value;
+    }
+
     /**
      * Questa funzione ritorna se è possibile fare un doppio gioco mettendo una cella su questa
      * Presuppone che la cella sia ancora libera (altrimenti non so esattamente cosa fa a calcolarsi)

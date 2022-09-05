@@ -4,6 +4,9 @@ public class DirectionValue {
     public int left;
     public int right;
     public int center;
+    public int numSliding;
+    public int value;  // TODO: usando il mics, il numero di sliding windows buone, + numero di celle amiche
+    // K - left + K - right;
 
     public boolean adiacentLeftIsFree; // left cell from the current
     public boolean adiacentRightIsFree; // right cell from the current
@@ -15,20 +18,24 @@ public class DirectionValue {
     }
 
     DirectionValue(int same) {
-        left = same;
-        right = same;
-        center = Integer.MAX_VALUE;
+        resetTo(same);
+    }
+
+    public int getValue() {
+        return center;  // TODO:
     }
 
     public void resetTo(int same) {
         left = same;
         right = same;
         center = Integer.MAX_VALUE;
+        numSliding = 0;
     }
 
     public void setInvalidDirectionValue() {
         this.left = -1;
         this.right = -1;
+        this.numSliding = 0;
         this.center = -1;
     }
     /**
@@ -63,7 +70,7 @@ public class DirectionValue {
 
         return false;
     }
-
+    
     @Override
     public String toString() {
         return String.format("(%d, %d, %d)", left, center, right);

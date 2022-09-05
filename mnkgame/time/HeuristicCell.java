@@ -16,8 +16,8 @@ import mnkgame.MNKCellState;
 // se mmai ci metti anche un caso in cui serve per vincere uno in mezzo, e lo consideri separato
 // non va?
 class HeuristicCell implements Comparable<HeuristicCell> {
-    private final int i;
-    private final int j; 
+    public final int i;
+    public final int j; 
     public int index;  // l'index all'interno dell'array della board
     public Value allyValue;
     public Value enemyValue;
