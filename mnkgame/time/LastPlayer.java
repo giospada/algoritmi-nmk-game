@@ -11,9 +11,13 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private MNKCellState yourState;
     private MNKGameState yourWin;
     private MNKGameState gameState;
-    private final int BRANCHING_FACTOR = 5;
+    private final int BRANCHING_FACTOR = 7;
+    private final int DEPTH_LIMIT = 7;
     private final int KINF = 1000000000;  // 1 miliardo
 
+    private int M, N;
+    // l'algoritmo si comporta in modo molto strano alle prime mosse
+    private boolean firstMove;
     public LastPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
@@ -22,12 +26,16 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         B = new Board(M, N, K, myState);
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+
+        firstMove = true;
+        this.M = M;
+        this.N = N;
     }
 
 
 
     public int minPlayer(int depth, int alpha, int beta) {
-        if (gameState != MNKGameState.OPEN) {  // TODO: check when the board is in end state (depth time, state)
+        if (gameState != MNKGameState.OPEN || depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
             return B.getValue(yourState);  // todo get the heuristic value of this game state
         }
         B.setPlayer(yourState);
@@ -54,7 +62,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     }
 
     private int maxPlayer(int depth, int alpha, int beta) {
-        if (gameState != MNKGameState.OPEN) {  // TODO: check when the board is in end state (depth time, state)
+        if (gameState != MNKGameState.OPEN || depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
             return B.getValue(myState);
         }
 
@@ -142,8 +150,9 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int beta = KINF;
         int v = -KINF;
 
-        int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
         MNKCell cell = null;
+        // al primo livello valuto quasi tutto
+        int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
         for (int i = 0; i < len; i++) {
             gameState = B.markCell(B.getGreatKCell(i).i, B.getGreatKCell(i).j, true);
             int minPlayerValue = minPlayer(1, alpha, beta);
@@ -165,9 +174,17 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         B.setPlayer(yourState);
         if (movedCells.length > 0) {
             MNKCell c = movedCells[movedCells.length - 1]; // Recover the last move from MC
-            B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
-            B.updateCellValue(c.i, c.j);
+            B.markCell(c.i, c.j, true); // Save the last move in the local MNKBoard
+            firstMove = false;
         }
+
+        if (firstMove) {
+            MNKCell bestCell = new MNKCell((M - 1) / 2, (N - 1) / 2);
+            B.markCell(bestCell.i, bestCell.j, true);
+            firstMove = false;
+            return bestCell;
+        }
+
         System.out.println("Playing");
 
         // Priority 1: Win
@@ -206,10 +223,9 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         // TODO: Probably using minimax
         B.setPlayer(myState);
 
-        System.out.println("No winning cell found, selecting a random one");
-        MNKCell bestCell = freeCells[0];  // temporaneo
-        B.markCell(bestCell.i, bestCell.j);
-        B.updateCellValue(bestCell.i, bestCell.j);
+        System.out.println("No winning cell found, selecting with mini-max ab");
+        MNKCell bestCell = findBestMove();
+        B.markCell(bestCell.i, bestCell.j, true);
         return bestCell;
     }
 

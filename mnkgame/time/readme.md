@@ -21,3 +21,9 @@ Nemmeno la `findWinCell` sembra funzionare, forse la board sotto non è in una v
 dovremmo fare dei test migliori.
 
 Nemmeno la prevent win non sembra funzionare, il giocatore sembra andare mooolto a caso
+
+
+### Update 06/09
+Il nuovo algoritmo per cercare le line-double play è buggata,
+considera configurazioni come
+OXXX come se fossero dei doppi giochi. 

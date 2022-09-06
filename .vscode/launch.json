@@ -7,7 +7,7 @@
             "name": "Launch Main tester",
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
-            "args": "3 3 3 mnkgame.montecarlo.Player mnkgame.RandomPlayer -r 1 -t 1 -v"
+            "args": "3 3 3  mnkgame.QuasiRandomPlayer mnkgame.montecarlo.Player -r 1 -t 3 -v"
         }, {
             "type": "java",
             "name": "Launch Main human",

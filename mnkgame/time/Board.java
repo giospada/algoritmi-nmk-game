@@ -86,7 +86,10 @@ public class Board {
 
     // TODO: decidere quando utilizzarlo
     private void sortMoves() {
-        Arrays.sort(sortedAllCells);
+        for (int i = 0; i < freeCellsCount; i++) {
+            sortedAllCells[i] = allCells[i];
+        }
+        Arrays.sort(sortedAllCells, 0, freeCellsCount);
     }
 
     public MNKCell getGreatKCell(int k) {
@@ -305,11 +308,12 @@ public class Board {
     }
     
     public int getValue(MNKCellState state) {
-        if (state == allyPlayer) {
-            return sumAllyHeuristic - sumEnemyHeuristic;
-        } else {
-            return sumEnemyHeuristic - sumAllyHeuristic;
-        }
+        return sumAllyHeuristic + sumEnemyHeuristic;  // proviamo così e vedo cosa succede
+        // if (state == allyPlayer) {
+        //     return sumAllyHeuristic - sumEnemyHeuristic;
+        // } else {
+        //     return sumEnemyHeuristic - sumAllyHeuristic;
+        // }
     }
 
     public void computeCellValue(int i, int j) {
