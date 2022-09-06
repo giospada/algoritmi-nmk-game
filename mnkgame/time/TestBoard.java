@@ -5,6 +5,7 @@ import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 
 import org.junit.jupiter.api.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 
@@ -104,8 +105,15 @@ public class TestBoard {
     }
 
     @Test
+    @Category(TestDoublePlay.class)
     @DisplayName("Correctly recognizes a line double play at angle when it's present")
     public void testDoubleWin() {
+        // E E E E E ...
+        // E X E E e ...
+        // E E X E e ...
+        // E E E X e ...
+        // E E E E T ...
+        // ...
         Board B = new Board(10, 10, 5, MNKCellState.P1);
         B.markCell(1, 1);
         B.markCell(2, 2);
@@ -121,7 +129,32 @@ public class TestBoard {
         assert !value.isDoublePlay();
     }
 
+    @Test 
+    @Category(TestDoublePlay.class)
+    @DisplayName("Correctly recognizes a not double play in line when it's blocked")
+    public void notInlineDoublePlay() {
+        // O E E E E ...
+        // E X E E e ...
+        // E E X E e ...
+        // E E E X e ...
+        // E E E E T ...
+        // ...
+        Board B = new Board(10, 10, 5, MNKCellState.P1);
+        B.markCell(1, 1);
+        B.markCell(2, 2);
+        B.markCell(3, 3);
+
+        B.setPlayer(MNKCellState.P2);
+        B.markCell(0, 0);
+        B.updateCellValue(4, 4);
+        Value value = B.getCellValue(4, 4, MNKCellState.P1);
+        assert value.directions[2].bestWin() == 2;
+        assert !value.directions[2].isInLineDoublePlay();
+        assert !value.isDoublePlay();
+    }
+
     @Test
+    @Category(TestDoublePlay.class)
     public void randomTest() {
         Board B = new Board(4, 4, 3, MNKCellState.P1);
         Value value = B.getCellValue(1, 1, MNKCellState.P1);
@@ -129,9 +162,15 @@ public class TestBoard {
     }
 
     @Test
-    // @Disabled("Non funzionano i check attuali per questo caso")
+    @Category(TestDoublePlay.class)
     @DisplayName("Correctly recognizes a line double play in middle when it's not present")
     public void testNoDoubleWin() {
+        // E E E E E ...
+        // E X E E e ...
+        // E E X E e ...
+        // E E E T e ...
+        // E E E E X ...
+        // ...
         Board B = new Board(10, 10, 5, MNKCellState.P1);
         B.markCell(1, 1);
         B.markCell(2, 2);
@@ -145,6 +184,7 @@ public class TestBoard {
     }
 
     @Test
+    @Category(TestDoublePlay.class)
     @DisplayName("Correctly recognizes a multiline double play when it's present")
     public void testMultiLineDoubleWin() {
         Board B = new Board(10, 10, 5, MNKCellState.P1);
@@ -161,6 +201,7 @@ public class TestBoard {
 
 
     @Test
+    @Category(MicsHeuristicTest.class)
     @DisplayName("tests if correcly counts for 3x3 board in all angles")
     public void testEmpty() {
         Board board = new Board(3, 3, 3, MNKCellState.P1);
@@ -191,6 +232,7 @@ public class TestBoard {
     }
 
     @Test
+    @Category(MicsHeuristicTest.class)
     @DisplayName("tests if correcly counts for 5x5 board in all angles except middle")
     public void testFiveByFive() {
         // O O O O O
@@ -242,6 +284,7 @@ public class TestBoard {
     }
 
     @Test
+    @Category(MicsHeuristicTest.class)
     @DisplayName("test if correctly counts for obstacles")
     public void testObstacles() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
@@ -293,6 +336,7 @@ public class TestBoard {
     }
 
     @Test
+    @Category(MicsHeuristicTest.class)
     @DisplayName("test if correctly counts for own pieces and obstacles")
     public void countOwnPieces() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
@@ -327,3 +371,6 @@ public class TestBoard {
         assert value == 1 + 1; // 1 per le celle libere + 1 per la cella amica in (2, 2)
     }
 }
+
+class TestDoublePlay extends TestBoard {}
+class MicsHeuristicTest extends TestBoard {}
