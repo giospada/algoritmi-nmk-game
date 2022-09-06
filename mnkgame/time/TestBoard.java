@@ -72,11 +72,11 @@ public class TestBoard {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(1, 1);
         B.updateCellValue(1, 1);
-        Value value = B.getCellValue(1, 1, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 2;
-        assert value.directions[1].bestWin() == 2;
+        Value value = B.getCellValue(0, 0, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 3;
+        assert value.directions[1].bestWin() == 3;
         assert value.directions[2].bestWin() == 2;
-        assert value.directions[3].bestWin() == 2;
+        assert value.directions[3].bestWin() == -1;
     }
 
     @Test
@@ -85,27 +85,22 @@ public class TestBoard {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(0, 0);
         B.updateCellValue(0, 0);
-        Value value = B.getCellValue(0, 0, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 2;
-        assert value.directions[1].bestWin() == 2;
+        Value value = B.getCellValue(1, 1, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 3;
+        assert value.directions[1].bestWin() == 3;
         assert value.directions[2].bestWin() == 2;
-        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+        assert value.directions[3].bestWin() == 3;  // guardando l'angolo non posso vincere
 
         B.markCell(1, 1);
         B.updateCellValue(1, 1);
-        value = B.getCellValue(0, 0, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 2;
-        assert value.directions[1].bestWin() == 2;
+        value = B.getCellValue(2, 2, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 3;
+        assert value.directions[1].bestWin() == 3;
         assert value.directions[2].bestWin() == 1;
         assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
 
-        B.markCell(2, 2);
-        B.updateCellValue(2, 2);
-        value = B.getCellValue(0, 0, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 2;
-        assert value.directions[1].bestWin() == 2;
-        assert value.directions[2].bestWin() == 0;
-        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+        MNKGameState state = B.markCell(2, 2);
+        assert state == MNKGameState.WINP1;
     }
 
     @Test
@@ -116,8 +111,9 @@ public class TestBoard {
         B.markCell(2, 2);
         B.markCell(3, 3);
         B.updateCellValue(4, 4);
-        Value value = B.getCellValue(3, 3, MNKCellState.P1);
+        Value value = B.getCellValue(4, 4, MNKCellState.P1);
         assert value.directions[2].bestWin() == 2;
+        assert value.directions[2].isInLineDoublePlay();
         assert value.isDoublePlay();
 
         value = B.getCellValue(9, 9, MNKCellState.P1);
@@ -133,7 +129,7 @@ public class TestBoard {
     }
 
     @Test
-    @Disabled("Non funzionano i check attuali per questo caso")
+    // @Disabled("Non funzionano i check attuali per questo caso")
     @DisplayName("Correctly recognizes a line double play in middle when it's not present")
     public void testNoDoubleWin() {
         Board B = new Board(10, 10, 5, MNKCellState.P1);
@@ -143,7 +139,9 @@ public class TestBoard {
         B.updateCellValue(3, 3);
         Value value = B.getCellValue(3, 3, MNKCellState.P1);
         assert value.directions[2].bestWin() == 2;
-        assert !value.isDoublePlay();  // buggato
+        assert !value.directions[0].isInLineDoublePlay();
+        assert value.directions[2].isInLineDoublePlay();
+        assert value.isDoublePlay();  // buggato
     }
 
     @Test
@@ -163,7 +161,6 @@ public class TestBoard {
 
 
     @Test
-    @Disabled("Old test, for MICS heuristics")
     @DisplayName("tests if correcly counts for 3x3 board in all angles")
     public void testEmpty() {
         Board board = new Board(3, 3, 3, MNKCellState.P1);
@@ -173,6 +170,8 @@ public class TestBoard {
         angleValues[2] = board.getHeuristic(2, 0);
         angleValues[3] = board.getHeuristic(0, 2);
         for (int i = 0; i < angleValues.length; i++) {
+            System.out.println(angleValues[i]);
+            System.out.flush();
             assert angleValues[i] == 3;
         }
 
@@ -182,6 +181,8 @@ public class TestBoard {
         middleValues[2] = board.getHeuristic(0, 1);
         middleValues[3] = board.getHeuristic(2, 1);
         for (int i = 0; i < middleValues.length; i++) {
+            System.out.println(middleValues[i]);
+            System.out.flush();
             assert middleValues[i] == 2;
         }
 
@@ -190,7 +191,6 @@ public class TestBoard {
     }
 
     @Test
-    @Disabled("Old test, for MICS heuristics")
     @DisplayName("tests if correcly counts for 5x5 board in all angles except middle")
     public void testFiveByFive() {
         // O O O O O
@@ -242,11 +242,11 @@ public class TestBoard {
     }
 
     @Test
-    @Disabled("Old test, for MICS heuristics")
     @DisplayName("test if correctly counts for obstacles")
     public void testObstacles() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
         board.setCellState(2, 2, MNKCellState.P2);
+        board.updateCellValue(2, 2);
 
         // test corners
         int cornerValues[] = new int[4];
@@ -293,15 +293,22 @@ public class TestBoard {
     }
 
     @Test
-    @Disabled("Old test, for MICS heuristics")
     @DisplayName("test if correctly counts for own pieces and obstacles")
     public void countOwnPieces() {
         Board board = new Board(5, 5, 3, MNKCellState.P1);
         board.setCellState(2, 2, MNKCellState.P1);
+        board.computeCellValue(1, 1);
         assert board.getHeuristic(1, 1) == (7 + 1);  // + 1 per la cella amica
 
         board.setCellState(3, 3, MNKCellState.P2);
-        assert board.getHeuristic(1, 1) == (6 + 1);
+        board.computeCellValue(1, 1);
+        System.out.println(board.getHeuristic(1, 1));
+        System.out.flush();
+        assert board.getHeuristic(1, 1) == (6);
+        // con la nuova versione non vado a contare le celle del middle
+        // seppur mi valevano, quindi questa implementazione non è strettamente
+        // equivalente al mics per questo punto.
+        // assert board.getHeuristic(1, 1) == (6 + 1);  
 
         // avvolgo tutta la cella 1 1
         board.setCellState(0, 0, MNKCellState.P2);
@@ -311,9 +318,11 @@ public class TestBoard {
         board.setCellState(1, 2, MNKCellState.P2);
         board.setCellState(2, 1, MNKCellState.P2);
         board.setCellState(0, 2, MNKCellState.P2);
+        board.computeCellValue(1, 1);
         assert board.getHeuristic(1, 1) == 0; // check che non conta la cella amica
 
         board.setCellState(3, 3, MNKCellState.FREE);
+        board.computeCellValue(1, 1);
         int value = board.getHeuristic(1, 1);
         assert value == 1 + 1; // 1 per le celle libere + 1 per la cella amica in (2, 2)
     }

@@ -2,10 +2,7 @@ package mnkgame.time;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
-
-import org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.NumericConversion;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -214,12 +211,6 @@ public class Board {
         return false;
     }
 
-
-    /**
-     * This should be O(K)
-     * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
-     * @param state, lo stato per cercare il valore (NON HA SENDO AVERE LO STATE FREE)
-     */
     /**
      * This should be O(K)
      * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
@@ -243,20 +234,6 @@ public class Board {
         int right = 1, left = 1;
         int numberOfOwnCells = B[i][j].state == state ? 1 : 0;
 
-        // ### Updata flag per le celle adiacenti al centro
-        if (!isValidCell(i + right * iAdd, j + right * jAdd) || B[i + right * iAdd][j + right * jAdd].state == opponentState) {
-            dirValue.adiacentRightIsFree = false;
-        } else {
-            dirValue.adiacentRightIsFree = true;
-        }
-
-        if (!isValidCell(i - left * iAdd, j - left * jAdd) || B[i - left * iAdd][j - left * jAdd].state == opponentState) {
-            dirValue.adiacentLeftIsFree = false;
-        } else {
-            dirValue.adiacentLeftIsFree = true;
-        }
-        // ### Fine update flag per le celle adiacenti al centro
-
         // ### Raggiungi la massima cella raggiungibile a destra, contando le celle amiche.
         while (right < K) {
             int rightIidx = i + right * iAdd;
@@ -273,12 +250,13 @@ public class Board {
             }
             right++;
         }
-        right--;
-        if (!isValidCell(i + right * iAdd, j + right * jAdd) || B[i + right * iAdd][j + right * jAdd].state == opponentState) {
-            dirValue.rightIsFree = false;
-        } else {
-            dirValue.rightIsFree = true;
+        if (right == K) {  // raggiunta la grandezza per la prima sliding window
+            dirValue.numSliding++;
+            if (numberOfOwnCells >= K - 2) {
+                dirValue.numtwos++;
+            }
         }
+        right--;
         // ### Fine
 
 
@@ -295,20 +273,19 @@ public class Board {
                 dirValue.left = -1;
                 break;
             }
+
+            if (B[leftIidx][leftJidx].state == MNKCellState.FREE) {
+                dirValue.left++;
+            }  else {
+                numberOfOwnCells++;
+            }
             
             // Se ho già raggiunto la grandezza giusta per la window, mantienila.
             if (right + left == K) {
                 if (B[i + right * iAdd][j + right * jAdd].state == state) {
                     numberOfOwnCells--;
                 }
-                
                 right--;
-            }
-
-            if (B[leftIidx][leftJidx].state == MNKCellState.FREE) {
-                dirValue.left++;
-            }  else {
-                numberOfOwnCells++;
             }
 
             // calcola il centro solo se la slinding window ha lunghezza già adeguata (K)
@@ -317,17 +294,23 @@ public class Board {
                 if (centerToFill < dirValue.center) {
                     dirValue.center = centerToFill;
                 }
+                
+                dirValue.numSliding++;
+                if (numberOfOwnCells >= K - 2) {
+                    dirValue.numtwos++;
+                }
             }
             left++;
         }
-        left--;
-        if (!isValidCell(i - left * iAdd, j - left * jAdd) || B[i - left * iAdd][j - left * jAdd].state == opponentState) {
-            dirValue.leftIsFree = false;
-        } else {
-            dirValue.leftIsFree = true;
-        }
+        // if (right + left == K) {  // raggiunta la grandezza per la prima sliding window
+        //     dirValue.numSliding++;
+        //     if (numberOfOwnCells >= K - 2) {
+        //         dirValue.numtwos++;
+        //     }
+        // }
 
         if (dirValue.center == Integer.MAX_VALUE) dirValue.center = -1;
+        dirValue.computeValue(this.K);
     }
     
     public int getValue(MNKCellState state) {
@@ -476,6 +459,12 @@ public class Board {
         allCells[j] = cell;
     }
 
+    /**
+     * Old mics function
+     */
+    public int getHeuristic(int i, int j) {
+        return B[i][j].allyValue.getValue();
+    }
 
     /**
      * Returns the id of the player allowed to play next move.
