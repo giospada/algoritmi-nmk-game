@@ -4,7 +4,7 @@ import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
-public class MicsPlayer implements mnkgame.MNKPlayer {
+public class LastPlayer implements mnkgame.MNKPlayer {
     private Board B;
     private MNKGameState myWin;
     private MNKCellState myState;
@@ -14,8 +14,7 @@ public class MicsPlayer implements mnkgame.MNKPlayer {
     private final int BRANCHING_FACTOR = 5;
     private final int KINF = 1000000000;  // 1 miliardo
 
-    public MicsPlayer() {
-    }
+    public LastPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         myState = first ? MNKCellState.P1 : MNKCellState.P2;

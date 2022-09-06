@@ -255,15 +255,12 @@ public class Board {
             if (numberOfOwnCells >= K - 2) {
                 dirValue.numtwos++;
             }
+
+            // set first possible value for the center
+            dirValue.center = dirValue.right;
         }
         right--;
         // ### Fine
-
-
-        // set the first possible value for the center
-        if (dirValue.right != -1) {
-            dirValue.center = dirValue.right;
-        }
 
         // ### scorrimento a sinistra con la sliding window
         while (left < K) {
@@ -294,7 +291,7 @@ public class Board {
                 if (centerToFill < dirValue.center) {
                     dirValue.center = centerToFill;
                 }
-                
+
                 dirValue.numSliding++;
                 if (numberOfOwnCells >= K - 2) {
                     dirValue.numtwos++;
@@ -302,12 +299,6 @@ public class Board {
             }
             left++;
         }
-        // if (right + left == K) {  // raggiunta la grandezza per la prima sliding window
-        //     dirValue.numSliding++;
-        //     if (numberOfOwnCells >= K - 2) {
-        //         dirValue.numtwos++;
-        //     }
-        // }
 
         if (dirValue.center == Integer.MAX_VALUE) dirValue.center = -1;
         dirValue.computeValue(this.K);
