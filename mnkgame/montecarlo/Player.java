@@ -33,23 +33,12 @@ public class Player implements MNKPlayer {
     }
 
     private boolean hasTimeRunOut() {
-        return (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (50.0 / 100.0);
-    }
-
-    void applyCurrNodeMoves(TreeNode currNode) {
-        if (currNode.parent == null) {
-            return;
-        }
-        applyCurrNodeMoves(currNode.parent);
-        B.markCell(currNode.currMove.i, currNode.currMove.j);  // TODO fallo tempo costante
+        return (System.currentTimeMillis() - startTime) / 1000.0 > TIMEOUT * (70.0 / 100.0);
     }
 
     public MNKGameState myWin;
     public MNKGameState yourWin;
     TreeNode select(TreeNode curNode) {
-        // if (curNode == root) {
-        //     curNode = curNode.children.peek();
-        // }
         while (!curNode.isLeaf && !curNode.isFinished) {
             curNode = curNode.children.peek();
             B.setCellState(curNode.currMove.i, curNode.currMove.j);
@@ -57,6 +46,7 @@ public class Player implements MNKPlayer {
 
         return curNode;
     }
+
     /**
      * @brief suppongo che curNode sia una foglia
      * @param curNode
@@ -137,6 +127,7 @@ public class Player implements MNKPlayer {
         curNode.goodTries += addingValue;
         curNode.tries += 2;
     }
+
     private TreeNode searchChildren(TreeNode curNode,MNKCell cell) {
         if (cell == null) return null;
         if (curNode.isLeaf) {
@@ -167,31 +158,22 @@ public class Player implements MNKPlayer {
         MNKCell c = MC.length > 0 ? MC[MC.length - 1] : null;
         updateRoot(searchChildren(root, c));
 
-        // queue = new PriorityQueue<TreeNode>();
-
-        // queue.add(root);
-
         while (!hasTimeRunOut()) {
-            // this is pseudo code
-            // TreeNode leaf = queue.peek();  // with the board state, or initTree
-            // if (leaf.parent == root) {
-            //     possibleMoves[possibleMovesLenght] = leaf;
-            //     possibleMovesLenght++;
-            // }
             TreeNode leaf = select(root);
             TreeNode child = expand(leaf);
             MNKGameState result = simulate(child);  // rollout
             backpropagate(result, child);
-            // System.out.println(root);
-            // if (!child.isFinished) {
-            //     queue.add(child);
-            // }
         }
 
-        // TODO: return the best cell, highest number of playouts.
-        TreeNode bestNode = root.children.peek();
-        //if(FC.length > 7)
-        //    System.err.println(root);
+        // O(n) bestNode with higher number of playouts
+        TreeNode bestNode = null;
+        int nTries = 0;
+        for (TreeNode child : root.children) {
+            if (child.tries > nTries) {
+                nTries = child.tries;
+                bestNode = child;
+            }
+        }
         updateRoot(bestNode);
         return bestNode.currMove;
     }
