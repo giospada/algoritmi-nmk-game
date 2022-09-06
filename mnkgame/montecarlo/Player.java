@@ -41,7 +41,8 @@ public class Player implements MNKPlayer {
     TreeNode select(TreeNode curNode) {
         while (!curNode.isLeaf && !curNode.isFinished) {
             curNode = curNode.children.peek();
-            B.setCellState(curNode.currMove.i, curNode.currMove.j);
+            B.markCell(curNode.currMove.i, curNode.currMove.j);
+            B.togglePlayer();
         }
 
         return curNode;
