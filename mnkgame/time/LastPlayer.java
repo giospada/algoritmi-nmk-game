@@ -32,8 +32,6 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         this.N = N;
     }
 
-
-
     public int minPlayer(int depth, int alpha, int beta) {
         if (gameState != MNKGameState.OPEN || depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
             return B.getValue(yourState);  // todo get the heuristic value of this game state
@@ -92,6 +90,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private MNKCell findWinCell(MNKCell[] freeCells) {
         for (MNKCell d : freeCells) {
             if (B.markCell(d.i, d.j) == myWin) {
+                B.unmarkCell();
                 return d;
             } else {
                 B.unmarkCell();
@@ -104,10 +103,6 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         for (MNKCell d : freeCells) {
             if (B.markCell(d.i, d.j) == yourWin) {
                 B.unmarkCell();
-                
-                // vado a marcare io la cella con cui vincerebbe l'avversario
-                B.setPlayer(myState);;
-                B.markCell(d.i, d.j);
                 return d;
             }
             B.unmarkCell();
@@ -151,6 +146,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int v = -KINF;
 
         MNKCell cell = null;
+        B.setPlayer(myState);
+
         // al primo livello valuto quasi tutto
         int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
         for (int i = 0; i < len; i++) {
@@ -178,8 +175,11 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             firstMove = false;
         }
 
+        B.print();
+
         if (firstMove) {
             MNKCell bestCell = new MNKCell((M - 1) / 2, (N - 1) / 2);
+            B.setPlayer(myState);
             B.markCell(bestCell.i, bestCell.j, true);
             firstMove = false;
             return bestCell;
@@ -192,6 +192,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         MNKCell winCell = findWinCell(freeCells);
         if (winCell != null) {
             System.out.println("Winning cell found");
+            B.markCell(winCell.i, winCell.j, true);
+
             return winCell;
         }
 
@@ -200,14 +202,19 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         MNKCell preventWinCell = findPreventWinCell(freeCells);
         if (preventWinCell != null) {
             System.out.println("Preventing win cell found");
+            B.setPlayer(myState);
+            B.markCell(preventWinCell.i, preventWinCell.j, true);
+
             return preventWinCell;
         }
 
         // Priority 3, find the best cell to fork (two or more winning ways)
-        B.setPlayer(myState);
         winCell = findMyDoublePlay(freeCells);
         if (winCell != null) {
             System.out.println("Double play cell found");
+            B.setPlayer(myState);
+            B.markCell(winCell.i, winCell.j, true);
+
             return winCell;
         }
 
@@ -216,16 +223,19 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         preventWinCell = findEnemyDoublePlay(freeCells);
         if (preventWinCell != null) {
             System.out.println("Preventing double play cell found");
+            B.setPlayer(myState);
+            B.markCell(preventWinCell.i, preventWinCell.j, true);
+
             return preventWinCell;
         }
 
         // Priority 5, find the best cell to win in the most number of possible ways
         // TODO: Probably using minimax
-        B.setPlayer(myState);
-
         System.out.println("No winning cell found, selecting with mini-max ab");
         MNKCell bestCell = findBestMove();
+        B.setPlayer(myState);
         B.markCell(bestCell.i, bestCell.j, true);
+
         return bestCell;
     }
 

@@ -33,7 +33,7 @@ class HeuristicCell implements Comparable<HeuristicCell> {
     }
     
     public int compareTo(HeuristicCell other){
-        return 1;  
+        return - allyValue.getValue() - enemyValue.getValue() + other.allyValue.getValue() + other.enemyValue.getValue();
         // TODO!
         // if (allyValue.equals(other.allyValue)) {
         //     return allyValue.compareTo(other.allyValue);
