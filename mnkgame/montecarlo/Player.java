@@ -1,10 +1,7 @@
 package mnkgame.montecarlo;
 
-import java.util.PriorityQueue;
-
 import javax.management.RuntimeErrorException;
 
-import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
@@ -14,7 +11,6 @@ public class Player implements MNKPlayer {
     private Board B; // TODO make board
     private long startTime;
     private int TIMEOUT;
-    private TreeNode[] possibleMoves;
     int possibleMovesLenght;
     TreeNode root;
 
@@ -26,10 +22,13 @@ public class Player implements MNKPlayer {
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
         MNKCellState myState = first ? MNKCellState.P1 : MNKCellState.P2;
-        MNKCellState yourState = first ? MNKCellState.P2 : MNKCellState.P1;
+        // MNKCellState yourState = first ? MNKCellState.P2 : MNKCellState.P1;
         TIMEOUT = timeout_in_secs;
         B = new Board(M, N, K, myState);
-        root = null;  // TODO spostamento della root a seconda delle mosse.
+
+        // ROOT inizializzata con tutte le mosse
+        root = new TreeNode();
+        root.createChilds(B.getFreeCells());
     }
 
     private boolean hasTimeRunOut() {
@@ -42,7 +41,6 @@ public class Player implements MNKPlayer {
         while (!curNode.isLeaf && !curNode.isFinished) {
             curNode = curNode.children.peek();
             B.markCell(curNode.currMove.i, curNode.currMove.j);
-            B.togglePlayer();
         }
 
         return curNode;
@@ -58,7 +56,6 @@ public class Player implements MNKPlayer {
         if (curNode != root && (curNode.tries == 0 || curNode.isFinished)) {
             // rollout with current node
             B.unmarkCell();  // non vogliamo mandare in simulate un nodo finisced
-            B.togglePlayer();
             return curNode;
         }
 
@@ -74,7 +71,6 @@ public class Player implements MNKPlayer {
         MNKCell nextCell = curNode.currMove;
         int numMoves = 1;
         MNKGameState lastState = B.markCell(nextCell);
-        B.togglePlayer();
 
         if (lastState != MNKGameState.OPEN) {  // marca come cella finale non espandibile
             curNode.isFinished = true;
@@ -82,23 +78,27 @@ public class Player implements MNKPlayer {
 
         while(lastState == MNKGameState.OPEN){
             numMoves++;
-            MNKCell best = null;
-            int bestScore = -1;
-            for(MNKCell cell : B.getFreeCells()){
-                int heuristics = B.getHeuristic(cell.i, cell.j) + B.getSwappedHeuristics(cell.i, cell.j);  // O(K)
-                if (heuristics > bestScore) {
-                    bestScore = heuristics;
-                    best = cell;
-                }
-            }
+
+            // QUESTO FA SCELTA RANDOMICHE
+            MNKCell[] freeCells = B.getFreeCells();
+            MNKCell best = freeCells[(int) Math.random() * freeCells.length];
+
+            // QUESTO USA IL MICS.
+            // int bestScore = -1;
+            // for(MNKCell cell : B.getFreeCells()){
+            //     int heuristics = B.getHeuristic(cell.i, cell.j) + B.getSwappedHeuristics(cell.i, cell.j);  // O(K)
+            //     if (heuristics > bestScore) {
+            //         bestScore = heuristics;
+            //         best = cell;
+            //     }
+            // }
+
             lastState = B.markCell(best);
-            B.togglePlayer();
         }
 
         // si può ottimizzare??? da guardare
         for(int i = 1; i < numMoves; i++){
             B.unmarkCell();
-            B.togglePlayer();
         }
 
         return lastState;
@@ -108,14 +108,16 @@ public class Player implements MNKPlayer {
         int addingValue = 0;
         if (state == myWin) {
             addingValue = 2;
-        } else if (state == MNKGameState.DRAW) {
+        } else if (state == yourWin) {
             addingValue = 1;
         }
+        // se valutiamo 0 la vittoria nemica, allora non è in grado di bloccare.
+
 
         while (curNode.parent != null) {
             curNode.goodTries += addingValue;
 
-            curNode.tries += 2;
+            curNode.tries +=2;
             curNode.parent.children.remove(curNode);
             curNode.parent.children.add(curNode);  // riaggiorna la posizione del nodo nella priority
 
@@ -129,8 +131,8 @@ public class Player implements MNKPlayer {
         curNode.tries += 2;
     }
 
-    private TreeNode searchChildren(TreeNode curNode,MNKCell cell) {
-        if (cell == null) return null;
+    private TreeNode searchChildren(TreeNode curNode, MNKCell cell) {
+        if (cell == null || curNode == null || curNode.isFinished) return null;  // invalid input
         if (curNode.isLeaf) {
             return new TreeNode();
         }
@@ -144,10 +146,10 @@ public class Player implements MNKPlayer {
     }
 
     private void updateRoot(TreeNode cell) {
-        if (cell == null) {  // 
-            root = new TreeNode();
-            return;
+        if (cell == null) {
+            throw new NullPointerException("the cell i want to update the root with is null");
         }
+
         root = cell;
         root.parent = null;  // scollego la root dal padre
         B.markCell(cell.currMove);
@@ -157,7 +159,8 @@ public class Player implements MNKPlayer {
     public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
         startTime = System.currentTimeMillis();
         MNKCell c = MC.length > 0 ? MC[MC.length - 1] : null;
-        updateRoot(searchChildren(root, c));
+        if (c != null)
+            updateRoot(searchChildren(root, c));
 
         while (!hasTimeRunOut()) {
             TreeNode leaf = select(root);
@@ -175,6 +178,12 @@ public class Player implements MNKPlayer {
                 bestNode = child;
             }
         }
+
+        // if (bestNode.isFinished) {
+        //     System.out.println("bestNode.isFinished");
+        //     System.out.print(root);
+        // }
+
         updateRoot(bestNode);
         return bestNode.currMove;
     }

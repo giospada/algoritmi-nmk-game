@@ -145,6 +145,7 @@ public class Board {
 
             FC.remove(oldc);
             MC.add(newc);
+            this.togglePlayer();
 
             if (isWinningCell(i, j))
                 gameState = B[i][j] == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
@@ -167,6 +168,7 @@ public class Board {
             MNKCell oldc = MC.removeLast();
             MNKCell newc = new MNKCell(oldc.i, oldc.j, MNKCellState.FREE);
             B[oldc.i][oldc.j] = MNKCellState.FREE;
+            this.togglePlayer();
 
             FC.add(newc);
             gameState = MNKGameState.OPEN;
