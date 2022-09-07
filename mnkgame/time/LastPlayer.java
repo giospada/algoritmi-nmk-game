@@ -120,8 +120,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         for (int i = 0; i < len; i++) {
             HeuristicCell currCell = B.getGreatKCell(i);
             gameState = B.markCell(currCell.i, currCell.j);
-
             int minPlayerValue = minPlayer(1, alpha, beta);
+            B.unmarkCell();
 
             if (minPlayerValue > v) {
                 v = minPlayerValue;
