@@ -4,8 +4,6 @@ import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
-// X X E -> 1 + 2 (per le due X) | -> KINF - 1
-
 public class LastPlayer implements mnkgame.MNKPlayer {
     private Board B;
     private MNKGameState myWin;
@@ -40,7 +38,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     public int minPlayer(int depth, int alpha, int beta) {
         if (depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
             return B.getValue(yourState);  // todo get the heuristic value of this game state
-        }else if(gameState == myWin ){
+        }else if(gameState == myWin){
             return KINF - 1;
         } else if (gameState == yourWin) {
             return -KINF + 1;
@@ -86,7 +84,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
         
         for (int i = 0; i < len; i++) {
-            gameState = B.markCell(B.getGreatKCell(i).i, B.getGreatKCell(i).j);
+            gameState = B.markCell(B.getGreatKCell(i));
             int minPlayerValue = minPlayer(depth + 1, alpha, beta);
             B.unmarkCell();
 
@@ -122,6 +120,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             gameState = B.markCell(currCell.i, currCell.j);
             int minPlayerValue = minPlayer(1, alpha, beta);
             B.unmarkCell();
+
+            System.out.println("cella: " + currCell.i + " " + currCell.j + " valore: " + minPlayerValue);
 
             if (minPlayerValue > v) {
                 v = minPlayerValue;
