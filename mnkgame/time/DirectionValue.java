@@ -6,6 +6,10 @@ public class DirectionValue {
     public int center;  // numero minimo di celle per vincere per l'intera direzione
     public int numSliding;  // numero di sliding windows validi
     public int numtwos;  // numero di sliding windows a cui mancano 2 per finire (uno sicuramente è al centro)
+    public int numones;
+    public static final int DOUBLEPLAY_MULT = 100;
+    public static final int WIN_MULT = 100000;
+    // anche per l'uno
 
     // usando il mics, il numero di sliding windows buone, + numero di celle amiche
     private int value;
@@ -26,10 +30,17 @@ public class DirectionValue {
     public void computeValue(int K) {
         value = numSliding;
         if (left >= 0) 
-            value += K - left;
+            value += K - left; // ??? moltiplicatore per sliding window per 1 e per 2
 
         if (right >= 0)
             value += K - right;
+
+        if (numones > 0) {
+            value *= WIN_MULT;
+        } else if (isInLineDoublePlay()) {
+            value *= DOUBLEPLAY_MULT;
+        }
+
     }
 
     public int getValue() {
@@ -40,16 +51,20 @@ public class DirectionValue {
         left = same;
         right = same;
         center = Integer.MAX_VALUE;
+        value = 0;
         numSliding = 0;
         numtwos = 0;
+        numones = 0;
     }
 
     public void setInvalidDirectionValue() {
         this.left = -1;
         this.right = -1;
         this.numSliding = 0;
-        this.numtwos = 0;
         this.center = -1;
+        this.value = 0;
+        this.numones = 0;
+        this.numtwos = 0;
     }
 
     /**

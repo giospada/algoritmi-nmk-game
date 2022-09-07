@@ -255,8 +255,10 @@ public class Board {
         }
         if (right == K) {  // raggiunta la grandezza per la prima sliding window
             dirValue.numSliding++;
-            if (numberOfOwnCells >= K - 2) {
+            if (numberOfOwnCells == K - 2) {
                 dirValue.numtwos++;
+            } else if (numberOfOwnCells == K - 1) {
+                dirValue.numones++;
             }
 
             // set first possible value for the center
@@ -296,8 +298,10 @@ public class Board {
                 }
 
                 dirValue.numSliding++;
-                if (numberOfOwnCells >= K - 2) {
+                if (numberOfOwnCells == K - 2) {
                     dirValue.numtwos++;
+                } else if (numberOfOwnCells == K - 1) {
+                    dirValue.numones++;
                 }
             }
             left++;
@@ -307,13 +311,19 @@ public class Board {
         dirValue.computeValue(this.K);
     }
     
+    public HeuristicCell getIthCell(int i) {
+        return allCells[i];
+    }
+
     public int getValue(MNKCellState state) {
-        return sumAllyHeuristic + sumEnemyHeuristic;  // proviamo così e vedo cosa succede
-        // if (state == allyPlayer) {
-        //     return sumAllyHeuristic - sumEnemyHeuristic;
-        // } else {
-        //     return sumEnemyHeuristic - sumAllyHeuristic;
-        // }
+        // return sumAllyHeuristic + sumEnemyHeuristic;  
+        // proviamo così e vedo cosa succede
+
+        if (state == allyPlayer) {
+            return sumAllyHeuristic - sumEnemyHeuristic;
+        } else {
+            return sumEnemyHeuristic - sumAllyHeuristic;
+        }
     }
 
     public void computeCellValue(int i, int j) {
@@ -419,6 +429,16 @@ public class Board {
         System.out.println();
     }
 
+    public void printHeuristics() {
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                System.out.print(B[i][j].getValue() + " \t");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
     private int getHorizontalAdder(int dirCode) {
         return dirCode == 0 ? 1 : dirCode == 1 ? 0 : dirCode == 2 ? 1 : 1;
     }
@@ -435,7 +455,6 @@ public class Board {
     public MNKGameState gameState() {
         return gameState;
     }
-
     boolean isValidCell(int i, int j) {
         return i >= 0 && i < M && j >= 0 && j < N;
     }

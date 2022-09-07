@@ -32,8 +32,12 @@ class HeuristicCell implements Comparable<HeuristicCell> {
         state = MNKCellState.FREE;
     }
     
+    public int getValue() {
+        return allyValue.getValue() + enemyValue.getValue();
+    }
+
     public int compareTo(HeuristicCell other){
-        return - allyValue.getValue() - enemyValue.getValue() + other.allyValue.getValue() + other.enemyValue.getValue();
+        return other.getValue() - this.getValue();
         // TODO!
         // if (allyValue.equals(other.allyValue)) {
         //     return allyValue.compareTo(other.allyValue);

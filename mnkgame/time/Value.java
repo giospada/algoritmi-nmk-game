@@ -26,9 +26,28 @@ public class Value {
 
     public int getValue() {
         int value = 0;
+        int numTwo = 0;
         for (int i = 0; i < 4; i++) {
-            value += directions[i].getValue();
+            int currValue = directions[i].getValue();
+
+            // se è maggiore significa che ho avuto una double play inline
+            // oppure la win a singola mossa, quindi ritorno subito questo come il valore migliroe
+            // della cella.
+            if (currValue >= DirectionValue.DOUBLEPLAY_MULT) {
+                return currValue;
+            }
+
+            if (directions[i].bestWin() == 2) {
+                numTwo++;
+            }
+
+            if (numTwo >= 2) {
+                return 4 * DirectionValue.DOUBLEPLAY_MULT;  // un valore a caso che rappresenta una doppia win
+            }
+
+            value += currValue;
         }
+
         return value;
     }
 
@@ -41,13 +60,17 @@ public class Value {
      * 2. Ho una combo in due direzioni differenti.
      */
     public boolean isDoublePlay() {
+        int numTwo = 0;
         for (int i = 0; i < 4; i++) {
             if (directions[i].isInLineDoublePlay()) return true;
-            if (directions[i].bestWin() != 2) continue;
-            for (int j = i + 1; j < 4; j++) {
-                if (directions[j].bestWin() == 2) return true;
+
+            if (directions[i].bestWin() == 2) {
+                numTwo++;
             }
+
+            if (numTwo >= 2) return true;
         }
+
         return false;
     }
 

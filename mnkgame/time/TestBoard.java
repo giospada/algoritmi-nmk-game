@@ -5,6 +5,9 @@ import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -102,6 +105,16 @@ public class TestBoard {
 
         MNKGameState state = B.markCell(2, 2);
         assert state == MNKGameState.WINP1;
+    }
+
+    @Test
+    @DisplayName("Correctly updates the center")
+    public void testCellValueAfterCenterMoves() {
+        Board B = new Board(3, 3, 3, MNKCellState.P1);
+        B.markCell(2, 0, true);
+        B.markCell(2, 2, true);
+        Value value = B.getCellValue(2, 1, MNKCellState.P1);
+        assert value.directions[0].bestWin() == 1;
     }
 
     @Test
