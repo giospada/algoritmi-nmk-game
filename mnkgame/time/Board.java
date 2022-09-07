@@ -75,7 +75,7 @@ public class Board {
 
         allyPlayer = playerCode;
         enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-        currentPlayer = playerCode == MNKCellState.P1 ? 0 : 1;
+        currentPlayer = 0;
         for(int i = 0; i < M; i++) {
             for(int j = 0; j < N; j++) {
                 B[i][j] = new HeuristicCell(i, j, i * N + j);
