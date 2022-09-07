@@ -407,15 +407,74 @@ public class TestBoard {
     @DisplayName("tests for all cells and sorted cells")
     class AllCells {
         @Test
-        @DisplayName("test if correctly if a used move is not present in sortedCells")
+        @DisplayName("test if a used move is not present in sortedCells")
         public void TestMoveIsUsed() {
             Board B = new Board(3, 3, 3, MNKCellState.P1);
             B.markCell(0, 0);
+
+            for (int i = 0; i < B.freeCellsCount; i++) {
+                HeuristicCell cell = B.getIthCell(i);
+                assert cell.i != 0 || cell.j != 0;
+            }
+
             for (int i = 0; i < B.freeCellsCount; i++) {
                 HeuristicCell cell = B.getGreatKCell(i);
-                assert cell.i != 0 && cell.j != 0;
+                assert cell.i != 0 || cell.j != 0;
             }
-            
+        }
+
+        @Test
+        @DisplayName("unmarked move is present in sortedCells and allcells")
+        public void TestMoveIsUnmarked() {
+            Board B = new Board(3, 3, 3, MNKCellState.P1);
+            B.markCell(0, 0);
+            B.unmarkCell();
+
+            boolean isPresentInAllCells = false;
+            boolean isPresentInSortedCells = false;
+
+            for (int i = 0; i < B.freeCellsCount; i++) {
+                HeuristicCell cell = B.getIthCell(i);
+                if (cell.i == 0 && cell.j == 0) {
+                    isPresentInAllCells = true;
+                }
+            }
+
+            for (int i = 0; i < B.freeCellsCount; i++) {
+                HeuristicCell cell = B.getGreatKCell(i);
+                if (cell.i == 0 && cell.j == 0) {
+                    isPresentInSortedCells = true;
+                }                
+            }
+
+            assert isPresentInAllCells;
+            assert isPresentInSortedCells;
+        }
+
+        @Test
+        @DisplayName("test if all cells are present in allcells, and sortedcells")
+        public void allCellsPresentOnInit() {
+            Board B = new Board(3, 3, 3, MNKCellState.P1);
+
+            boolean board1[][] = new boolean[3][3];
+            boolean board2[][] = new boolean[3][3];
+
+            for (int i = 0; i < B.freeCellsCount; i++) {
+                HeuristicCell cell = B.getIthCell(i);
+                board1[cell.i][cell.j] = true;
+            }
+
+            for (int i = 0; i < B.freeCellsCount; i++) {
+                HeuristicCell cell = B.getGreatKCell(i);
+                board2[cell.i][cell.j] = true;
+            }
+
+            for (int i = 0; i < 3; i++) { 
+                for (int j = 0; j < 3; j++) { 
+                    assert board1[i][j] == true;
+                    assert board2[i][j] == true;
+                }
+            }
         }
     }
 }
