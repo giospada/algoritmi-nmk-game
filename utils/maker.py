@@ -19,8 +19,8 @@ def main():
     parser.add_argument('-r', '--rounds', help='il numero di ripetizioni a partite', type=int, default=1)
     parser.add_argument('-v', '--verbose', help='verbose', action='store_true')
     parser.add_argument('--human', help='human player', action='store_true')
-    parser.add_argument('-p1', '--player1', help='player 1', default='qrandom')
-    parser.add_argument('-p2', '--player2', help='player 2', default='qrandom')
+    parser.add_argument('-p1', '--player1', help='player 1', default=None)
+    parser.add_argument('-p2', '--player2', help='player 2', default=None)
     parser.add_argument('-a', '--all', help='simulate prof. test', action='store_true')
     args = parser.parse_args()
 
@@ -121,7 +121,7 @@ def make_command(args):
     player1 = name_to_classname(args.player1)
     player2 = name_to_classname(args.player2)
     if args.human:
-        return f"java -cp build mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} {player1}"
+        return f"java -cp build mnkgame.MNKGame {args.board[0]} {args.board[1]} {args.board[2]} {player1 if player1 is not None else ''} {player2 if player2 is not None else ''}"
     else:
         verbose = "-v" if args.verbose else ""
         return f"java -cp build mnkgame.MNKPlayerTester {args.board[0]} {args.board[1]} {args.board[2]} {player1} {player2} -r {args.rounds} -t {args.time} {verbose}"
