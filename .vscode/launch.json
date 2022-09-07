@@ -4,16 +4,38 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch Main tester",
+            "name": "Launch test",
+            "request": "launch",
+            "mainClass": "test",
+            "projectName": "mnk-game_30ce19ed"
+        },
+        {
+            "type": "java",
+            "name": "QRandom vs LastPlayer 100 round",
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
-            "args": "3 3 3  mnkgame.QuasiRandomPlayer mnkgame.montecarlo.Player -r 1 -t 3 -v"
-        }, {
+            "args": "3 3 3 mnkgame.QuasiRandomPlayer  mnkgame.time.LastPlayer  -r 100 -t 1000000 -v"
+        },
+        {
+            "type": "java",
+            "name": "DebugPlayer vs LastPlayer",
+            "request": "launch",
+            "mainClass": "mnkgame.MNKPlayerTester",
+            "args": "3 3 3 mnkgame.debugPlayer.DebugPlayer   mnkgame.time.LastPlayer  -r 1 -t 1000000 -v"
+        },
+        {
+            "type": "java",
+            "name": "LastPlayer vs DebugPlayer",
+            "request": "launch",
+            "mainClass": "mnkgame.MNKPlayerTester",
+            "args": "3 3 3  mnkgame.time.LastPlayer  mnkgame.debugPlayer.DebugPlayer  -r 1 -t 1000000 -v"
+        },
+        {
             "type": "java",
             "name": "Launch Main human",
             "request": "launch",
             "mainClass": "mnkgame.MNKGame",
             "args": "3 3 3 mnkgame.montecarlo.Player"
-        },
+        }
     ]
 }
