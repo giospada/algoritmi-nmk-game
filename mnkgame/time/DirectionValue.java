@@ -1,25 +1,34 @@
 package mnkgame.time;
 
 public class DirectionValue {
-    public int left;  // numero minimo di celle per vincere andando solo a sinistra
-    public int right;  // numero minimo di celle per vincere andando solo a destra
-    public int center;  // numero minimo di celle per vincere per l'intera direzione
-    public int numSliding;  // numero di sliding windows validi
-    public int numtwos;  // numero di sliding windows a cui mancano 2 per finire (uno sicuramente è al centro)
-    public int numones;
-    public static final int DOUBLEPLAY_MULT = 100;
-    public static final int WIN_MULT = 100000;
+    // numero minimo di celle per vincere andando solo a sinistra 
+    // (guarda sempre a distanza K-1, se in quella distanza c'è una cella nemica viene settato a -1)
+    //public int left;  
+    
+    // numero minimo di celle per vincere andando solo a destra (uguale a left ma nel'altra direzione)
+    //public int right;  
+
+    // numero minimo di celle per vincere per l'intera direzione
+    // center rappresenta anche il numero di da completare nella migliore sliding window
+    public int center;  
+
+    // numero di sliding windows validi
+    public int numSliding;  
+    
+    // numero di sliding windows massimi 
+    public int numMaximumSliding;  
+
+    // numero di mie celle 
+    public int numMyCells;
+    public static final int DOUBLEPLAY_VAL = 100;
+    public static final int WIN_VAL = 100000;
     // anche per l'uno
 
     // usando il mics, il numero di sliding windows buone, + numero di celle amiche
     private int value;
     
     DirectionValue() {
-        this(0);
-    }
-
-    DirectionValue(int same) {
-        resetTo(same);
+        reset();
     }
 
     /**
@@ -27,67 +36,49 @@ public class DirectionValue {
      * heuristics.
      * @param K
      */
-    public void computeValue(int K) {
-        value = numSliding;
-        if (left >= 0) 
-            value += K - left; // ??? moltiplicatore per sliding window per 1 e per 2
+    public void updateDirectionValue() {
+        value = numSliding + numMyCells;
 
-        if (right >= 0)
-            value += K - right;
-
-        if (numones > 0) {
-            value *= WIN_MULT;
+        if (center == 1) {
+            value = WIN_VAL;
         } else if (isInLineDoublePlay()) {
-            value *= DOUBLEPLAY_MULT;
+            value = DOUBLEPLAY_VAL;
         }
-
     }
 
-    public int getValue() {
+    public int getDirectionValue() {
         return value;
     }
 
-    public void resetTo(int same) {
-        left = same;
-        right = same;
-        center = Integer.MAX_VALUE;
-        value = 0;
-        numSliding = 0;
-        numtwos = 0;
-        numones = 0;
+    public void reset() {
+        this.center = Integer.MAX_VALUE;
+        this.value = 0;
+        this.numSliding = 0;
+        this.numMaximumSliding = 0;
+        this.numMyCells = 0;
     }
 
     public void setInvalidDirectionValue() {
-        this.left = -1;
-        this.right = -1;
-        this.numSliding = 0;
+        //this.left = -1;
+        //this.right = -1;
         this.center = -1;
-        this.value = 0;
-        this.numones = 0;
-        this.numtwos = 0;
+        this.numSliding = 0;
+        this.numMaximumSliding = 0;
+        this.numMyCells = 0;
     }
 
     /**
      * @return if it's possible to win (i.e. if there is at least one way to win in this direction)
      */
-    public boolean isPossible() {
+    public boolean canWin() {
         return center >= 0;  // NOTA: se left o right >= 0, allora center >= 0
     }
 
     /**
      * @return the minimum number of steps to win in this direction, -1 if you can't win
      */
-    public int bestWin() {
-        if (left == -1 && right == -1) {
-            return center;
-        // da ora so che center >= 0;
-        } else if (left == -1) {
-            return Math.min(right, center);
-        } else if (right == -1) {
-            return Math.min(left, center);
-        } else {
-            return Math.min(Math.min(left, right), center);
-        }
+    public int minStepsToWin() {
+        return center;
     }
 
     /**
@@ -95,11 +86,11 @@ public class DirectionValue {
      * This is true if at least two sliding windows have need two moves to win
      */
     public boolean isInLineDoublePlay() {
-        return numtwos >= 2;
+        return numMaximumSliding >= 2 && center == 2;
     }
     
     @Override
     public String toString() {
-        return String.format("(%d, %d, %d)", left, center, right);
+        return String.format("(center: %d, myCell:%d, numSlinding: %d, maxNumSliding: %d)", center, numMyCells, numSliding, numMaximumSliding);
     }
 }

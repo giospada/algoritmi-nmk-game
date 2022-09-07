@@ -1,15 +1,11 @@
 package mnkgame.time;
 
 import mnkgame.MNKCellState;
-import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import org.junit.experimental.categories.Category;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 
 public class TestBoard {
@@ -29,7 +25,9 @@ public class TestBoard {
     public void testMarkUnmarkMultiple() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(0, 0);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(1, 1);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(2, 2);
         assert B.getState(0, 0) == MNKCellState.P1;
         assert B.getState(1, 1) == MNKCellState.P1;
@@ -47,7 +45,9 @@ public class TestBoard {
     public void testBoardEndState() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(0, 0);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(1, 1);
+        B.setPlayer(MNKCellState.P1);
         MNKGameState state = B.markCell(2, 2);
         assert state == MNKGameState.WINP1;
         B.unmarkCell();
@@ -59,50 +59,53 @@ public class TestBoard {
     public void testCellValue() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         Value value = B.getCellValue(0, 0, MNKCellState.P1);
-
-        assert value.directions[0].bestWin() == 3;
-        assert value.directions[1].bestWin() == 3;
-        assert value.directions[2].bestWin() == 3;
-        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+        System.out.println(value.directions[0].minStepsToWin());
+        System.out.flush();
+        assert value.directions[0].minStepsToWin() == 3;
+        assert value.directions[1].minStepsToWin() == 3;
+        assert value.directions[2].minStepsToWin() == 3;
+        assert value.directions[3].minStepsToWin() == -1;  // guardando l'angolo non posso vincere
 
         value = B.getCellValue(1, 1, MNKCellState.P2);
         for (int i = 0; i < 4; i++)
-            assert value.directions[i].bestWin() == 3;
+            assert value.directions[i].minStepsToWin() == 3;
     }
     
     @Test
-    @DisplayName("bestwin should update when player moves at center")
+    @DisplayName("minStepsToWin should update when player moves at center")
     public void testCellValueAfterMove() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(1, 1);
         B.updateCellValue(1, 1);
         Value value = B.getCellValue(0, 0, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 3;
-        assert value.directions[1].bestWin() == 3;
-        assert value.directions[2].bestWin() == 2;
-        assert value.directions[3].bestWin() == -1;
+        assert value.directions[0].minStepsToWin() == 3;
+        assert value.directions[1].minStepsToWin() == 3;
+        assert value.directions[2].minStepsToWin() == 2;
+        assert value.directions[3].minStepsToWin() == -1;
     }
 
     @Test
-    @DisplayName("bestwin should update when player moves in multiple places")
+    @DisplayName("minStepsToWin should update when player moves in multiple places")
     public void testCellValueAfterMultipleMoves() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
         B.markCell(0, 0);
         B.updateCellValue(0, 0);
         Value value = B.getCellValue(1, 1, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 3;
-        assert value.directions[1].bestWin() == 3;
-        assert value.directions[2].bestWin() == 2;
-        assert value.directions[3].bestWin() == 3;  // guardando l'angolo non posso vincere
+        assert value.directions[0].minStepsToWin() == 3;
+        assert value.directions[1].minStepsToWin() == 3;
+        assert value.directions[2].minStepsToWin() == 2;
+        assert value.directions[3].minStepsToWin() == 3;  // guardando l'angolo non posso vincere
 
+        B.setPlayer(MNKCellState.P1);
         B.markCell(1, 1);
         B.updateCellValue(1, 1);
         value = B.getCellValue(2, 2, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 3;
-        assert value.directions[1].bestWin() == 3;
-        assert value.directions[2].bestWin() == 1;
-        assert value.directions[3].bestWin() == -1;  // guardando l'angolo non posso vincere
+        assert value.directions[0].minStepsToWin() == 3;
+        assert value.directions[1].minStepsToWin() == 3;
+        assert value.directions[2].minStepsToWin() == 1;
+        assert value.directions[3].minStepsToWin() == -1;  // guardando l'angolo non posso vincere
 
+        B.setPlayer(MNKCellState.P1);
         MNKGameState state = B.markCell(2, 2);
         assert state == MNKGameState.WINP1;
     }
@@ -111,10 +114,11 @@ public class TestBoard {
     @DisplayName("Correctly updates the center")
     public void testCellValueAfterCenterMoves() {
         Board B = new Board(3, 3, 3, MNKCellState.P1);
-        B.markCell(2, 0, true);
-        B.markCell(2, 2, true);
+        B.markCell(2, 0);
+        B.setPlayer(MNKCellState.P1);
+        B.markCell(2, 2);
         Value value = B.getCellValue(2, 1, MNKCellState.P1);
-        assert value.directions[0].bestWin() == 1;
+        assert value.directions[0].minStepsToWin() == 1;
     }
 
     @Test
@@ -129,16 +133,18 @@ public class TestBoard {
         // ...
         Board B = new Board(10, 10, 5, MNKCellState.P1);
         B.markCell(1, 1);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(2, 2);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(3, 3);
         B.updateCellValue(4, 4);
         Value value = B.getCellValue(4, 4, MNKCellState.P1);
-        assert value.directions[2].bestWin() == 2;
+        assert value.directions[2].minStepsToWin() == 2;
         assert value.directions[2].isInLineDoublePlay();
         assert value.isDoublePlay();
 
         value = B.getCellValue(9, 9, MNKCellState.P1);
-        assert value.directions[2].bestWin() == 5;
+        assert value.directions[2].minStepsToWin() == 5;
         assert !value.isDoublePlay();
     }
 
@@ -154,14 +160,16 @@ public class TestBoard {
         // ...
         Board B = new Board(10, 10, 5, MNKCellState.P1);
         B.markCell(1, 1);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(2, 2);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(3, 3);
 
         B.setPlayer(MNKCellState.P2);
         B.markCell(0, 0);
         B.updateCellValue(4, 4);
         Value value = B.getCellValue(4, 4, MNKCellState.P1);
-        assert value.directions[2].bestWin() == 2;
+        assert value.directions[2].minStepsToWin() == 2;
         assert !value.directions[2].isInLineDoublePlay();
         assert !value.isDoublePlay();
     }
@@ -186,11 +194,13 @@ public class TestBoard {
         // ...
         Board B = new Board(10, 10, 5, MNKCellState.P1);
         B.markCell(1, 1);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(2, 2);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(4, 4);
         B.updateCellValue(3, 3);
         Value value = B.getCellValue(3, 3, MNKCellState.P1);
-        assert value.directions[2].bestWin() == 2;
+        assert value.directions[2].minStepsToWin() == 2;
         assert !value.directions[0].isInLineDoublePlay();
         assert value.directions[2].isInLineDoublePlay();
         assert value.isDoublePlay();  // buggato
@@ -202,10 +212,15 @@ public class TestBoard {
     public void testMultiLineDoubleWin() {
         Board B = new Board(10, 10, 5, MNKCellState.P1);
         B.markCell(1, 1);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(2, 2);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(3, 3);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(4, 5);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(4, 6);
+        B.setPlayer(MNKCellState.P1);
         B.markCell(4, 7);
         B.updateCellValue(4, 4);
         Value value = B.getCellValue(4, 4, MNKCellState.P1);
@@ -352,34 +367,37 @@ public class TestBoard {
     @Category(MicsHeuristicTest.class)
     @DisplayName("test if correctly counts for own pieces and obstacles")
     public void countOwnPieces() {
-        Board board = new Board(5, 5, 3, MNKCellState.P1);
-        board.setCellState(2, 2, MNKCellState.P1);
-        board.computeCellValue(1, 1);
-        assert board.getHeuristic(1, 1) == (7 + 1);  // + 1 per la cella amica
+        Board board = new Board(5, 5, 4, MNKCellState.P1);
+        board.setPlayer(MNKCellState.P1);
+        board.markCell(2, 2);
+        assert board.getHeuristic(1, 1) == (6 + 1);  // + 1 per la cella amica
 
-        board.setCellState(3, 3, MNKCellState.P2);
-        board.computeCellValue(1, 1);
-        System.out.println(board.getHeuristic(1, 1));
-        System.out.flush();
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(4, 4);  
         assert board.getHeuristic(1, 1) == (6);
-        // con la nuova versione non vado a contare le celle del middle
-        // seppur mi valevano, quindi questa implementazione non è strettamente
-        // equivalente al mics per questo punto.
-        // assert board.getHeuristic(1, 1) == (6 + 1);  
+
 
         // avvolgo tutta la cella 1 1
-        board.setCellState(0, 0, MNKCellState.P2);
-        board.setCellState(1, 0, MNKCellState.P2);
-        board.setCellState(2, 0, MNKCellState.P2);
-        board.setCellState(0, 1, MNKCellState.P2);
-        board.setCellState(1, 2, MNKCellState.P2);
-        board.setCellState(2, 1, MNKCellState.P2);
-        board.setCellState(0, 2, MNKCellState.P2);
-        board.computeCellValue(1, 1);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(0, 0);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(1, 0);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(2, 0);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(0, 1);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(1, 2);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(2, 1);
+        board.setPlayer(MNKCellState.P2);
+        board.markCell(0, 2);
         assert board.getHeuristic(1, 1) == 0; // check che non conta la cella amica
 
         board.setCellState(3, 3, MNKCellState.FREE);
-        board.computeCellValue(1, 1);
+        board.setCellState(4, 4, MNKCellState.FREE);
+
+        board.updateCellValue(1, 1);
         int value = board.getHeuristic(1, 1);
         assert value == 1 + 1; // 1 per le celle libere + 1 per la cella amica in (2, 2)
     }

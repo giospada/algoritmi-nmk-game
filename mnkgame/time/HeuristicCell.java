@@ -17,7 +17,7 @@ import mnkgame.MNKCellState;
 // non va?
 class HeuristicCell implements Comparable<HeuristicCell> {
     public final int i;
-    public final int j; 
+    public final int j;
     public int index;  // l'index all'interno dell'array della board
     public Value allyValue;
     public Value enemyValue;
@@ -46,55 +46,8 @@ class HeuristicCell implements Comparable<HeuristicCell> {
         // }
         // return heuristicValue - other.heuristicValue;  // ordine crescente
     }
-    
-    MNKCell toMNKCell() {
-        return new MNKCell(i, j);
+
+    public MNKCell toMNKCell() {
+        return new MNKCell(i, j, state);
     }
-    // VERSIONE DI GIO
-    // private final int i;
-    // private final int j; 
-    // public int index;  // l'index all'interno dell'array della board
-    // public int heuristicValue;
-    // public MNKCellState state;
-    // // le direzioni sono
-    // // 0 - sopra
-    // // 1 - sotto
-    // // 2 - destra
-    // // 3 - sinistra
-    // // 4 - alto e sinistra
-    // // 5 - basso e destra
-    // // 6 - alto e destra
-    // // 7 - basso e sinistra
-    
-    // // distanza massima prima di trovare una cella dell'altro segno max K
-    // public int depthDirection[];
-
-    // // numero di celle segnare interne alla depthDirection
-    // public int crossedCell[];
-
-    // // celle vicini segnate dallo stesso player
-    // public int adjCell[];
-
-    
-
-    // public HeuristicCell(int i, int j, int index) {
-    //     this.i = i;
-    //     this.j = j;
-    //     this.index = index;
-    //     depthDirection = new int[8];
-    //     numberCrossedCell = new int[8];
-    //     state = MNKCellState.FREE;
-    //     updateHeuristicValue();
-    // }
-
-    // void updateHeuristicValue(){
-    //     for(int i = 0; i < 4; i++){
-    //         //caso vince
-    //         if(adjCell[i] + adjCell[i+1] >= K){
-    //             heuristicValue = Integer.MAX_VALUE;
-    //             return;
-    //         }
-
-    //     }
-    // }
 }
