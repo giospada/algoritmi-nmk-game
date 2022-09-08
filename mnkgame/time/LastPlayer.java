@@ -11,11 +11,18 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private MNKCellState yourState;
     private MNKGameState yourWin;
     private MNKGameState gameState;
-    private final int BRANCHING_FACTOR = 9;
-    private final int DEPTH_LIMIT = 8;
     private final int KINF = Integer.MAX_VALUE;
-    private final int TIMEOUT ;
-    private int timeStart ;
+
+    private int BRANCHING_FACTOR = 9;
+    private int DEPTH_LIMIT = 8;
+    private int maxNumberOfMoves;
+    
+    // mosse massime per il tree attuale
+    private int maxMovesCurrentTree;
+    
+    // mosse del tree attuale
+    private int movesCurrentTree;
+
 
     private final boolean DEBUG = true;
 
@@ -24,30 +31,26 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private boolean firstMove;
     public LastPlayer() {}
 
-    
-    private boolean hasTimeRunOut() {
-        return (System.currentTimeMillis() - timeStart) / 1000.0 > TIMEOUT * (99.0 / 100.0);
-    }
-
-
-
-
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
-        timeStart = System.currentTimeMillis();
-        TIMEOUT= timeout_in_secs;
-
-        myState = first ? MNKCellState.P1 : MNKCellState.P2;
-        yourState = first ? MNKCellState.P2 : MNKCellState.P1;
-        B = new Board(M, N, K, myState);
-        myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
-        yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+        long timeStart = System.currentTimeMillis();
+        this.myState = first ? MNKCellState.P1 : MNKCellState.P2;
+        this.yourState = first ? MNKCellState.P2 : MNKCellState.P1;
+        this.B = new Board(M, N, K, myState);
+        this.myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
+        this.yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 
         firstMove = true;
         this.M = M;
         this.N = N;
 
-        // TODO: calcola la profondità massima esplorabile, con numero nodi esplorabili dal 
-        // computer del prof e così calcola quanto deep può andare
+        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs , B);
+        timing.findBestTime();
+        // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
+        //BRANCHING_FACTOR = timing.getBranchingFactor();
+        //DEPTH_LIMIT = timing.getDephtLimit();
+        this.maxNumberOfMoves = timing.getMoves();
+        this.maxMovesCurrentTree = 0;
+        this.movesCurrentTree = 0;
     }
 
     public int minPlayer(int depth, int alpha, int beta) {
@@ -67,10 +70,15 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
         
         for (int i = 0; i < len; i++) {
+            if (movesCurrentTree >= maxMovesCurrentTree) {
+                break;
+            }
+
             gameState = B.markCell(B.getGreatKCell(i));
             int maxPlayerValue = maxPlayer(depth + 1, alpha, beta);
             B.unmarkCell();
-
+            movesCurrentTree++;
+            
             if (maxPlayerValue < v) {
                 v = maxPlayerValue;
                 beta = Math.min(beta, v);
@@ -79,6 +87,10 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             // TODO: sarebbe buono provare a fare una ordering, sul principio della late move reduction.
             if (v <= alpha)
                 return v;
+        }
+        
+        if(v == KINF){
+            return B.getValue(myState);
         }
         return v;
     }
@@ -99,9 +111,16 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
         
         for (int i = 0; i < len; i++) {
+            if (movesCurrentTree >= maxMovesCurrentTree) {
+                break;
+            }
+
             gameState = B.markCell(B.getGreatKCell(i));
             int minPlayerValue = minPlayer(depth + 1, alpha, beta);
             B.unmarkCell();
+            
+            movesCurrentTree++;
+            
 
             if (minPlayerValue > v) {
                 v = minPlayerValue;
@@ -111,6 +130,11 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             if (v >= beta)
                 return v;
         }
+
+        if(v == -KINF) {
+            return B.getValue(myState);
+        }
+
         return v;
     }
 
@@ -129,21 +153,36 @@ public class LastPlayer implements mnkgame.MNKPlayer {
 
         // al primo livello valuto quasi tutto
         int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
+        maxMovesCurrentTree = maxNumberOfMoves / 4;
+        int toAddEachStep = (maxNumberOfMoves - maxMovesCurrentTree)/(len-1);
+
+        if (DEBUG) {
+            System.out.println("maxMovesCurrentTree: " + maxMovesCurrentTree);
+            System.out.println("toAddEachStep: " + toAddEachStep);
+        }
 
         for (int i = 0; i < len; i++) {
+            movesCurrentTree = 0;
             HeuristicCell currCell = B.getGreatKCell(i);
             gameState = B.markCell(currCell.i, currCell.j);
             int minPlayerValue = minPlayer(1, alpha, beta);
             B.unmarkCell();
 
-            if (DEBUG)
+            
+            if (DEBUG){
                 System.out.println("cella: " + currCell.i + " " + currCell.j + " valore: " + minPlayerValue);
+                System.out.format("usate %d mosse su %d\n", movesCurrentTree, maxMovesCurrentTree);
+            }
 
             if (minPlayerValue > v) {
                 v = minPlayerValue;
                 cell = currCell.toMNKCell();
                 alpha = Math.max(alpha, v);
             }
+
+            // quelli rimasti nell'iterazione precendente + numero da aggiungere ogni step
+            
+            maxMovesCurrentTree = (maxMovesCurrentTree - movesCurrentTree) + toAddEachStep;
         }
         return cell;
     }    
