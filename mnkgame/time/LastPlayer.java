@@ -3,6 +3,9 @@ package mnkgame.time;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
+import mnkgame.time.SmallBoard.Board;
+import mnkgame.time.SmallBoard.HeuristicCell;
+import mnkgame.time.SmallBoard.Value;
 
 public class LastPlayer implements mnkgame.MNKPlayer {
     private Board B;

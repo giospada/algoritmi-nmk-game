@@ -1,4 +1,4 @@
-package mnkgame.time;
+package mnkgame.time.SmallBoard;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -15,7 +15,7 @@ import mnkgame.MNKCellState;
 // si può fare questa cosa per ogni verso delle 4 direzioni possibili e credo sia semplice
 // se mmai ci metti anche un caso in cui serve per vincere uno in mezzo, e lo consideri separato
 // non va?
-class HeuristicCell implements Comparable<HeuristicCell> {
+public class HeuristicCell implements Comparable<HeuristicCell> {
     public final int i;
     public final int j;
     public int index;  // l'index all'interno dell'array della board

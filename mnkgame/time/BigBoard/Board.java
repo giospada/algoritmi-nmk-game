@@ -1,4 +1,4 @@
-package mnkgame.time;
+package mnkgame.time.BigBoard;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;

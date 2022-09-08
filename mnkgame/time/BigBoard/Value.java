@@ -1,4 +1,4 @@
-package mnkgame.time;
+package mnkgame.time.BigBoard;
 
 /**
  * Questa classe è un modo per rappresentare il valore di una cella

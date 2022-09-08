@@ -2,6 +2,8 @@ package mnkgame.time;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
+import mnkgame.time.SmallBoard.Board;
+import mnkgame.time.SmallBoard.HeuristicCell;
 
 /**
  * Questa classe è utilizzata per fare una stima della capacità di esecuzione del computer remoto

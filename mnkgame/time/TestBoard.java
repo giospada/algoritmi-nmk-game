@@ -2,6 +2,9 @@ package mnkgame.time;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
+import mnkgame.time.SmallBoard.Board;
+import mnkgame.time.SmallBoard.HeuristicCell;
+import mnkgame.time.SmallBoard.Value;
 
 import org.junit.jupiter.api.*;
 
