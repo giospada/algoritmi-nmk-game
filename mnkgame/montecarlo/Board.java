@@ -2,29 +2,46 @@ package mnkgame.montecarlo;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Arrays;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import mnkgame.MNKCell;
 
 public class Board {
     public final int M;
     public final int N;
     public final int K;
 
-    protected final MNKCellState[][] B;
-    protected final LinkedList<MNKCell> MC; // Marked Cells
-    protected final HashSet<MNKCell> FC; // Free Cells
+    /**
+     * Rappresentazione della board in 2D 
+     */
+    private final HeuristicCell[][] B;
+
+    /**
+     * tutte le celle in allCells minori di freeCellsCount
+     * devono soddisfare l'invariante che puntino al proprio index all'interno dell'array
+     * mentre tutte le celle mosse (quelle maggiori o uguali) devonon puntare all'index
+     * in cui devono tornare per ristabilire l'ordine
+     */
+    public final HeuristicCell[] allCells;
+    public int freeCellsCount;
+
+    /**
+     * Rappresenta una sottoparte sortata secondo la compareTo di
+     * Heuristic cells di tutte le celle
+     */
+    public final HeuristicCell[] sortedAllCells;
+    
 
     private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
-    protected int currentPlayer; // currentPlayer plays next move
-    protected MNKGameState gameState; // game state
+    private int currentPlayer; // currentPlayer plays next move
+    private MNKGameState gameState; // game state
 
-    protected MNKCellState ownerPlayer;
-    protected MNKCellState enemyPlayer;
-
+    private MNKCellState allyPlayer;  // alleato di sé stesso
+    private MNKCellState enemyPlayer;
+    
+    private int sumEnemyHeuristic;  // utilizzata per dare un valore alla configurazione della board
+    private int sumAllyHeuristic;
     /**
      * Create a board of size MxN and initialize the game parameters
      *
@@ -46,76 +63,61 @@ public class Board {
         this.N = N;
         this.K = K;
 
-        B = new MNKCellState[M][N];
-        ownerPlayer = playerCode;
+        sumAllyHeuristic = 0;
+        sumEnemyHeuristic = 0;
+
+        B = new HeuristicCell[M][N];
+        allCells = new HeuristicCell[M * N];
+        sortedAllCells = new HeuristicCell[M * N];
+        freeCellsCount = M * N;
+        
+
+        allyPlayer = playerCode;
         enemyPlayer = playerCode == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-        currentPlayer = playerCode == MNKCellState.P1 ? 0 : 1;
-
-        // large HashSet, so that it should never reallocate.
-        FC = new HashSet<MNKCell>(2 * M * N);
-        MC = new LinkedList<MNKCell>();
-
-        reset();
-    }
-
-    /**
-     * Resets the MNKBoard
-     */
-    public void reset() {
-        gameState = MNKGameState.OPEN;
-        initBoard();
-        initFreeCellList();
-        initMarkedCellList();
-    }
-
-    /**
-     * Returns the state of cell <code>i,j</code>
-     *
-     * @param i i-th row
-     * @param j j-th column
-     *
-     * @return State of the <code>i,j</code> cell (FREE,P1,P2)
-     * @throws IndexOutOfBoundsException If <code>i,j</code> are out of matrix bounds
-     */
-    public MNKCellState cellState(int i, int j) throws IndexOutOfBoundsException {
-        if (i < 0 || i >= M || j < 0 || j >= N)
-            throw new IndexOutOfBoundsException("Indexes " + i + "," + j + " are out of matrix bounds");
-        else
-            return B[i][j];
-    }
-
-    public void print() {
+        currentPlayer = 0;
+        for(int i = 0; i < M; i++) {
+            for(int j = 0; j < N; j++) {
+                B[i][j] = new HeuristicCell(i, j, i * N + j);
+                allCells[i*N + j] = B[i][j];
+                sortedAllCells[i*N + j] = B[i][j];
+            }
+        }
+        
+        // deve essere in for separato perché vuole prima avere una board inizializzata
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                if (B[i][j] == MNKCellState.P1)
-                    System.out.print("1 ");
-                else if (B[i][j] == MNKCellState.P2)
-                    System.out.print("2 ");
-                else
-                    System.out.print("0 ");
+                initCellValue(i, j);
             }
-            System.out.println();
         }
-        System.out.println();
-    }
-    /**
-     * Returns the current state of the game.
-     *
-     * @return MNKGameState enumeration constant (OPEN,WINP1,WINP2,DRAW)
-     */
-    public MNKGameState gameState() {
-        return gameState;
+        updateCellDataStruct();  // sort sortedall cells
+
+        gameState = MNKGameState.OPEN;
     }
 
+    // TODO: Migliorarlo 
     /**
-     * Returns the id of the player allowed to play next move.
-     *
-     * @return 0 (first player) or 1 (second player)
+     * Crea una copia delle celle disponibili e le sorta
      */
-    public int currentPlayer() {
-        return currentPlayer;
+    private void updateCellDataStruct() {
+        for (int i = 0; i < freeCellsCount; i++) {
+            sortedAllCells[i] = allCells[i];
+        }
+        Arrays.sort(sortedAllCells, 0, freeCellsCount);
     }
 
+    public HeuristicCell getGreatKCell(int k) {
+        if (k < 0 || k >= freeCellsCount)
+            return null;
+        // TODO: migliorare questo perché non vorremmo che creasse semppre un nuovo oggetto
+        // e lo distruggesse sul momento.
+        return sortedAllCells[k];
+    }
+
+    public MNKGameState markCell(HeuristicCell cell){
+        return markCell(cell.i, cell.j);
+    }
+    
+    
     /**
      * Marks the selected cell for the current player
      *
@@ -127,33 +129,41 @@ public class Board {
      * @throws IndexOutOfBoundsException If <code>i,j</code> are out of matrix bounds
      * @throws IllegalStateException If the game already ended or if <code>i,j</code> is not a free cell
      */
-    public MNKGameState markCell(MNKCell cell) throws IndexOutOfBoundsException, IllegalStateException {
-        return markCell(cell.i, cell.j);
-    }
     public MNKGameState markCell(int i, int j) throws IndexOutOfBoundsException, IllegalStateException {
-        if (gameState != MNKGameState.OPEN) {
-            throw new IllegalStateException("Game ended!");
-        } else if (i < 0 || i >= M || j < 0 || j >= N) {
-            throw new IndexOutOfBoundsException("Indexes " + i + "," + j + " out of matrix bounds");
-        } else if (B[i][j] != MNKCellState.FREE) {
-            throw new IllegalStateException("Cell " + i + "," + j + " is not free");
-        } else {
-            MNKCell oldc = new MNKCell(i, j, B[i][j]);
-            MNKCell newc = new MNKCell(i, j, Player[currentPlayer]);
+        // checks non importanti ai fini algoritmici
+        if (gameState != MNKGameState.OPEN) { throw new IllegalStateException("TimeBoard: Game ended!"); } else if (i < 0 || i >= M || j < 0 || j >= N) { throw new IndexOutOfBoundsException("TimeBoard:Indexes " + i + "," + j + " out of matrix bounds"); } else if (B[i][j].state != MNKCellState.FREE) { throw new IllegalStateException("TimeBoard:Cell " + i + "," + j + " is not free"); } B[i][j].state = Player[currentPlayer];
 
-            B[i][j] = Player[currentPlayer];
 
-            FC.remove(oldc);
-            MC.add(newc);
-            this.togglePlayer();
+        // setta in modo che l'indice di quello in fondo da spostare sia coerente con l'invariante
+        allCells[freeCellsCount - 1].index = B[i][j].index;  
 
-            if (isWinningCell(i, j))
-                gameState = B[i][j] == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
-            else if (FC.isEmpty())
-                gameState = MNKGameState.DRAW;
+        swapAllCellsByIndex(B[i][j].index, freeCellsCount - 1);
+        freeCellsCount--;
 
-            return gameState;
+        // TODO: invece di descrivere lo stato draw, come celle libere non rimanenti
+        // si potrebbero usare il numero di sliding window che hanno ancora possibilità di vincere
+        // così permette di stabilire il draw molte mosse prima.
+        // Update game state
+        if (Player[currentPlayer] == allyPlayer && B[i][j].allyValue.hasOneLeft()) {
+            gameState = allyPlayer == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
+        } else if (Player[currentPlayer] == enemyPlayer && B[i][j].enemyValue.hasOneLeft()) {
+            gameState = allyPlayer == MNKCellState.P1 ? MNKGameState.WINP2 : MNKGameState.WINP1;
+        } else if (freeCellsCount == 0) { 
+            gameState = MNKGameState.DRAW;
         }
+
+
+        B[i][j].state = Player[currentPlayer];
+        // bisogna anche settare il valore invalido???
+        // lo spostiamo tutto in cell Value update
+        updateCellValue(i, j);
+        updateCellDataStruct();
+        // Arrays.sort()
+        // TODO: decidere come sortare le celle in modo da riprenderle in modo effettivo
+        
+        currentPlayer = 1 - currentPlayer;
+
+        return gameState;
     }
 
     /**
@@ -162,263 +172,385 @@ public class Board {
      * @throws IllegalStateException If there is no move to undo
      */
     public void unmarkCell() throws IllegalStateException {
-        if (MC.size() == 0) {
+        if (freeCellsCount == M * N)
             throw new IllegalStateException("No move to undo");
-        } else {
-            MNKCell oldc = MC.removeLast();
-            MNKCell newc = new MNKCell(oldc.i, oldc.j, MNKCellState.FREE);
-            B[oldc.i][oldc.j] = MNKCellState.FREE;
-            this.togglePlayer();
 
-            FC.add(newc);
-            gameState = MNKGameState.OPEN;
+        // freeCellsCount punta all'ultimo elemento moved
+        HeuristicCell cell = allCells[freeCellsCount];
+        
+        // rollback della cella markata
+        allCells[freeCellsCount].state = MNKCellState.FREE;
+        int oldIndex = allCells[freeCellsCount].index;
+        swapAllCellsByIndex(oldIndex, freeCellsCount);
+        allCells[freeCellsCount].index = freeCellsCount; // punta ancora a oldindex
+        freeCellsCount++;
+        
+        // rollback della board
+        gameState = MNKGameState.OPEN;
+        updateCellValue(cell.i, cell.j);
+        updateCellDataStruct();
+        currentPlayer = 1 - currentPlayer;
+    }
+
+
+    /**
+     * This should be O(K)
+     * 
+     * @param lineCode 1 = horizontal, 2 = vertical, 3 = diagonal, 4 = anti-diagonal
+     * @param state,   lo stato per cercare il valore (NON HA SENDO AVERE LO STATE
+     *                 FREE)
+     * @return INPLACE: the heuristics value for the current board for that cell.
+     */
+    public void computeCellDirectionValue(int i, int j, int lineCode, MNKCellState state) {
+        DirectionValue dirValue = state == allyPlayer ? B[i][j].allyValue.directions[lineCode]
+                : B[i][j].enemyValue.directions[lineCode];
+        MNKCellState opponentState = state == allyPlayer ? enemyPlayer : allyPlayer;
+
+        // calcola solo su celle vuote
+        
+        if (B[i][j].state == opponentState || B[i][j].state == state) {
+            dirValue.setInvalidDirectionValue();
+            dirValue.updateDirectionValue();
+            return;
+        }
+
+        int jAdd = getHorizontalAdder(lineCode);
+        int iAdd = getVerticalAdder(lineCode);
+        dirValue.reset();
+
+        int right = 1, left = 1;
+        int numberOfOwnCells = 0;
+
+        // ### Raggiungi la massima cella raggiungibile a destra, contando le celle
+        // amiche.
+        while (right < K) {
+            int rightIidx = i + right * iAdd;
+            int rightJidx = j + right * jAdd;
+            if (!isValidCell(rightIidx, rightJidx) || B[rightIidx][rightJidx].state == opponentState) {
+                break;
+            }
+
+            if (B[rightIidx][rightJidx].state == state) {
+                numberOfOwnCells++;
+                dirValue.numMyCells++;
+            }
+            right++;
+        }
+        if (right == K) { // raggiunta la grandezza per la prima sliding window
+            dirValue.numSliding = 1;
+            dirValue.numMaximumSliding = 1;
+
+            // set first possible value for the center
+            dirValue.center = K - numberOfOwnCells;
+        }
+        right--;  // torna al primo valido
+        
+
+        // ### scorrimento a sinistra con la sliding window
+        while (left < K) {
+            int leftIidx = i - left * iAdd;
+            int leftJidx = j - left * jAdd;
+            if (!isValidCell(leftIidx, leftJidx) || B[leftIidx][leftJidx].state == opponentState) {
+                break;
+            }
+
+            if (B[leftIidx][leftJidx].state == state) {
+                numberOfOwnCells++;
+                dirValue.numMyCells++;
+            }
+
+            // Se ho già raggiunto la grandezza giusta per la window, mantienila.
+            if (right + left == K) {
+                if (B[i + right * iAdd][j + right * jAdd].state == state) {
+                    numberOfOwnCells--;
+                }
+                right--;
+            }
+
+            // calcola il centro solo se la slinding window ha lunghezza già adeguata (K)
+            if (right + left == K - 1) {
+                int centerToFill = K - numberOfOwnCells;
+                if (centerToFill < dirValue.center) {
+                    dirValue.center = centerToFill;
+                    dirValue.numMaximumSliding = 1;  // nuova sliding window con valore minore
+                } else if (centerToFill == dirValue.center) {
+                    dirValue.numMaximumSliding++;
+                }
+                
+                dirValue.numSliding++;
+            }
+            left++;
+        }
+
+        if (dirValue.center == Integer.MAX_VALUE)
+            dirValue.setInvalidDirectionValue();
+            
+        dirValue.updateDirectionValue();
+    }
+
+    public HeuristicCell getIthCell(int i) {
+        return allCells[i];
+    }
+
+    public int getValue(MNKCellState state) {
+        // return sumAllyHeuristic + sumEnemyHeuristic;
+        // proviamo così e vedo cosa succede
+
+        if (state == allyPlayer) {
+            return sumAllyHeuristic - sumEnemyHeuristic;
+        } else {
+            return sumEnemyHeuristic - sumAllyHeuristic;
         }
     }
-
-    public MNKCell[] getMarkedCells() {
-        return MC.toArray(new MNKCell[MC.size()]);
+    
+    /**
+     * Chiamato solo dal costruttore come primi valori
+     */
+    private void initCellValue(int i, int j) {
+        for (int k = 0; k < 4; k++) {
+            computeCellDirectionValue(i, j, k, allyPlayer);
+            computeCellDirectionValue(i, j, k, enemyPlayer);
+        }
+        B[i][j].allyValue.updateValue();
+        B[i][j].enemyValue.updateValue();
+        sumAllyHeuristic += B[i][j].allyValue.getValue();
+        sumEnemyHeuristic += B[i][j].enemyValue.getValue();
     }
 
-    public MNKCell[] getFreeCells() {
-        return FC.toArray(new MNKCell[FC.size()]);
-    }
-
-    boolean isValidCell(int i, int j) {
-        return i >= 0 && i < M && j >= 0 && j < N;
-    }
-
-    public void setCellState(int i, int j, MNKCellState state) {
-        B[i][j] = state;
+    public Value getCellValue(int i, int j, MNKCellState state) {
+        if (state == allyPlayer) {
+            return B[i][j].allyValue;
+        } else {
+            return B[i][j].enemyValue;
+        }
     }
 
     /**
-     * Sets the cell cell for current player and swaps
+     * Updated the value of all the cells touched by a positioning of a cell
+     * <code> state </code>
+     * 
+     * @param i,    j the cell index
+     * @param state
+     *              Runs in O(K^2)
      */
-    public void setCellState(int i, int j) {
-        setCellState(i, j, Player[currentPlayer]);
-        togglePlayer();
+    public void updateCellValue(int i, int j) {
+        sumAllyHeuristic -= B[i][j].allyValue.getValue();
+        sumEnemyHeuristic -= B[i][j].enemyValue.getValue();
+        for (int dir = 0; dir < 4; dir++){
+            computeCellDirectionValue(i, j, dir, enemyPlayer);
+            computeCellDirectionValue(i, j, dir, allyPlayer);
+            updateCellDirectionValue(i, j, dir);
+        }
+
+        B[i][j].allyValue.updateValue();
+        B[i][j].enemyValue.updateValue();
+
+        sumAllyHeuristic += B[i][j].allyValue.getValue();
+        sumEnemyHeuristic += B[i][j].enemyValue.getValue();
     }
 
-    public void togglePlayer() {
-        currentPlayer = (currentPlayer + 1) % 2;
-    }
+    private void updateCellDirectionValue(int i, int j, int dirCode) {
+        int jAdd = getHorizontalAdder(dirCode);
+        int iAdd = getVerticalAdder(dirCode);
 
-    // questa funzione aggiorna l'euristica contando solamente una singola linea
-    
-    // lineCode: 1 -> verticale, 2 -> orizzontale, 3 -> diagonale, 4 -> antidiagonale
+        // TODO
+        // le cose difficili da fare è gestire il nuovo valore migliore per il middle,
+        // che probabilmente
+        // devi ancora andare a fare una scansione lineare
+        // invece per tutte le altre celle di interesse basta cambiare un valore
+        // esempio
+        // metto una croce in 0,0 allora, prendiamo per esempio le direzioni
+        // orizzontali.
+        // Mi basta togliere un 1 per l'orizzontale da una parte, mentre il centro lo
+        // devo aggiornare
+        // Invece per il cerchio, ora non può più fare nessuna combo da questa parte,
+        // quindi dobbiamo settare un -1
+        // nella direzione indicata e andare a ricalcolarci il middle.
+        // Questa cosa credo abbia complessità K^2, perché devo farlo per O(K) nodi e
+        // nel peggiore dei casi vado
+        // a fare una scansione lungo una direzione di K, ma se forse storiamo altri
+        // valori, probabilmente non avremo più bisogno di questo K in più
+        // ma dovremo avere un array lungo K che stori il numero di cosi contenuti nella
+        // sliding window o simile...
 
-    // cosa serve nell'euristica della board?
-    //
+        // attualmente è una versione lenta che aggiorna tutte le celle toccate
 
+        // Trova il punto d'inizio per aggiornare le celle
 
-    private int getLineHeuristics(int i, int j, int lineCode) {
-        int x_multiplier = lineCode == 1 ? 1 : lineCode == 2 ? 0 : lineCode == 3 ? 1 : 1;
-        int y_multiplier = lineCode == 1 ? 0 : lineCode == 2 ? 1 : lineCode == 3 ? 1 : -1;
+        // TODO: magari questa parte si può mettere in una funzione che è ripetuta due volte
 
-        int heuristic = 0;  // heuristic value to return
-        int myCells = 0;  // number of myOwnCells in the window
+        int left = 1, right = 1;
+        while (left < K && isValidCell(i - left * iAdd, j - left * jAdd)) {
+            int iIdx = i - left * iAdd;
+            int jIdx = j - left * jAdd;
 
-        // creazione dello sliding windows
-        int start = 0;
-        int end = 1;
-        while (end < K && isValidCell(i + end * y_multiplier, j + end * x_multiplier)) {
-            if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {
-                myCells++;
-            } else if (B[i + end * y_multiplier][j + end * x_multiplier] == enemyPlayer) {
-                break;
-            }
-            end++;
-        }
-        end--; // così rientra all'ultimo valido 
-        while (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && end - start < K) {
-            if (B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
-                myCells++;
-            } else if (B[i + start * y_multiplier][j + start * x_multiplier] == enemyPlayer) {
-                break;
-            }
-            start--;
-        }
-        start++; // così rientra all'ultimo valido, stesso modo per end.
-
-        // fine creazione sliding window
-        if (end - start + 1 == K) {
-            heuristic = myCells + 1;  // +1 perché è una sliding window valida
-        } else {
-            return 0; // non è possibile nemmeno creare un singolo sliding window in questa direzione
-        }
-
-        // go to next step
-        start--;
-        if (isValidCell(i + start * y_multiplier, j + start * x_multiplier) && B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
-            myCells++;
-        }
-        if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {  // sempre valido finché start è valido, no check per contorno
-            myCells--;
-        }
-        end--;
-
-        while (start > -K && isValidCell(i + start * y_multiplier, j + start * x_multiplier)) {
-            if (B[i + start * y_multiplier][j + start * x_multiplier] == enemyPlayer) break;
+            sumAllyHeuristic -= B[iIdx][jIdx].allyValue.getValue();
+            sumEnemyHeuristic -= B[iIdx][jIdx].enemyValue.getValue();
+            computeCellDirectionValue(iIdx, jIdx, dirCode, allyPlayer);
+            computeCellDirectionValue(iIdx, jIdx, dirCode, enemyPlayer);
+            B[iIdx][jIdx].allyValue.updateValue();
+            B[iIdx][jIdx].enemyValue.updateValue();
+            sumAllyHeuristic += B[iIdx][jIdx].allyValue.getValue();
+            sumEnemyHeuristic += B[iIdx][jIdx].enemyValue.getValue();
             
-            heuristic++;  // ossia ho un altro blocco da K valido
-
-            start--;
-            if (!isValidCell(i + start * y_multiplier, j + start * x_multiplier)) break;
-            if (B[i + start * y_multiplier][j + start * x_multiplier] == ownerPlayer) {
-                myCells++;
-            }
-            if (B[i + end * y_multiplier][j + end * x_multiplier] == ownerPlayer) {
-                myCells--;
-            }
-            end--;
-            // ADD BONUS FOR NUMBER OF CELLS IN THE WINDOW
-            // if (myCells >= K - 1) {
-            //     System.out.print("adding bonus line code is: " + lineCode + "\n");
-            //     heuristic += 4;  // BONUS PERICOLOSITÀ
-            // }
+            left++;
         }
 
-        return heuristic;
-    }
+        while (right < K && isValidCell(i + right * iAdd, j + right * jAdd)) {
+            int iIdx = i + right * iAdd;
+            int jIdx = j + right * jAdd;
 
-    // checks if the cell has K - 2 samekind in a row
-    // the concept is the same as markCell, so it could be implemented there,
-    // but for clarity i make it his own function
-    public int getAlmostKHeuristics(int i, int j) {
-        if (B[i][j] == MNKCellState.FREE) return 0;
-        final int almostKGain = 8; // dovrebbe essere diverso a seconda della grandezza della board
-        int heuristic = 0;
-        MNKCellState state = B[i][j];
-        // Horizontal check
-        int n = 1;
-        for (int k = 1; j - k >= 0 && B[i][j - k] == state; k++) n++; // backward check
-        if (n == K - 1) heuristic += almostKGain;
-        n = 1;
-        for (int k = 1; j + k < N && B[i][j + k] == state; k++) n++; // forward check
-        if (n == K - 1) heuristic += almostKGain;
+            sumAllyHeuristic -= B[iIdx][jIdx].allyValue.getValue();
+            sumEnemyHeuristic -= B[iIdx][jIdx].enemyValue.getValue();
+            computeCellDirectionValue(iIdx, jIdx, dirCode, allyPlayer);
+            computeCellDirectionValue(iIdx, jIdx, dirCode, enemyPlayer);
+            B[iIdx][jIdx].allyValue.updateValue();
+            B[iIdx][jIdx].enemyValue.updateValue();
+            sumAllyHeuristic += B[iIdx][jIdx].allyValue.getValue();
+            sumEnemyHeuristic += B[iIdx][jIdx].enemyValue.getValue();
 
-        // Vertical check
-        n = 1;
-        for (int k = 1; i - k >= 0 && B[i - k][j] == state; k++) n++; // backward check
-        if (n == K - 1) heuristic += almostKGain;
-        n = 1;
-        for (int k = 1; i + k < M && B[i + k][j] == state; k++) n++; // forward check
-        if (n == K - 1) heuristic += almostKGain;
-        n = 1;
-
-        // Diagonal check
-        n = 1;
-        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k] == state; k++) n++; // backward check
-        if (n == K - 1) heuristic += almostKGain;
-        n = 1;
-        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k] == state; k++) n++; // forward check
-        if (n == K - 1) heuristic += almostKGain;
-
-        // Anti-diagonal check
-        n = 1;
-        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k] == state; k++) n++; // backward check
-        if (n == K - 1) heuristic += almostKGain;
-        n = 1;
-        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k] == state; k++) n++; // backward check
-        if (n == K - 1) heuristic += almostKGain;
-        
-        return heuristic;
-    }
-
-    // questa funzione deve aggiornare le euristiche seguendo il metodo di
-    // Nathaniel Hayes and Teig Loge nel paper 2016, contando le mosse disponibili.
-    // questa implementazione ricacola sempre l'euristica ogni step, si può migliorare
-    // facendo Dinamic programming, ma per quanto esposto poi dovrebbe funzioanre ugualmente
-    public int getHeuristic(int i, int j) {
-        if (B[i][j] == enemyPlayer) {
-            return 0;
-        }
-        
-        int heuristic = 0;
-        for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
-        return heuristic;
-    }
-
-    // ritorna i valori euristica per il nemico
-    public int getSwappedHeuristics(int i, int j) {
-        if (B[i][j] == ownerPlayer) {
-            return 0;
-        }
-
-        MNKCellState tmp = ownerPlayer;
-        ownerPlayer = enemyPlayer;
-        enemyPlayer = tmp;
-
-        int heuristic = 0;
-        for (int k = 1; k <= 4; k++) heuristic += getLineHeuristics(i, j, k);
-
-        tmp = ownerPlayer;
-        ownerPlayer = enemyPlayer;
-        enemyPlayer = tmp;
-
-        return heuristic;
-    }
-
-    private void initBoard() {
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                B[i][j] = MNKCellState.FREE;
-            }
+            right++;
         }
     }
 
-    private void initFreeCellList() {
-        this.FC.clear();
-        for (int i = 0; i < M; i++)
-            for (int j = 0; j < N; j++)
-                this.FC.add(new MNKCell(i, j));
+    /**
+     * Returns the state of cell <code>i,j</code>
+     *
+     * @param i i-th row
+     * @param j j-th column
+     *
+     * @return State of the <code>i,j</code> cell (FREE,P1,P2)
+     */
+    public MNKCellState getState(int i, int j) {
+        return B[i][j].state;
     }
 
-    private void initMarkedCellList() {
-        this.MC.clear();
+
+    private int getHorizontalAdder(int dirCode) {
+        return dirCode == 0 ? 1 : dirCode == 1 ? 0 : dirCode == 2 ? 1 : 1;
+    }
+
+    private int getVerticalAdder(int dirCode) {
+        return dirCode == 0 ? 0 : dirCode == 1 ? 1 : dirCode == 2 ? 1 : -1;
+    }
+
+    /**
+     * Returns the current state of the game.
+     *
+     * @return MNKGameState enumeration constant (OPEN,WINP1,WINP2,DRAW)
+     */
+    public MNKGameState gameState() {
+        return gameState;
+    }
+
+
+    public void setCellState(int i, int j, MNKCellState state) {
+        B[i][j].state = state;
     }
 
     public void setPlayer(MNKCellState player) {
         currentPlayer = player == MNKCellState.P1 ? 0 : 1;
     }
 
-    // Check winning state from cell i, j
-    private boolean isWinningCell(int i, int j) {
-        MNKCellState s = B[i][j];
-        int n;
+    private boolean isValidCell(int i, int j) {
+        return i >= 0 && i < M && j >= 0 && j < N;
+    }
 
-        // Useless pedantic check
-        if (s == MNKCellState.FREE)
-            return false;
+    private void swapAllCellsByIndex(int i, int j) {
+        HeuristicCell cell = allCells[i];
+        allCells[i] = allCells[j];
+        allCells[j] = cell;
+    }
+
+    /**
+     * Old mics function
+     */
+    public int getHeuristic(int i, int j) {
+        return B[i][j].allyValue.getValue();
+    }
+
+    /**
+     * Returns the id of the player allowed to play next move.
+     *
+     * @return 0 (first player) or 1 (second player)
+     */
+    public int currentPlayer() {
+        return currentPlayer;
+    }
+    
+    public void print() {
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                if (B[i][j].state == MNKCellState.P1)
+                    System.out.print("1 ");
+                else if (B[i][j].state == MNKCellState.P2)
+                    System.out.print("2 ");
+                else
+                    System.out.print("0 ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public void printHeuristics(boolean ally) {
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                if (ally)
+                    System.out.print(B[i][j].allyValue.getValue() + " \t");
+                else
+                    System.out.print(B[i][j].enemyValue.getValue() + " \t");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    /* 
+    Ugly fun
+     Check winning state from cell i, j
+    private boolean isWinningCell(int i, int j) {
+        MNKCellState state = B[i][j].state;
+        int n;
 
         // Horizontal check
         n = 1;
-        for (int k = 1; j - k >= 0 && B[i][j - k] == s; k++) n++; // backward check
-        for (int k = 1; j + k < N && B[i][j + k] == s; k++) n++; // forward check
+        for (int k = 1; j - k >= 0 && B[i][j - k].state == state; k++)
+            n++; // backward check
+        for (int k = 1; j + k < N && B[i][j + k].state == state; k++)
+            n++; // forward check
         if (n >= K)
             return true;
 
         // Vertical check
         n = 1;
-        for (int k = 1; i - k >= 0 && B[i - k][j] == s; k++) n++; // backward check
-        for (int k = 1; i + k < M && B[i + k][j] == s; k++) n++; // forward check
+        for (int k = 1; i - k >= 0 && B[i - k][j].state == state; k++)
+            n++; // backward check
+        for (int k = 1; i + k < M && B[i + k][j].state == state; k++)
+            n++; // forward check
         if (n >= K)
             return true;
 
         // Diagonal check
         n = 1;
-        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k] == s; k++) n++; // backward check
-        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k] == s; k++) n++; // forward check
+        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k].state == state; k++)
+            n++; // backward check
+        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k].state == state; k++)
+            n++; // forward check
         if (n >= K)
             return true;
 
         // Anti-diagonal check
         n = 1;
-        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k] == s; k++) n++; // backward check
-        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k] == s; k++) n++; // backward check
+        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k].state == state; k++)
+            n++; // backward check
+        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k].state == state; k++)
+            n++; // backward check
         if (n >= K)
             return true;
 
         return false;
     }
+    */
+
 }

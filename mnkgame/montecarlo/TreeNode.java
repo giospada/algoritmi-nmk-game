@@ -8,7 +8,7 @@ public class TreeNode implements Comparable<TreeNode>{
     public TreeNode parent;
     public int tries;
     public int goodTries;
-    public MNKCell currMove;
+    public HeuristicCell currMove;
     public boolean isFinished;
     public boolean isLeaf;
     public PriorityQueue<TreeNode> children;
@@ -18,23 +18,24 @@ public class TreeNode implements Comparable<TreeNode>{
     }
 
     public TreeNode(TreeNode parent) {
-       this(parent, new MNKCell(-1, -1));
+       this(parent, new HeuristicCell(-1,-1,-1));
     }
-    public TreeNode(TreeNode parent, MNKCell currMove) {
+
+    public TreeNode(TreeNode parent, HeuristicCell heuristicCell) {
         this.parent = parent;
         this.tries = 0;
         this.goodTries = 0;
-        this.currMove = currMove;
+        this.currMove = heuristicCell;
         this.isFinished = false;
         this.isLeaf = true;
         this.children = new PriorityQueue<TreeNode>();
     }
 
-    public void createChilds(MNKCell [] moves){
-        isLeaf = false;
-        for (MNKCell move : moves) {
-            children.add(new TreeNode(this, move));
-        }
+    public TreeNode createNextChild(Board board){
+        if (children.size() == board.freeCellsCount) return null;
+        TreeNode child = new TreeNode(this, board.getGreatKCell(children.size()));
+        children.add(child);
+        return child;
     }
 
     double upperConfidenceBound() {

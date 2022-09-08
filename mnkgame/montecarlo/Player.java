@@ -13,6 +13,7 @@ public class Player implements MNKPlayer {
     private int TIMEOUT;
     int possibleMovesLenght;
     TreeNode root;
+    private final int MOVES_STEP = 5;
 
 
     public Player() {}
@@ -28,7 +29,7 @@ public class Player implements MNKPlayer {
 
         // ROOT inizializzata con tutte le mosse
         root = new TreeNode();
-        root.createChilds(B.getFreeCells());
+        root.createNextChild(B);
     }
 
     private boolean hasTimeRunOut() {
@@ -60,7 +61,8 @@ public class Player implements MNKPlayer {
         }
 
         // sono sicuro ora di essere in una foglia che si può espandere
-        curNode.createChilds(B.getFreeCells());
+        TreeNode nextChild = curNode.createNextChild(B);
+        if (nextChild != null) return nextChild;
 
         // prende il miglior child da ritornare
         TreeNode bestNode = curNode.children.peek();
@@ -68,7 +70,7 @@ public class Player implements MNKPlayer {
     }
 
     MNKGameState simulate(TreeNode curNode) {
-        MNKCell nextCell = curNode.currMove;
+        HeuristicCell nextCell = curNode.currMove;
         int numMoves = 1;
         MNKGameState lastState = B.markCell(nextCell);
 
@@ -79,9 +81,13 @@ public class Player implements MNKPlayer {
         while(lastState == MNKGameState.OPEN){
             numMoves++;
 
-            // QUESTO FA SCELTA RANDOMICHE
-            MNKCell[] freeCells = B.getFreeCells();
-            MNKCell best = freeCells[(int) Math.random() * freeCells.length];
+            // 0.683 1 0.8 2, 0.9 a più. 
+            
+            HeuristicCell best;
+
+            best = B.getGreatKCell(0);  // custom log2 function
+
+
 
             // QUESTO USA IL MICS.
             // int bestScore = -1;
@@ -102,6 +108,7 @@ public class Player implements MNKPlayer {
         }
 
         return lastState;
+
     }
 
     void backpropagate(MNKGameState state, TreeNode curNode) {
@@ -117,7 +124,7 @@ public class Player implements MNKPlayer {
         while (curNode.parent != null) {
             curNode.goodTries += addingValue;
 
-            curNode.tries +=2;
+            curNode.tries += 2;
             curNode.parent.children.remove(curNode);
             curNode.parent.children.add(curNode);  // riaggiorna la posizione del nodo nella priority
 
@@ -185,7 +192,7 @@ public class Player implements MNKPlayer {
         // }
 
         updateRoot(bestNode);
-        return bestNode.currMove;
+        return bestNode.currMove.toMNKCell();
     }
 
     @Override
