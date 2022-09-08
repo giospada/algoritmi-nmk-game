@@ -12,15 +12,30 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private MNKGameState yourWin;
     private MNKGameState gameState;
     private final int BRANCHING_FACTOR = 9;
-    private final int DEPTH_LIMIT = 10;
+    private final int DEPTH_LIMIT = 8;
     private final int KINF = Integer.MAX_VALUE;
+    private final int TIMEOUT ;
+    private int timeStart ;
+
+    private final boolean DEBUG = true;
 
     private int M, N;
     // l'algoritmo si comporta in modo molto strano alle prime mosse
     private boolean firstMove;
     public LastPlayer() {}
 
+    
+    private boolean hasTimeRunOut() {
+        return (System.currentTimeMillis() - timeStart) / 1000.0 > TIMEOUT * (99.0 / 100.0);
+    }
+
+
+
+
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
+        timeStart = System.currentTimeMillis();
+        TIMEOUT= timeout_in_secs;
+
         myState = first ? MNKCellState.P1 : MNKCellState.P2;
         yourState = first ? MNKCellState.P2 : MNKCellState.P1;
         B = new Board(M, N, K, myState);
@@ -121,7 +136,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             int minPlayerValue = minPlayer(1, alpha, beta);
             B.unmarkCell();
 
-            System.out.println("cella: " + currCell.i + " " + currCell.j + " valore: " + minPlayerValue);
+            if (DEBUG)
+                System.out.println("cella: " + currCell.i + " " + currCell.j + " valore: " + minPlayerValue);
 
             if (minPlayerValue > v) {
                 v = minPlayerValue;
@@ -139,8 +155,11 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             firstMove = false;
         }
 
-        B.print();
-        B.printHeuristics();
+        if (DEBUG) {
+            B.print();
+            B.printHeuristics(true);
+            B.printHeuristics(false);
+        }
 
         // MNKCell priorityCell=checkEasyState();
         // if(priorityCell != null){
@@ -149,8 +168,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         // }
 
         // Priority 5, find the best cell to win in the most number of possible ways
-        // TODO: Probably using minimax
-        System.out.println("No winning cell found, selecting with mini-max ab");
+        // System.out.println("No winning cell found, selecting with mini-max ab");
         MNKCell bestCell = findBestMove();
         B.markCell(bestCell.i, bestCell.j);
 

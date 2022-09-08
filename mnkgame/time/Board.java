@@ -4,7 +4,6 @@ import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
 import java.util.Arrays;
 
-import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
@@ -83,13 +82,14 @@ public class Board {
                 sortedAllCells[i*N + j] = B[i][j];
             }
         }
-
+        
         // deve essere in for separato perché vuole prima avere una board inizializzata
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
                 initCellValue(i, j);
             }
         }
+        updateCellDataStruct();  // sort sortedall cells
 
         gameState = MNKGameState.OPEN;
     }
@@ -140,6 +140,9 @@ public class Board {
         swapAllCellsByIndex(B[i][j].index, freeCellsCount - 1);
         freeCellsCount--;
 
+        // TODO: invece di descrivere lo stato draw, come celle libere non rimanenti
+        // si potrebbero usare il numero di sliding window che hanno ancora possibilità di vincere
+        // così permette di stabilire il draw molte mosse prima.
         // Update game state
         if (Player[currentPlayer] == allyPlayer && B[i][j].allyValue.hasOneLeft()) {
             gameState = allyPlayer == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
@@ -490,10 +493,13 @@ public class Board {
         System.out.println();
     }
 
-    public void printHeuristics() {
+    public void printHeuristics(boolean ally) {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                System.out.print(B[i][j].allyValue.getValue() + " \t");
+                if (ally)
+                    System.out.print(B[i][j].allyValue.getValue() + " \t");
+                else
+                    System.out.print(B[i][j].enemyValue.getValue() + " \t");
             }
             System.out.println();
         }
