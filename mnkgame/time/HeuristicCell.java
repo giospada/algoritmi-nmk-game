@@ -22,6 +22,7 @@ class HeuristicCell implements Comparable<HeuristicCell> {
     public Value allyValue;
     public Value enemyValue;
     public MNKCellState state;
+    private int numAdiacent;
 
     public HeuristicCell(int i, int j, int index) {
         this.i = i;
@@ -30,10 +31,19 @@ class HeuristicCell implements Comparable<HeuristicCell> {
         allyValue = new Value();
         enemyValue = new Value();
         state = MNKCellState.FREE;
+        numAdiacent = 0;
     }
     
     public int getValue() {
         return allyValue.getValue() + enemyValue.getValue();
+    }
+    
+    public int getValueWithAdj() {
+        return (allyValue.getValue() + enemyValue.getValue()) + numAdiacent * 5;
+    }
+
+    public void addAdiacent(int v) {
+        numAdiacent += v;
     }
 
     public int compareTo(HeuristicCell other){

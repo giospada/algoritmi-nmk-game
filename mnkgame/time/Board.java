@@ -2,7 +2,9 @@ package mnkgame.time;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.PriorityQueue;
+
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
@@ -43,6 +45,8 @@ public class Board {
     private int sumEnemyHeuristic;  // utilizzata per dare un valore alla configurazione della board
     private int sumAllyHeuristic;
 
+    private int branchingFactor = 40;
+
     /**
      * Create a board of size MxN and initialize the game parameters
      *
@@ -52,7 +56,11 @@ public class Board {
      *
      * @throws IllegalArgumentException If M,N,K are smaller than  1
      */
-    public Board(int M, int N, int K, MNKCellState playerCode) throws IllegalArgumentException {
+     
+     public Board(int M, int N, int K, MNKCellState playerCode) throws IllegalArgumentException {
+        this(M, N, K, playerCode, 50);
+     }
+     public Board(int M, int N, int K, MNKCellState playerCode,int maxBranchingFactor) throws IllegalArgumentException {
         if (M <= 0)
             throw new IllegalArgumentException("M cannot be smaller than 1");
         if (N <= 0)
@@ -69,7 +77,7 @@ public class Board {
 
         B = new HeuristicCell[M][N];
         allCells = new HeuristicCell[M * N];
-        sortedAllCells = new HeuristicCell[M * N];
+        sortedAllCells = new HeuristicCell[maxBranchingFactor];
         freeCellsCount = M * N;
         
 
@@ -80,7 +88,6 @@ public class Board {
             for(int j = 0; j < N; j++) {
                 B[i][j] = new HeuristicCell(i, j, i * N + j);
                 allCells[i*N + j] = B[i][j];
-                sortedAllCells[i*N + j] = B[i][j];
             }
         }
         
@@ -95,19 +102,34 @@ public class Board {
         gameState = MNKGameState.OPEN;
     }
 
+    public void setBranchingFactor(int branchingFactor) {
+        this.branchingFactor = branchingFactor;
+    }
+
     // TODO: Migliorarlo 
     /**
      * Crea una copia delle celle disponibili e le sorta
      */
-    private void updateCellDataStruct() {
+    public void updateCellDataStruct() {
+        PriorityQueue<HeuristicCell> pq = new PriorityQueue<HeuristicCell>(Collections.reverseOrder()); 
+        int len = Math.min(freeCellsCount, branchingFactor);
         for (int i = 0; i < freeCellsCount; i++) {
-            sortedAllCells[i] = allCells[i];
+            if(pq.size()<len) {
+                pq.add(allCells[i]);
+            }else if(pq.peek().compareTo(allCells[i]) > 0) {
+                pq.poll();
+                pq.add(allCells[i]);
+            }
         }
-        Arrays.sort(sortedAllCells, 0, freeCellsCount);
+        int i = len - 1;
+        while(!pq.isEmpty()){
+            sortedAllCells[i] = pq.poll();
+            i--;
+        }
     }
 
     public HeuristicCell getGreatKCell(int k) {
-        if (k < 0 || k >= freeCellsCount)
+        if (k < 0 || k >= branchingFactor)
             return null;
         // TODO: migliorare questo perché non vorremmo che creasse semppre un nuovo oggetto
         // e lo distruggesse sul momento.
@@ -158,6 +180,7 @@ public class Board {
         // lo spostiamo tutto in cell Value update
         updateCellValue(i, j);
         updateCellDataStruct();
+        // addAdjiacentCells(i, j, 1);
 
         // Arrays.sort()
         // TODO: decidere come sortare le celle in modo da riprenderle in modo effettivo
@@ -165,6 +188,16 @@ public class Board {
         currentPlayer = 1 - currentPlayer;
 
         return gameState;
+    }
+
+    public void addAdjiacentCells(int i, int j, int value) {
+        for (int di = i - 1; di < i + 1; di++) {
+            for (int dj = j - 1; dj < j + 1; dj++) {
+                if (di >= 0 && di < M && dj >= 0 && dj < N && B[di][dj].state == MNKCellState.FREE) {
+                    B[di][dj].addAdiacent(value);
+                }
+            }
+        }
     }
 
     /**
@@ -197,6 +230,7 @@ public class Board {
         gameState = MNKGameState.OPEN;
         updateCellValue(cell.i, cell.j);
         updateCellDataStruct();
+        // addAdjiacentCells(cell.i, cell.j, -1);
         currentPlayer = 1 - currentPlayer;
     }
 

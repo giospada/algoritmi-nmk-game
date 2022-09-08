@@ -14,7 +14,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private final int KINF = Integer.MAX_VALUE;
 
     private int BRANCHING_FACTOR = 7;
-    private int DEPTH_LIMIT = 8;
+    private int DEPTH_LIMIT = 10;
     private int maxNumberOfMoves;
     
     // mosse massime per il tree attuale
@@ -24,7 +24,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private int movesCurrentTree;
 
 
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
 
     private int M, N;
     // l'algoritmo si comporta in modo molto strano alle prime mosse
@@ -70,7 +70,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
         
         for (int i = 0; i < len; i++) {
-            if (movesCurrentTree >= maxMovesCurrentTree) {
+            if (movesCurrentTree + depth >= maxMovesCurrentTree) {
                 break;
             }
 
@@ -111,7 +111,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
         
         for (int i = 0; i < len; i++) {
-            if (movesCurrentTree >= maxMovesCurrentTree) {
+            if (movesCurrentTree + depth >= maxMovesCurrentTree) {
                 break;
             }
 
@@ -152,8 +152,11 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         MNKCell cell = null;
 
         // al primo livello valuto quasi tutto
+
         int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
         maxMovesCurrentTree = maxNumberOfMoves / 4;
+        B.setBranchingFactor(len);
+        B.updateCellDataStruct();
 
         int toAddEachStep;
         if (len <= 1)
@@ -170,7 +173,9 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             movesCurrentTree = 0;
             HeuristicCell currCell = B.getGreatKCell(i);
             gameState = B.markCell(currCell.i, currCell.j);
+            B.setBranchingFactor(BRANCHING_FACTOR);
             int minPlayerValue = minPlayer(1, alpha, beta);
+            B.setBranchingFactor(len);
             B.unmarkCell();
 
             
@@ -184,7 +189,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
                 cell = currCell.toMNKCell();
                 alpha = Math.max(alpha, v);
             }
-
+            
             // quelli rimasti nell'iterazione precendente + numero da aggiungere ogni step
             
             maxMovesCurrentTree = (maxMovesCurrentTree - movesCurrentTree) + toAddEachStep;
@@ -200,9 +205,9 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         }
 
         if (DEBUG) {
-            // B.print();
-            // B.printHeuristics(true);
-            // B.printHeuristics(false);
+            //B.print();
+            //B.printHeuristics(true);
+            //B.printHeuristics(false);
         }
 
         // MNKCell priorityCell=checkEasyState();
