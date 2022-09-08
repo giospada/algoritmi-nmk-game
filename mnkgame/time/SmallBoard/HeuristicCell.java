@@ -2,6 +2,7 @@ package mnkgame.time.SmallBoard;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
+import mnkgame.time.IHeuristicCell;
 
 // IDEA che deve essere valutata:
 // se invece di contare quanti pezzi hai,
@@ -15,7 +16,7 @@ import mnkgame.MNKCellState;
 // si può fare questa cosa per ogni verso delle 4 direzioni possibili e credo sia semplice
 // se mmai ci metti anche un caso in cui serve per vincere uno in mezzo, e lo consideri separato
 // non va?
-public class HeuristicCell implements Comparable<HeuristicCell> {
+public class HeuristicCell implements IHeuristicCell {
     public final int i;
     public final int j;
     public int index;  // l'index all'interno dell'array della board
@@ -46,7 +47,7 @@ public class HeuristicCell implements Comparable<HeuristicCell> {
         numAdiacent += v;
     }
 
-    public int compareTo(HeuristicCell other){
+    public int compareTo(IHeuristicCell other){
         return other.getValue() - this.getValue();
         // TODO!
         // if (allyValue.equals(other.allyValue)) {
@@ -59,5 +60,15 @@ public class HeuristicCell implements Comparable<HeuristicCell> {
 
     public MNKCell toMNKCell() {
         return new MNKCell(i, j, state);
+    }
+
+    @Override
+    public int getI() {
+        return i;
+    }
+
+    @Override
+    public int getJ() {
+        return j;
     }
 }

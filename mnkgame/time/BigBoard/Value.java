@@ -1,10 +1,12 @@
 package mnkgame.time.BigBoard;
 
+import mnkgame.time.IValue;
+
 /**
  * Questa classe è un modo per rappresentare il valore di una cella
  * in una board di gioco.
  */
-public class Value {
+public class Value implements IValue {
     /**
      * 0 = orizzontale
      * 1 = verticale

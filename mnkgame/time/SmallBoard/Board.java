@@ -8,8 +8,11 @@ import java.util.PriorityQueue;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
+import mnkgame.time.IBoard;
+import mnkgame.time.IHeuristicCell;
+import mnkgame.time.IValue;
 
-public class Board {
+public class Board implements IBoard {
     public final int M;
     public final int N;
     public final int K;
@@ -128,7 +131,7 @@ public class Board {
         }
     }
 
-    public HeuristicCell getGreatKCell(int k) {
+    public IHeuristicCell getGreatKCell(int k) {
         if (k < 0 || k >= branchingFactor)
             return null;
         // TODO: migliorare questo perché non vorremmo che creasse semppre un nuovo oggetto
@@ -136,8 +139,8 @@ public class Board {
         return sortedAllCells[k];
     }
 
-    public MNKGameState markCell(HeuristicCell cell){
-        return markCell(cell.i, cell.j);
+    public MNKGameState markCell(IHeuristicCell cell){
+        return markCell(cell.getI(), cell.getJ());
     }
     
     
@@ -330,7 +333,7 @@ public class Board {
         dirValue.updateDirectionValue();
     }
 
-    public HeuristicCell getIthCell(int i) {
+    public IHeuristicCell getIthCell(int i) {
         return allCells[i];
     }
 
@@ -359,7 +362,7 @@ public class Board {
         sumEnemyHeuristic += B[i][j].enemyValue.getValue();
     }
 
-    public Value getCellValue(int i, int j, MNKCellState state) {
+    public IValue getCellValue(int i, int j, MNKCellState state) {
         if (state == allyPlayer) {
             return B[i][j].allyValue;
         } else {
@@ -548,51 +551,8 @@ public class Board {
         System.out.println();
     }
 
-    /* 
-    Ugly fun
-     Check winning state from cell i, j
-    private boolean isWinningCell(int i, int j) {
-        MNKCellState state = B[i][j].state;
-        int n;
-
-        // Horizontal check
-        n = 1;
-        for (int k = 1; j - k >= 0 && B[i][j - k].state == state; k++)
-            n++; // backward check
-        for (int k = 1; j + k < N && B[i][j + k].state == state; k++)
-            n++; // forward check
-        if (n >= K)
-            return true;
-
-        // Vertical check
-        n = 1;
-        for (int k = 1; i - k >= 0 && B[i - k][j].state == state; k++)
-            n++; // backward check
-        for (int k = 1; i + k < M && B[i + k][j].state == state; k++)
-            n++; // forward check
-        if (n >= K)
-            return true;
-
-        // Diagonal check
-        n = 1;
-        for (int k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k].state == state; k++)
-            n++; // backward check
-        for (int k = 1; i + k < M && j + k < N && B[i + k][j + k].state == state; k++)
-            n++; // forward check
-        if (n >= K)
-            return true;
-
-        // Anti-diagonal check
-        n = 1;
-        for (int k = 1; i - k >= 0 && j + k < N && B[i - k][j + k].state == state; k++)
-            n++; // backward check
-        for (int k = 1; i + k < M && j - k >= 0 && B[i + k][j - k].state == state; k++)
-            n++; // backward check
-        if (n >= K)
-            return true;
-
-        return false;
+    @Override
+    public int getFreeCellsCount() {
+        return this.freeCellsCount;
     }
-    */
-
 }

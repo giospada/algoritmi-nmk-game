@@ -20,6 +20,7 @@ public class DirectionValue {
 
     // numero di mie celle 
     public int numMyCells;
+    public static final int MY_CELL_MULT = 5;
     public static final int DOUBLEPLAY_VAL = 100;
     public static final int WIN_VAL = 100000;
     // anche per l'uno
@@ -37,7 +38,7 @@ public class DirectionValue {
      * @param K
      */
     public void updateDirectionValue() {
-        value = numSliding + numMyCells;
+        value = numSliding + numMyCells * MY_CELL_MULT;
 
         if (center == 1) {
             value = WIN_VAL;

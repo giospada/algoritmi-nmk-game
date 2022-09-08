@@ -3,12 +3,9 @@ package mnkgame.time;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import mnkgame.time.SmallBoard.Board;
-import mnkgame.time.SmallBoard.HeuristicCell;
-import mnkgame.time.SmallBoard.Value;
 
 public class LastPlayer implements mnkgame.MNKPlayer {
-    private Board B;
+    private IBoard B;
     private MNKGameState myWin;
     private MNKCellState myState;
     private MNKCellState yourState;
@@ -30,15 +27,23 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private final boolean DEBUG = true;
 
     private int M, N;
+
     // l'algoritmo si comporta in modo molto strano alle prime mosse
     private boolean firstMove;
+    
     public LastPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         long timeStart = System.currentTimeMillis();
         this.myState = first ? MNKCellState.P1 : MNKCellState.P2;
         this.yourState = first ? MNKCellState.P2 : MNKCellState.P1;
-        this.B = new Board(M, N, K, myState);
+
+        if (M > 10 && N > 10) {
+            this.B = new mnkgame.time.BigBoard.Board(M, N, K, myState);
+        } else {
+            this.B = new mnkgame.time.SmallBoard.Board(M, N, K, myState);
+        }
+
         this.myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         this.yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 
@@ -46,7 +51,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         this.M = M;
         this.N = N;
 
-        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs , B);
+        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
         timing.findBestTime();
         // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
         //BRANCHING_FACTOR = timing.getBranchingFactor();
@@ -70,7 +75,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         
         int v = KINF;
         
-        int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
+        int len = Math.min(BRANCHING_FACTOR, B.getFreeCellsCount());
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
@@ -111,7 +116,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
 
         int v = -KINF;
         
-        int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
+        int len = Math.min(BRANCHING_FACTOR, B.getFreeCellsCount());
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
@@ -156,7 +161,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
 
         // al primo livello valuto quasi tutto
 
-        int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
+        int len = Math.min(BRANCHING_FACTOR * 3, B.getFreeCellsCount());
         maxMovesCurrentTree = maxNumberOfMoves / 4;
         B.setBranchingFactor(len);
         B.updateCellDataStruct();
@@ -174,16 +179,16 @@ public class LastPlayer implements mnkgame.MNKPlayer {
 
         for (int i = 0; i < len; i++) {
             movesCurrentTree = 0;
-            HeuristicCell currCell = B.getGreatKCell(i);
-            gameState = B.markCell(currCell.i, currCell.j);
+            IHeuristicCell currCell = B.getGreatKCell(i);
+            gameState = B.markCell(currCell);
             B.setBranchingFactor(BRANCHING_FACTOR);
             int minPlayerValue = minPlayer(1, alpha, beta);
             B.setBranchingFactor(len);
             B.unmarkCell();
 
             
-            if (DEBUG){
-                System.out.println("cella: " + currCell.i + " " + currCell.j + " valore: " + minPlayerValue);
+            if (DEBUG) {
+                System.out.println("cella: " + currCell.getI() + " " +  currCell.getJ() + " valore: " + minPlayerValue);
                 System.out.format("usate %d mosse su %d\n", movesCurrentTree, maxMovesCurrentTree);
             }
 
@@ -229,110 +234,5 @@ public class LastPlayer implements mnkgame.MNKPlayer {
 
     public String playerName() {
         return "Mics Player v2";
-    }
-
-    /**
-     * @brief guarda se le mosse che portano sicuramente ad una vittoria / ad una perdita
-     * @return la cella o null se non ha trovato nulla
-     */
-    private MNKCell checkEasyState() {
-        if (firstMove) {
-            MNKCell bestCell = new MNKCell((M - 1) / 2, (N - 1) / 2);
-            firstMove = false;
-            return bestCell;
-        }
-
-        System.out.println("Playing");
-        // TODO: Potrebbe essere che la cella migliore abbia sempre i valore euristico più alto
-        // per cui si potrebbe fare un check costante invece che lineare come qui.
-        // In pratica prendi la tua cella migliore, quella del nemico guardi se sono in uno dei casi di priorità 1-4
-        // in quel caso esegui quella che ha piu priorità
-
-        // Priority 1: Win
-        MNKCell winCell = findWinCell();
-        if (winCell != null) {
-            System.out.println("Winning cell found");
-            return winCell;
-        }
-
-        // Priority 2, prevent the opponent from winning
-        B.setPlayer(yourState);
-        MNKCell preventWinCell = findPreventWinCell();
-        if (preventWinCell != null) {
-            System.out.println("Preventing win cell found");
-            B.setPlayer(myState);
-            return preventWinCell;
-        }
-
-        // Priority 3, find the best cell to fork (two or more winning ways)
-        winCell = findMyDoublePlay();
-        if (winCell != null) {
-            System.out.println("Double play cell found");
-            return winCell;
-        }
-
-        // Priority 4, find the best cell to block the opponent's fork
-        preventWinCell = findEnemyDoublePlay();
-        if (preventWinCell != null) {
-            System.out.println("Preventing double play cell found");
-            return preventWinCell;
-        }
-        return null;
-    }
-    
-    // time should never run out right? it's the first step!
-    // @returns a winning cell if there is one
-    private MNKCell findWinCell() {
-        for (int i = 0; i < B.freeCellsCount; i++) {
-            HeuristicCell cell = B.getIthCell(i);
-            if (B.markCell(cell.i, cell.j) == myWin) {
-                B.unmarkCell();
-                return cell.toMNKCell();
-            } else {
-                B.unmarkCell();
-            }
-        }
-        return null;
-    }
-
-    private MNKCell findPreventWinCell() {
-        for (int i = 0; i < B.freeCellsCount; i++) {
-            HeuristicCell cell = B.getIthCell(i);
-            if (B.markCell(cell.i, cell.j) == yourWin) {
-                B.unmarkCell();
-                return cell.toMNKCell();
-            }
-            B.unmarkCell();
-        }
-        return null;
-    }
-
-    private MNKCell findMyDoublePlay() {
-        MNKCell winningCell = null;
-        for (int i = 0; i < B.freeCellsCount; i++) {
-            HeuristicCell cell = B.getIthCell(i);
-            Value value = B.getCellValue(cell.i, cell.j, myState);
-            if (value.isDoublePlay()) {
-                winningCell = cell.toMNKCell();
-            }
-
-            if (winningCell != null) break;
-        }
-        return winningCell;
-    }
-
-    private MNKCell findEnemyDoublePlay() {
-        MNKCell winningCell = null;
-        for (int i = 0; i < B.freeCellsCount; i++) {
-            HeuristicCell cell = B.getIthCell(i);
-            Value value = B.getCellValue(cell.i, cell.j, yourState);
-            if (value.isDoublePlay()) {
-                winningCell = cell.toMNKCell();
-            }
-
-            if (winningCell != null) break;
-        }
-
-        return winningCell;
     }
 }

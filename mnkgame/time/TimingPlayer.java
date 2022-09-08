@@ -3,7 +3,6 @@ package mnkgame.time;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import mnkgame.time.SmallBoard.Board;
-import mnkgame.time.SmallBoard.HeuristicCell;
 
 /**
  * Questa classe è utilizzata per fare una stima della capacità di esecuzione del computer remoto
@@ -13,7 +12,7 @@ class TimingPlayer{
 
     private long timeStart;
     private final long TIMEOUT;
-    private Board B;
+    private IBoard B;
     private int moves;
 
     private int BRANCHING_FACTOR = 7;
@@ -23,7 +22,7 @@ class TimingPlayer{
         this(timeStart, timeout_in_secs, new Board(M, N, K, MNKCellState.P1));
     }  
     
-    TimingPlayer(long timeStart, int timeout_in_secs,Board board) {
+    TimingPlayer(long timeStart, int timeout_in_secs, IBoard board) {
         this.timeStart = timeStart;
         this.TIMEOUT = Math.min(timeout_in_secs, 10);
         this.B = board;        
@@ -40,12 +39,12 @@ class TimingPlayer{
      * @return
      */
     public void findBestTime() {
-        int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
+        int len = Math.min(BRANCHING_FACTOR * 3, B.getFreeCellsCount());
         for (int i = 0; i < len; i++) {
             if (hasTimeRunOut()) return;
             
-            HeuristicCell currCell = B.getGreatKCell(i);
-            B.markCell(currCell.i, currCell.j);
+            IHeuristicCell currCell = B.getGreatKCell(i);
+            B.markCell(currCell);
             minPlayer(1);
             B.unmarkCell();
             moves++;
@@ -56,7 +55,7 @@ class TimingPlayer{
         if (hasEnded(depth)) { 
             return;
         }
-        int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
+        int len = Math.min(BRANCHING_FACTOR, B.getFreeCellsCount());
         for (int i = 0; i < len; i++) {
             B.markCell(B.getGreatKCell(i));
             maxPlayer(depth + 1);
@@ -69,7 +68,7 @@ class TimingPlayer{
         if(hasEnded(depth))
             return;
 
-        int len = Math.min(BRANCHING_FACTOR, B.freeCellsCount);
+        int len = Math.min(BRANCHING_FACTOR, B.getFreeCellsCount());
         
         for (int i = 0; i < len; i++) {
             if(hasTimeRunOut()) return; 
