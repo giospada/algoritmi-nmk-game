@@ -1,4 +1,4 @@
-package mnkgame.montecarlo
+package mnkgame.montecarlo;
 
 /**
  * Questa classe è un modo per rappresentare il valore di una cella

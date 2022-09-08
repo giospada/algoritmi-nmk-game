@@ -12,10 +12,10 @@ public class DebugPlayer implements mnkgame.MNKPlayer {
      * Selects a random cell in <code>FC</code>
      */
     MNKCell moves[] = {
-            new MNKCell(2, 0), 
             new MNKCell(2, 2), 
-            new MNKCell(0, 2), 
-            new MNKCell(2, 1),
+            new MNKCell(2, 0), 
+            new MNKCell(0, 1), 
+            new MNKCell(1, 2),
     };
 
     int i = 0;

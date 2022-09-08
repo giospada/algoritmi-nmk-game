@@ -36,6 +36,13 @@
             "request": "launch",
             "mainClass": "mnkgame.MNKGame",
             "args": "3 3 3 mnkgame.montecarlo.Player"
-        }
+        },
+        {
+            "type": "java",
+            "name": "random 10 10 5",
+            "request": "launch",
+            "mainClass": "mnkgame.MNKPlayerTester",
+            "args": "10 10 5  mnkgame.time.LastPlayer  mnkgame.RandomPlayer  -r 1 -t 1000000 -v"
+        },
     ]
 }

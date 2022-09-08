@@ -14,8 +14,8 @@ class TimingPlayer{
     private Board B;
     private int moves;
 
-    private int BRANCHING_FACTOR = 9;
-    private int DEPTH_LIMIT = 10;
+    private int BRANCHING_FACTOR = 7;
+    private int DEPTH_LIMIT = 15;
     
     TimingPlayer(long timeStart, int timeout_in_secs, int M, int N, int K) {
         this(timeStart, timeout_in_secs, new Board(M, N, K, MNKCellState.P1));
@@ -23,7 +23,7 @@ class TimingPlayer{
     
     TimingPlayer(long timeStart, int timeout_in_secs,Board board) {
         this.timeStart = timeStart;
-        this.TIMEOUT = timeout_in_secs;
+        this.TIMEOUT = Math.min(timeout_in_secs, 10);
         this.B = board;        
         this.moves = 0;
     }

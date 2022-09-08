@@ -13,7 +13,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private MNKGameState gameState;
     private final int KINF = Integer.MAX_VALUE;
 
-    private int BRANCHING_FACTOR = 9;
+    private int BRANCHING_FACTOR = 7;
     private int DEPTH_LIMIT = 8;
     private int maxNumberOfMoves;
     
@@ -24,7 +24,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private int movesCurrentTree;
 
 
-    private final boolean DEBUG = true;
+    private final boolean DEBUG = false;
 
     private int M, N;
     // l'algoritmo si comporta in modo molto strano alle prime mosse
@@ -60,7 +60,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             return KINF - 1;
         } else if (gameState == yourWin) {
             return -KINF + 1;
-        }else if ( gameState  == MNKGameState.DRAW){
+        }else if ( gameState  == MNKGameState.DRAW || B.isForcedDraw()){
             return 0;
         }
         
@@ -102,7 +102,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
             return KINF - 1;            
         } else if (gameState == yourWin) {
             return -KINF + 1;
-        } else if (gameState == MNKGameState.DRAW) {
+        } else if (gameState == MNKGameState.DRAW || B.isForcedDraw()) {
             return 0;
         }
 
@@ -154,10 +154,15 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         // al primo livello valuto quasi tutto
         int len = Math.min(BRANCHING_FACTOR * 3, B.freeCellsCount);
         maxMovesCurrentTree = maxNumberOfMoves / 4;
-        int toAddEachStep = (maxNumberOfMoves - maxMovesCurrentTree)/(len-1);
+
+        int toAddEachStep;
+        if (len <= 1)
+            toAddEachStep = maxNumberOfMoves;
+        else
+            toAddEachStep = (maxNumberOfMoves - maxMovesCurrentTree)/ (len - 1);
 
         if (DEBUG) {
-            System.out.println("maxMovesCurrentTree: " + maxMovesCurrentTree);
+            System.out.println("maxMovesCurrentTree: " + maxNumberOfMoves);
             System.out.println("toAddEachStep: " + toAddEachStep);
         }
 
@@ -195,9 +200,9 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         }
 
         if (DEBUG) {
-            B.print();
-            B.printHeuristics(true);
-            B.printHeuristics(false);
+            // B.print();
+            // B.printHeuristics(true);
+            // B.printHeuristics(false);
         }
 
         // MNKCell priorityCell=checkEasyState();

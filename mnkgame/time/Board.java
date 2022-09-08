@@ -42,6 +42,7 @@ public class Board {
     
     private int sumEnemyHeuristic;  // utilizzata per dare un valore alla configurazione della board
     private int sumAllyHeuristic;
+
     /**
      * Create a board of size MxN and initialize the game parameters
      *
@@ -152,18 +153,25 @@ public class Board {
             gameState = MNKGameState.DRAW;
         }
 
-
         B[i][j].state = Player[currentPlayer];
         // bisogna anche settare il valore invalido???
         // lo spostiamo tutto in cell Value update
         updateCellValue(i, j);
         updateCellDataStruct();
+
         // Arrays.sort()
         // TODO: decidere come sortare le celle in modo da riprenderle in modo effettivo
         
         currentPlayer = 1 - currentPlayer;
 
         return gameState;
+    }
+
+    /**
+     * se entrambi sono zero, significa che qualunque mossa faccia è sempre una mossa che porta a draw
+     */
+    public boolean isForcedDraw() {
+        return sumAllyHeuristic + sumEnemyHeuristic == 0;
     }
 
     /**
