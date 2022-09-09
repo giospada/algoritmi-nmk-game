@@ -4,7 +4,7 @@ import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
-public class LastPlayer implements mnkgame.MNKPlayer {
+public class LastPlayer2 implements mnkgame.MNKPlayer {
     private IBoard B;
     private MNKGameState myWin;
     private MNKCellState myState;
@@ -31,16 +31,15 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     // l'algoritmo si comporta in modo molto strano alle prime mosse
     private boolean firstMove;
     
-    public LastPlayer() {}
+    public LastPlayer2() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         long timeStart = System.currentTimeMillis();
         this.myState = first ? MNKCellState.P1 : MNKCellState.P2;
         this.yourState = first ? MNKCellState.P2 : MNKCellState.P1;
 
-        if (M > 10 && N > 10) {
+        if (M >= 10 && N >= 10) {
             this.B = new mnkgame.time.BigBoard.Board(M, N, K, myState);
-            DEPTH_LIMIT = 7;
         } else {
             this.B = new mnkgame.time.SmallBoard.Board(M, N, K, myState);
         }
@@ -234,6 +233,6 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     }
 
     public String playerName() {
-        return "Mics Player v2";
+        return "Mics Biggo v2";
     }
 }

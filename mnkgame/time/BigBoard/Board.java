@@ -49,7 +49,7 @@ public class Board implements IBoard {
     private int sumEnemyHeuristic;  // utilizzata per dare un valore alla configurazione della board
     private int sumAllyHeuristic;
 
-    private int branchingFactor = 40;
+    private int branchingFactor = 10;
 
     /**
      * Create a board of size MxN and initialize the game parameters
@@ -62,7 +62,7 @@ public class Board implements IBoard {
      */
      
      public Board(int M, int N, int K, MNKCellState playerCode) throws IllegalArgumentException {
-        this(M, N, K, playerCode, 50);
+        this(M, N, K, playerCode, 10);
      }
      public Board(int M, int N, int K, MNKCellState playerCode,int maxBranchingFactor) throws IllegalArgumentException {
         if (M <= 0)
@@ -81,7 +81,7 @@ public class Board implements IBoard {
 
         B = new HeuristicCell[M][N];
         allCells = new HeuristicCell[M * N];
-        sortedAllCells = new HeuristicCell[maxBranchingFactor];
+        sortedAllCells = new HeuristicCell[40];
         freeCellsCount = M * N;
         
 
@@ -101,6 +101,8 @@ public class Board implements IBoard {
                 initCellValue(i, j);
             }
         }
+        
+        // prima mossa deve esse fatta sempre con le celle ordinate
         updateCellDataStruct();  // sort sortedall cells
 
         gameState = MNKGameState.OPEN;
@@ -120,10 +122,11 @@ public class Board implements IBoard {
         for (int i = 0; i < freeCellsCount; i++) {
             if(pq.size()<len) {
                 pq.add(allCells[i]);
-            }else if(pq.peek().compareTo(allCells[i]) > 0) {
+            } else if(pq.peek().compareTo(allCells[i]) > 0) {   // se il minimo è minore di allCells[i]
                 pq.poll();
                 pq.add(allCells[i]);
             }
+            assert allCells[i].state == MNKCellState.FREE;
         }
         int i = len - 1;
         while(!pq.isEmpty()){
@@ -183,8 +186,8 @@ public class Board implements IBoard {
         // bisogna anche settare il valore invalido???
         // lo spostiamo tutto in cell Value update
         updateCellValue(i, j);
+        addAdjiacentCells(i, j, 1);
         updateCellDataStruct();
-        // addAdjiacentCells(i, j, 1);
 
         // Arrays.sort()
         // TODO: decidere come sortare le celle in modo da riprenderle in modo effettivo
@@ -195,9 +198,9 @@ public class Board implements IBoard {
     }
 
     public void addAdjiacentCells(int i, int j, int value) {
-        for (int di = i - 1; di < i + 1; di++) {
-            for (int dj = j - 1; dj < j + 1; dj++) {
-                if (di >= 0 && di < M && dj >= 0 && dj < N && B[di][dj].state == MNKCellState.FREE) {
+        for (int di = i - 1; di <= i + 1; di++) {
+            for (int dj = j - 1; dj <= j + 1; dj++) {
+                if (isValidCell(di, dj)) {
                     B[di][dj].addAdiacent(value);
                 }
             }
@@ -233,8 +236,8 @@ public class Board implements IBoard {
         // rollback della board
         gameState = MNKGameState.OPEN;
         updateCellValue(cell.i, cell.j);
+        addAdjiacentCells(cell.i, cell.j, -1);
         updateCellDataStruct();
-        // addAdjiacentCells(cell.i, cell.j, -1);
         currentPlayer = 1 - currentPlayer;
     }
 
@@ -539,13 +542,13 @@ public class Board implements IBoard {
         System.out.println();
     }
 
-    public void printHeuristics(boolean ally) {
+    public void printHeuristics(boolean withValue) {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                if (ally)
-                    System.out.print(B[i][j].allyValue.getValue() + " \t");
+                if (withValue)
+                    System.out.print(B[i][j].getValueWithAdj() + " \t");
                 else
-                    System.out.print(B[i][j].enemyValue.getValue() + " \t");
+                    System.out.print(B[i][j].getAdjents() + " \t");
             }
             System.out.println();
         }

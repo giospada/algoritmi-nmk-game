@@ -40,14 +40,16 @@ class TimingPlayer{
      */
     public void findBestTime() {
         int len = Math.min(BRANCHING_FACTOR * 3, B.getFreeCellsCount());
+        // moves = 1000000;
+        // return;
         for (int i = 0; i < len; i++) {
-            if (hasTimeRunOut()) return;
-            
-            IHeuristicCell currCell = B.getGreatKCell(i);
-            B.markCell(currCell);
-            minPlayer(1);
-            B.unmarkCell();
-            moves++;
+           if (hasTimeRunOut()) return;
+           
+           IHeuristicCell currCell = B.getGreatKCell(i);
+           B.markCell(currCell);
+           minPlayer(1);
+           B.unmarkCell();
+           moves++;
         }
     }    
 

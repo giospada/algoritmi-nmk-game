@@ -20,9 +20,9 @@ public class DirectionValue {
 
     // numero di mie celle 
     public int numMyCells;
-    public static final int MY_CELL_MULT = 5;
-    public static final int DOUBLEPLAY_VAL = 100;
-    public static final int WIN_VAL = 100000;
+    public static final int MY_CELL_MULT = 10;
+    public static final int DOUBLEPLAY_VAL = 10000;
+    public static final int WIN_VAL = 1000000;
     // anche per l'uno
 
     // usando il mics, il numero di sliding windows buone, + numero di celle amiche
