@@ -4,7 +4,7 @@ header-includes:
   - \usepackage{graphicx}  # immagini
   - \usepackage{float}     # immagini, così posso mettere le immagini dove voglio
 ---
-\graphicspath{ {./relazion/images/} }
+\graphicspath{ {./relazione/images/} }
 
 # Progetto Algoritmi a.s. 2021/2022
 
@@ -116,11 +116,18 @@ se questa non è ancora stata rimossa, altrimenti, indica la posizione di ritorn
 
 Alcune cose importanti che si dovrebbero fare?
 
-- [ ] pseudocodice di markCell
-- [ ] pseudocodice di unmarkCell
+- [x] pseudocodice di markCell
+- [x] pseudocodice di unmarkCell
+- [X] spiegazione delle FreeCell
 - [ ] Spiegazione dell'euristica
-
-adfsafas
+  - [ ] 1. Spiegazione dell'ordering delle mosse -> cenno a Late Move reduction (o citazione del paper di MICS)
+  - [ ] 2. Spiegazine dell'eval della board
+  - [ ] 3. Note: sul pruning utile grazie a questo ordering
+  - [ ] 4. 
+  - [ ] 
+- [ ] algoritmo di sorting delle celle
+- [ ] spiegazione del timer test (numero dei nodi cercati)
+- [ ] spiegazione dei valori euristici per l'esplorazione in depth e in weight
 
 <!-- Esempio di algoritmo in MD, che si può compilare con pandoc -->
 ## Algorithm 1
@@ -146,8 +153,18 @@ Just a sample algorithmn
 \caption{While loop with If/Else condition}
 \end{algorithm}
 
-## Da provare
-1. Montecarlo con le CNN, dato il grande successo di AlphaGo
+## Approcci fallimentari
+1. Simulazione di Montecarlo (MCTS), dato il grande successo di AlphaGo
+   1. Guardava celle che avevano poco valore per la vittoria
+   2. Guardava tutti gli stati ad ogni livello, il che pesava molto anche sulla memoria (poichè si teneva tutto il game tree)
+   3. Il limite di tempo era troppo basso per avere un numero di simulazioni sufficenti
+   4. La capacità dell'hardware incideva molto sui risultati.
+
+2. Puro algoritmo heuristico (anche conosciuto come Greedy best first Search)
+   1. Non riusciva ad andare in profondità, dato che selezionava ogni volta la cella con maggiori probabilità di
+   vittoria al primo livello, questo non gli permetteva di pianificare le proprie mosse.
+
+3. alpha beta pruning puro, per i test grandi impiegava troppo tempo d'esecuzione, non riuscendo a fare l'eval di neanche una mossa
 
 # References
 <div id="refs"></div>
