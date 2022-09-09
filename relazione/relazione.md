@@ -119,7 +119,12 @@ sia per la scelta delle mosse.
 
 ### MICS - Minimum Incomplete Cell Set
 
-### Calcolo con le sliding window
+L'euristica del MICS racchiude in sé 3 informazioni principali:
+1. Quanto è favorevole una cella secondo aperture e pedine mie e nemiche.
+2. In modo analogo calcolo stesso valore per il nemico.
+3. La somma dei due valori precedenti mi dà una stima di criticità della singola cella (senza la presenza di doppi-giochi e fine-giochi)
+
+### Calcolo del MICS con le sliding window
 
 ### Rilevamento dei doppio-gioci e fine-giochi
 
@@ -206,7 +211,12 @@ Just a sample algorithmn
    vittoria al primo livello, questo non gli permetteva di pianificare le proprie mosse.
 
 3. alpha beta pruning puro, per i test grandi impiegava troppo tempo d'esecuzione, non riuscendo a fare l'eval di neanche una mossa
-4. [rule-based strategy$^2$][#refs], basato su 5 steps che riporto qui testualmente: Rule 1  If the player has a winning move, take it. Rule 2  If the opponent has a winning move, block it. Rule 3  If the player can create a fork (two winning ways) after this move, take it. Rule 4  Do not let the opponent create a fork after the player’s move. Rule 5  Move in a way such as the player may win the most number of possible ways. 
+4. [rule-based strategy$^2$][#refs], basato su 5 steps che riporto qui testualmente: 
+Rule 1  If the player has a winning move, take it. 
+Rule 2  If the opponent has a winning move, block it. 
+Rule 3  If the player can create a fork (two winning ways) after this move, take it. 
+Rule 4  Do not let the opponent create a fork after the player’s move. 
+Rule 5  Move in a way such as the player may win the most number of possible ways. 
    1. Queste regole sono state molto importanti come guida del nostro progetto, nonostante non siano applicate in modo esplicito, hanno guidato il valore fisso per le celle di doppio-gioco e fine-gioco.
 
 ## Miglioramenti possibili

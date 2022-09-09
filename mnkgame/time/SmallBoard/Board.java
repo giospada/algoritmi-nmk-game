@@ -555,4 +555,15 @@ public class Board implements IBoard {
     public int getFreeCellsCount() {
         return this.freeCellsCount;
     }
+    public int getK() {
+        return this.K;
+    }
+
+    public int getM() {
+        return this.M;
+    }
+    
+    public int getN() {
+        return this.N;
+    }
 }

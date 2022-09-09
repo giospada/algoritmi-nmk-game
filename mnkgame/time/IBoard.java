@@ -8,6 +8,12 @@ import mnkgame.MNKGameState;
 
 public interface IBoard {
 
+    public int getM();
+
+    public int getN();
+
+    public int getK();
+
     public void setBranchingFactor(int branchingFactor);
 
     public void updateCellDataStruct();
@@ -28,7 +34,6 @@ public interface IBoard {
 
     public int getValue(MNKCellState state);
     
-
     public IValue getCellValue(int i, int j, MNKCellState state);
 
     public MNKCellState getState(int i, int j);

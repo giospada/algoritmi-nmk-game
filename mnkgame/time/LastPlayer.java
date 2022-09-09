@@ -24,7 +24,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     private int movesCurrentTree;
 
 
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
 
     private int M, N;
 
@@ -55,8 +55,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
         timing.findBestTime();
         // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
-        //BRANCHING_FACTOR = timing.getBranchingFactor();
-        //DEPTH_LIMIT = timing.getDephtLimit();
+        BRANCHING_FACTOR = timing.getBranchingFactor();
+        DEPTH_LIMIT = timing.getDephtLimit();
         this.maxNumberOfMoves = timing.getMoves();
         this.maxMovesCurrentTree = 0;
         this.movesCurrentTree = 0;
@@ -214,9 +214,9 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         }
 
         if (DEBUG) {
-            B.print();
-            B.printHeuristics(true);
-            B.printHeuristics(false);
+            // B.print();
+            // B.printHeuristics(true);
+            // B.printHeuristics(false);
         }
 
         // MNKCell priorityCell=checkEasyState();

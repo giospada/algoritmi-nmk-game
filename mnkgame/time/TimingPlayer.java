@@ -16,7 +16,7 @@ class TimingPlayer{
     private int moves;
 
     private int BRANCHING_FACTOR = 7;
-    private int DEPTH_LIMIT = 15;
+    private int DEPTH_LIMIT = 10;
     
     TimingPlayer(long timeStart, int timeout_in_secs, int M, int N, int K) {
         this(timeStart, timeout_in_secs, new Board(M, N, K, MNKCellState.P1));
@@ -27,6 +27,11 @@ class TimingPlayer{
         this.TIMEOUT = Math.min(timeout_in_secs, 10);
         this.B = board;        
         this.moves = 0;
+
+        if (board.getK() == 10) {  // per le board grosse
+            DEPTH_LIMIT = 10;
+            BRANCHING_FACTOR = 3;
+        }
     }
 
     boolean hasEnded(int depth) {
@@ -92,12 +97,10 @@ class TimingPlayer{
     }
     
     public int getBranchingFactor() {   
-        //TODO: calcolarlo
-        return 0;  // stub
+        return BRANCHING_FACTOR;
     }
     public int getDephtLimit(){
-        //TODO: calcolarlo
-        return 0;  // stub
+        return DEPTH_LIMIT;
     }
 
 }

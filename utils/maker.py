@@ -103,6 +103,8 @@ def name_to_classname(name):
         return 'mnkgame.montecarlo.Player'
     elif name == 'time':
         return 'mnkgame.time.LastPlayer'
+    elif name == 'time2':
+        return 'mnkgame.time.LastPlayer2'
     elif name == 'debug':
         return 'mnkgame.debugPlayer.DebugPlayer'
     
