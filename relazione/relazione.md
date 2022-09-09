@@ -124,6 +124,8 @@ L'euristica del MICS racchiude in sé 3 informazioni principali:
 2. In modo analogo calcolo stesso valore per il nemico.
 3. La somma dei due valori precedenti mi dà una stima di criticità della singola cella (senza la presenza di doppi-giochi e fine-giochi)
 
+Con questo valore numerico riesco ad ordinare le mosse secondo un ordine di priorità.
+
 ### Calcolo del MICS con le sliding window
 
 ### Rilevamento dei doppio-gioci e fine-giochi
@@ -158,6 +160,46 @@ Quindi in ordine di importanza abbiamo:
 2. Cella di doppio-gioco banale
 3. Cella valutata dall'euristica del MICS.
 
+## Ordinamento delle mosse
+
+Problema:
+Su un array di `n` celle libre, dobbiamo ordinare le prime `l` che hanno il valore più alto
+
+Ad ogni momento dalla board dobbiamo riuscire a vedere le migliori `l` celle.
+Per farlo abbiamo guardato vari metodi.
+
+1. Il primo sorting normale che andava in `O(n log n)` dove n sono le celle libere
+   
+2. Quick select, che non andava bene perchè non ordina i primi k elementi. E tempo d'esecuzione peggiore era troppo alto.
+
+Il metodo che abbiamo utilizzato si scorre l'array delle celle libere tenendosi una heap di massimo `l` elementi, e infine 
+svuota la heap e la mette in un array che contiene le prime `l` celle sortate.
+Costo computazionale `O(n log l)`
+
+Questo miglioramento sui primi test è riustito a far esplorare la board 5 o 6 volte più mosse a parità di tempo in input.
+
+
+## Timer Test
+
+Al fine di avere una stima di quanti nodi di ricerca una macchina remota con un limite di tempo prefissato abbiamo
+utilizziamo la classe `TimingPlayer` che simula il tempo di computazione dell'intero processo per la scelta di una mossa.
+Dopo l'esecuzione di questa, avremo un numero di nodi esplorati nel limite di tempo dato, e utilizzeremo questo numero trovato
+durante l'init per decidere quanti nodi può esplorare il player vero.
+
+### Allocazione del numero di mosse
+
+Abbiamo visto che in seguito all'ordering del [MICS](#mics---minimum-incomplete-cell-set) le prime celle sono quelle più importanti
+da esplorare, quindi vogliamo allocare più mosse alla prima cella, in modo da avere una esplorazione più approfondita.
+
+In `findBestMove` vediamo come sono utilizzati il numero di celle trovate in questo modo.
+Nel caso in cui la prima cella non utilizzi tutte le celle date, queste saranno affidate alle celle di esplorazione successive.
+La cella di esplorazione successiva può, quindi, esplorare un numero di celle uguale a `numero nodi non utilizzati precedenti + 
+addendo di nuove celle da esplorare`. Così per tutte le celle fino alla fine.
+
+Il calcolo del numero di celle da allocare al primo, e da allocare via via alle successive è costante, $O(1)$ per caso pessimo, medio e ottimo
+in quanto esegue delle operazioni costanti.
+
+
 # TODOS
 
 Alcune cose importanti che si dovrebbero fare?
@@ -171,7 +213,7 @@ Alcune cose importanti che si dovrebbero fare?
   - [ ] 3. Note: sul pruning utile grazie a questo ordering
   - [ ] 4. 
   - [ ] 
-- [ ] algoritmo di sorting delle celle
+- [X] algoritmo di sorting delle celle
 - [ ] spiegazione del timer test (numero dei nodi cercati)
 - [ ] spiegazione dei valori euristici per l'esplorazione in depth e in weight
 
