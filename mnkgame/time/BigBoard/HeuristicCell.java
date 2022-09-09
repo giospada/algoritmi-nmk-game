@@ -24,7 +24,7 @@ public class HeuristicCell implements IHeuristicCell {
     public Value enemyValue;
     public MNKCellState state;
     private int numAdiacent;
-    public static int ADIACENT_MULT = 20;
+    public static int ADIACENT_MULT = 5;
 
     public int getAdjents() {
         return numAdiacent;

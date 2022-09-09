@@ -5,7 +5,6 @@ import java.lang.IndexOutOfBoundsException;
 import java.util.Collections;
 import java.util.PriorityQueue;
 
-
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
@@ -557,5 +556,17 @@ public class Board implements IBoard {
 
     public int getFreeCellsCount() {
         return freeCellsCount;
+    }
+
+    public int getK() {
+        return this.K;
+    }
+
+    public int getM() {
+        return this.M;
+    }
+    
+    public int getN() {
+        return this.N;
     }
 }

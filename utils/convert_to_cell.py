@@ -53,15 +53,15 @@ def main():
     while inp != "":
         inp = inp.split()[-1]
         xInput.append(eval(inp)[0])
-        yInput.append(eval(inp)[0])
+        yInput.append(eval(inp)[1])
         buffer += make_line(eval(inp), args.name)
         buffer2 += make_line(eval(inp), "Board")
 
         inp = input().strip()
     
-    print("let xMosse [] = [ {} ];" % xInput, end="")
-    print("let yMosse [] = [ {} ];" % yInput, end="")
-    print(f"int lenMosse = {len(yInput)};", end="")
+    print("let xMosse = {};".format(xInput))
+    print("let yMosse = {};".format(yInput))
+    print(f"let lenMosse = {len(yInput)};")
 
 
 
