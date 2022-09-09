@@ -168,16 +168,50 @@ Su un array di `n` celle libre, dobbiamo ordinare le prime `l` che hanno il valo
 Ad ogni momento dalla board dobbiamo riuscire a vedere le migliori `l` celle.
 Per farlo abbiamo guardato vari metodi.
 
-1. Il primo sorting normale che andava in `O(n log n)` dove n sono le celle libere
+1. Il primo sorting normale che andava in $O(n\, \log\, n)$ dove n sono le celle libere
    
 2. Quick select, che non andava bene perchè non ordina i primi k elementi. E tempo d'esecuzione peggiore era troppo alto.
 
-Il metodo che abbiamo utilizzato si scorre l'array delle celle libere tenendosi una heap di massimo `l` elementi, e infine 
+Il metodo che abbiamo utilizzato sfrutta una leggera variazione dell'algoritmo di heap-select: 
+si scorre l'array delle celle libere tenendosi una heap di massimo `l` elementi di questa, e infine 
 svuota la heap e la mette in un array che contiene le prime `l` celle sortate.
-Costo computazionale `O(n log l)`
+Costo computazionale $O(n\, \log\, l)$
 
 Questo miglioramento sui primi test è riustito a far esplorare la board 5 o 6 volte più mosse a parità di tempo in input.
 
+Un esempio di utilizzo di questo algoritmo lo si può trovare in `updateCellDataStruct` della Board. In questo caso utilizziamo
+la variabile `branchingFactor` per tenere il valore di `l` molto basso, garantendo nella pratica un costo di $O(n)$
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{int l, numero elementi della heap}
+\Input{array: array di elementi comparabili di lunghezza n t.c. n > l  }
+\Output{un array con le l elementi maggiori di array}
+\BlankLine
+
+queue = new MinPriorityQueue()\;
+
+\For{element in array} {
+    \uIf{queue.size() < l} {
+        add element to queue\;
+    }\ElseIf{get first element of queue < element} {
+        delete top of queue\;
+        add element to queue\;
+    }
+}
+
+\tcp{dopo il ciclo abbiamo esattamente l elementi nella queue}
+out = new Array of l elements\;
+int i = l - 1;
+\While{queue.size() > 0} {
+    out[i] = get first element of queue\;
+    delete top of queue\;
+    i = i - 1\;
+}
+\Return out\;
+\caption{Algoritmo di ordinamento delle mosse}
+\end{algorithm}
 
 ## Timer Test
 

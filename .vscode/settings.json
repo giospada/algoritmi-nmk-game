@@ -4,5 +4,13 @@
     ],
     "java.project.sourcePaths": [
         "./"
-    ]
+    ],
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "relazion/relazione.md",
+                "cmd": "pandoc relazion/relazione.md -o relazion/relazione.pdf"
+            },
+        ]
+    }
 }

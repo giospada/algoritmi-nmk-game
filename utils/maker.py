@@ -115,6 +115,12 @@ def name_to_classname(name):
         return 'mnkgame.github.notxia.OurPlayer'
     elif name == 'campemanu':
         return 'subroutine.GroupPlayer'
+    elif name == 'negamax':
+        return 'BottargaPlayer.PlayerNegamax.Player'
+    elif name == 'bmoveorder':
+        return 'BottargaPlayer.PlayerMoveOrder.Player'
+    elif name == 'pigna':
+        return 'mnkgame.Player'
 
 def make_command(args):
     if len(args.board) != 3:
