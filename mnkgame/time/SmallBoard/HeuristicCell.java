@@ -32,7 +32,6 @@ public class HeuristicCell implements IHeuristicCell {
         allyValue = new Value();
         enemyValue = new Value();
         state = MNKCellState.FREE;
-        numAdiacent = 0;
     }
     
     public int getValue() {
@@ -49,13 +48,6 @@ public class HeuristicCell implements IHeuristicCell {
 
     public int compareTo(IHeuristicCell other){
         return other.getValue() - this.getValue();
-        // TODO!
-        // if (allyValue.equals(other.allyValue)) {
-        //     return allyValue.compareTo(other.allyValue);
-        // } else {
-        //     return enemyValue.compareTo(other.enemyValue);
-        // }
-        // return heuristicValue - other.heuristicValue;  // ordine crescente
     }
 
     public MNKCell toMNKCell() {

@@ -109,7 +109,6 @@ public class Board implements IBoard {
         this.branchingFactor = branchingFactor;
     }
 
-    // TODO: Migliorarlo 
     /**
      * Crea una copia delle celle disponibili e le sorta
      */
@@ -134,8 +133,6 @@ public class Board implements IBoard {
     public IHeuristicCell getGreatKCell(int k) {
         if (k < 0 || k >= branchingFactor)
             return null;
-        // TODO: migliorare questo perché non vorremmo che creasse semppre un nuovo oggetto
-        // e lo distruggesse sul momento.
         return sortedAllCells[k];
     }
 
@@ -166,10 +163,6 @@ public class Board implements IBoard {
         swapAllCellsByIndex(B[i][j].index, freeCellsCount - 1);
         freeCellsCount--;
 
-        // TODO: invece di descrivere lo stato draw, come celle libere non rimanenti
-        // si potrebbero usare il numero di sliding window che hanno ancora possibilità di vincere
-        // così permette di stabilire il draw molte mosse prima.
-        // Update game state
         if (Player[currentPlayer] == allyPlayer && B[i][j].allyValue.hasOneLeft()) {
             gameState = allyPlayer == MNKCellState.P1 ? MNKGameState.WINP1 : MNKGameState.WINP2;
         } else if (Player[currentPlayer] == enemyPlayer && B[i][j].enemyValue.hasOneLeft()) {
@@ -179,15 +172,8 @@ public class Board implements IBoard {
         }
 
         B[i][j].state = Player[currentPlayer];
-        // bisogna anche settare il valore invalido???
-        // lo spostiamo tutto in cell Value update
         updateCellValue(i, j);
         updateCellDataStruct();
-        // addAdjiacentCells(i, j, 1);
-
-        // Arrays.sort()
-        // TODO: decidere come sortare le celle in modo da riprenderle in modo effettivo
-        
         currentPlayer = 1 - currentPlayer;
 
         return gameState;
@@ -233,7 +219,7 @@ public class Board implements IBoard {
         gameState = MNKGameState.OPEN;
         updateCellValue(cell.i, cell.j);
         updateCellDataStruct();
-        // addAdjiacentCells(cell.i, cell.j, -1);
+
         currentPlayer = 1 - currentPlayer;
     }
 
@@ -252,7 +238,6 @@ public class Board implements IBoard {
         MNKCellState opponentState = state == allyPlayer ? enemyPlayer : allyPlayer;
 
         // calcola solo su celle vuote
-        
         if (B[i][j].state == opponentState || B[i][j].state == state) {
             dirValue.setInvalidDirectionValue();
             dirValue.updateDirectionValue();
@@ -338,9 +323,6 @@ public class Board implements IBoard {
     }
 
     public int getValue(MNKCellState state) {
-        // return sumAllyHeuristic + sumEnemyHeuristic;
-        // proviamo così e vedo cosa succede
-
         if (state == allyPlayer) {
             return sumAllyHeuristic - sumEnemyHeuristic;
         } else {
@@ -397,32 +379,6 @@ public class Board implements IBoard {
     private void updateCellDirectionValue(int i, int j, int dirCode) {
         int jAdd = getHorizontalAdder(dirCode);
         int iAdd = getVerticalAdder(dirCode);
-
-        // TODO
-        // le cose difficili da fare è gestire il nuovo valore migliore per il middle,
-        // che probabilmente
-        // devi ancora andare a fare una scansione lineare
-        // invece per tutte le altre celle di interesse basta cambiare un valore
-        // esempio
-        // metto una croce in 0,0 allora, prendiamo per esempio le direzioni
-        // orizzontali.
-        // Mi basta togliere un 1 per l'orizzontale da una parte, mentre il centro lo
-        // devo aggiornare
-        // Invece per il cerchio, ora non può più fare nessuna combo da questa parte,
-        // quindi dobbiamo settare un -1
-        // nella direzione indicata e andare a ricalcolarci il middle.
-        // Questa cosa credo abbia complessità K^2, perché devo farlo per O(K) nodi e
-        // nel peggiore dei casi vado
-        // a fare una scansione lungo una direzione di K, ma se forse storiamo altri
-        // valori, probabilmente non avremo più bisogno di questo K in più
-        // ma dovremo avere un array lungo K che stori il numero di cosi contenuti nella
-        // sliding window o simile...
-
-        // attualmente è una versione lenta che aggiorna tutte le celle toccate
-
-        // Trova il punto d'inizio per aggiornare le celle
-
-        // TODO: magari questa parte si può mettere in una funzione che è ripetuta due volte
 
         int left = 1, right = 1;
         while (left < K && isValidCell(i - left * iAdd, j - left * jAdd)) {
@@ -555,6 +511,7 @@ public class Board implements IBoard {
     public int getFreeCellsCount() {
         return this.freeCellsCount;
     }
+
     public int getK() {
         return this.K;
     }

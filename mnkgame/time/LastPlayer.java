@@ -23,8 +23,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     // mosse del tree attuale
     private int movesCurrentTree;
 
-
-    private final boolean DEBUG = true;
+    private final boolean DEBUG = false;
 
     private int M, N;
 
@@ -63,8 +62,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     }
 
     public int minPlayer(int depth, int alpha, int beta) {
-        if (depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
-            return B.getValue(yourState);  // todo get the heuristic value of this game state
+        if (depth == DEPTH_LIMIT) {
+            return B.getValue(yourState);
         }else if(gameState == myWin){
             return KINF - 1;
         } else if (gameState == yourWin) {
@@ -93,7 +92,6 @@ public class LastPlayer implements mnkgame.MNKPlayer {
                 beta = Math.min(beta, v);
             }
 
-            // TODO: sarebbe buono provare a fare una ordering, sul principio della late move reduction.
             if (v <= alpha)
                 return v;
         }
@@ -105,7 +103,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     }
 
     private int maxPlayer(int depth, int alpha, int beta) {
-        if (depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
+        if (depth == DEPTH_LIMIT) {
             return B.getValue(myState);
         } else if(gameState == myWin){
             return KINF - 1;            
