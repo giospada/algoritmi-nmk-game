@@ -110,7 +110,48 @@ se questa non è ancora stata rimossa, altrimenti, indica la posizione di ritorn
     freeCellsCount = freeCellsCount + 1\;
     \caption{markCell senza checks sulla board}
 \end{algorithm}
-    
+
+## L'Euristica
+
+In questo progetto sono fondamentali le euristiche utilizzate al fine del successo del Player.
+Esiste una unica euristica che viene utilizzata, in modi diversi, sia per la valutazione della board
+sia per la scelta delle mosse.
+
+### MICS - Minimum Incomplete Cell Set
+
+### Calcolo con le sliding window
+
+### Rilevamento dei doppio-gioci e fine-giochi
+
+Con il sistema a sliding window possiamo anche rilevare con molta facilità alcune celle particolari *critiche* ossia 
+situazioni di doppi giochi oppure giochi ad una mossa dalla fine. 
+
+> Definiamo **fine-giochi** le celle per cui esiste almeno una sliding window a cui manca 1 mossa per vincere
+
+È chiaro come queste celle siano molto importanti sia per noi, al fine della vittoria, sia per il nemico, al fine di bloccarli.
+
+> Definiamo **doppi-giochi banali** le celle per cui 
+esistono due o più sliding window per cui mancano 2 mosse per vincere
+
+Se abbiamo una tale configurazione, si può notare molto facilmente come muovere su quella cella riduce le mosse per vincere
+di 1 in entrambe la sliding window. Abbiamo allora due sliding window in cui manca una mossa per vincere, per cui il nemico
+può bloccare al massimo una, garantendoci la vittoria sull'altra.
+
+Riguardo i doppi-giochi non banali, ossia doppi giochi in cui abbiamo bisogno di 3 o più mosse per vincere ci basiamo sulla
+capacità del minimax di scovarli, non siamo riusciti a trovare un modo per codificare questo caso tramite le sliding-window.
+
+### Punteggi per configurazioni du doppio-gioco e fine-gioco
+
+Sono assegnati alcuni punteggi speciali alle celle di doppio-gioco o fine-gioco.
+
+Queste configurazioni non sono espressamente visibili al MICS, per cui abbiamo assegnato dei valori fissi a *gradini*,
+ossia in qualunque modo si calcoli il MICS, il valore euristico di questo non può superare il valore assegnato da
+una cella di doppio gioco, e quest'ultima non può superare il valore di una cella di fine-gioco.
+
+Quindi in ordine di importanza abbiamo:
+1. Cella di fine-gioco
+2. Cella di doppio-gioco banale
+3. Cella valutata dall'euristica del MICS.
 
 # TODOS
 
@@ -165,10 +206,22 @@ Just a sample algorithmn
    vittoria al primo livello, questo non gli permetteva di pianificare le proprie mosse.
 
 3. alpha beta pruning puro, per i test grandi impiegava troppo tempo d'esecuzione, non riuscendo a fare l'eval di neanche una mossa
+4. [rule-based strategy$^2$][#refs], basato su 5 steps che riporto qui testualmente: Rule 1  If the player has a winning move, take it. Rule 2  If the opponent has a winning move, block it. Rule 3  If the player can create a fork (two winning ways) after this move, take it. Rule 4  Do not let the opponent create a fork after the player’s move. Rule 5  Move in a way such as the player may win the most number of possible ways. 
+   1. Queste regole sono state molto importanti come guida del nostro progetto, nonostante non siano applicate in modo esplicito, hanno guidato il valore fisso per le celle di doppio-gioco e fine-gioco.
+
+## Miglioramenti possibili
+1. Utilizzare un sistema ad apprendimento automatico per decidere il `BRANCHING_FACTOR` e la `DEPTH_LIMIT` che ora sono
+hardcodate secondo l'esperienza umana.
+2. Utilizzare più threads per l'esplorazione parallela dell'albero di ricerca (non possibile per limiti imposti).
+
+# Conclusione
+Abbiamo osservato come un classico algoritmo Minimax con alpha-beta pruning possa giocare in modo simile, o superiore 
+rispetto all'essere umano per le board di grandezza adeguata per l'umano (<= 10 per M e N), data una euristica che gli 
+permetta di potare ampi rami di albero.
 
 # References
 <div id="refs"></div>
 
 1. Russell, Stuart J., e Peter Norvig. Artificial Intelligence: A Modern Approach. Fourth edition, Global edition, Pearson, 2022. Chapt. 2
 
-
+2. Development of Tic-Tac-Toe Game Using Heuristic Search IOP Publishing, 2nd Joint Conference on Green Engineering Technology & Applied Computing 2020, Zain AM, Chai CW, Goh CC, Lim BJ, Low CJ, Tan SJ
