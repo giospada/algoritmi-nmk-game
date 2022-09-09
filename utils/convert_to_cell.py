@@ -47,15 +47,23 @@ def main():
     buffer = ''
     buffer2 = ''
     inp = input().strip()
+
+    xInput = []
+    yInput = []
     while inp != "":
         inp = inp.split()[-1]
+        xInput.append(eval(inp)[0])
+        yInput.append(eval(inp)[0])
         buffer += make_line(eval(inp), args.name)
         buffer2 += make_line(eval(inp), "Board")
 
         inp = input().strip()
+    
+    print("let xMosse [] = [ {} ];" % xInput, end="")
+    print("let yMosse [] = [ {} ];" % yInput, end="")
+    print(f"int lenMosse = {len(yInput)};", end="")
 
-    print(buffer)
-    print(buffer2)
+
 
 if __name__ == "__main__":
     main()
