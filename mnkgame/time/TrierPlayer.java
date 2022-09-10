@@ -4,7 +4,11 @@ import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 
-public class LastPlayer implements mnkgame.MNKPlayer {
+
+/**
+ * Scopo di questo player è avere la depth migliore
+ */
+public class TrierPlayer implements mnkgame.MNKPlayer {
     private IBoard B;
     private MNKGameState myWin;
     private MNKCellState myState;
@@ -23,9 +27,15 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     // mosse del tree attuale
     private int movesCurrentTree;
 
+
     private final boolean DEBUG = false;
 
-    public LastPlayer() {}
+    private int M, N;
+
+    // l'algoritmo si comporta in modo molto strano alle prime mosse
+    private boolean firstMove;
+    
+    public TrierPlayer() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
         long timeStart = System.currentTimeMillis();
@@ -37,19 +47,30 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         this.myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         this.yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 
-        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
-        timing.findBestTime();
+        firstMove = true;
+        this.M = M;
+        this.N = N;
+        
+        
+        DEPTH_LIMIT = DepthValue.Depth;
+        this.maxNumberOfMoves = DepthValue.NumeroDiMosse;
+        if(K>=10){
+            BRANCHING_FACTOR = 3;
+        }
+        //TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
+        //timing.findBestTime();
         // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
-        BRANCHING_FACTOR = timing.getBranchingFactor();
-        DEPTH_LIMIT = timing.getDephtLimit();
-        this.maxNumberOfMoves = timing.getMoves();
+        //BRANCHING_FACTOR = timing.getBranchingFactor();
+        //DEPTH_LIMIT = timing.getDephtLimit();
+        //this.maxNumberOfMoves = timing.getMoves();
         this.maxMovesCurrentTree = 0;
         this.movesCurrentTree = 0;
+
     }
 
     public int minPlayer(int depth, int alpha, int beta) {
-        if (depth == DEPTH_LIMIT) {
-            return B.getValue(yourState);
+        if (depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
+            return B.getValue(yourState);  // todo get the heuristic value of this game state
         }else if(gameState == myWin){
             return KINF - 1;
         } else if (gameState == yourWin) {
@@ -65,7 +86,8 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
-                break;
+                throw new RuntimeException("max moves reached");
+                
             }
 
             gameState = B.markCell(B.getGreatKCell(i));
@@ -78,6 +100,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
                 beta = Math.min(beta, v);
             }
 
+            // TODO: sarebbe buono provare a fare una ordering, sul principio della late move reduction.
             if (v <= alpha)
                 return v;
         }
@@ -89,7 +112,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     }
 
     private int maxPlayer(int depth, int alpha, int beta) {
-        if (depth == DEPTH_LIMIT) {
+        if (depth == DEPTH_LIMIT) {  // TODO: check when the board is in end state (depth time, state)
             return B.getValue(myState);
         } else if(gameState == myWin){
             return KINF - 1;            
@@ -105,7 +128,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
-                break;
+                throw new RuntimeException("max moves reached");
             }
 
             gameState = B.markCell(B.getGreatKCell(i));
@@ -194,12 +217,13 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         if (movedCells.length > 0) {
             MNKCell c = movedCells[movedCells.length - 1]; // Recover the last move from MC
             B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
+            firstMove = false;
         }
 
         if (DEBUG) {
-            // B.print();
-            // B.printHeuristics(true);
-            // B.printHeuristics(false);
+            B.print();
+            B.printHeuristics(true);
+            B.printHeuristics(false);
         }
 
         // MNKCell priorityCell=checkEasyState();
@@ -217,6 +241,6 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     }
 
     public String playerName() {
-        return "Mics Player v2";
+        return "Mics Biggo v2";
     }
 }

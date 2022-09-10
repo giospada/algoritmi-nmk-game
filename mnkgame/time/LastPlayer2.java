@@ -26,11 +26,6 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
 
     private final boolean DEBUG = false;
 
-    private int M, N;
-
-    // l'algoritmo si comporta in modo molto strano alle prime mosse
-    private boolean firstMove;
-    
     public LastPlayer2() {}
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
@@ -43,22 +38,17 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         this.myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         this.yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 
-        firstMove = true;
-        this.M = M;
-        this.N = N;
         
-        
-        DEPTH_LIMIT = DepthValue.Depth;
-        this.maxNumberOfMoves = DepthValue.NumeroDiMosse;
-        if(K>=10){
-            BRANCHING_FACTOR = 3;
-        }
-        //TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
-        //timing.findBestTime();
-        // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
-        //BRANCHING_FACTOR = timing.getBranchingFactor();
-        //DEPTH_LIMIT = timing.getDephtLimit();
-        //this.maxNumberOfMoves = timing.getMoves();
+        // DEPTH_LIMIT = DepthValue.Depth;
+        // this.maxNumberOfMoves = DepthValue.NumeroDiMosse;
+        // if(K>=10){
+        //     BRANCHING_FACTOR = 3;
+        // }
+        TimingPlayerTwo timing = new TimingPlayerTwo(timeStart, timeout_in_secs, B);
+        timing.findBestTime();
+        BRANCHING_FACTOR = timing.getBranchingFactor();
+        DEPTH_LIMIT = timing.getDephtLimit();
+        this.maxNumberOfMoves = timing.getMoves();
         this.maxMovesCurrentTree = 0;
         this.movesCurrentTree = 0;
 
@@ -82,8 +72,7 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
-                throw new RuntimeException("max moves reached");
-                
+                break;
             }
 
             gameState = B.markCell(B.getGreatKCell(i));
@@ -124,7 +113,7 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
-                throw new RuntimeException("max moves reached");
+                break;
             }
 
             gameState = B.markCell(B.getGreatKCell(i));
@@ -213,7 +202,6 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         if (movedCells.length > 0) {
             MNKCell c = movedCells[movedCells.length - 1]; // Recover the last move from MC
             B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
-            firstMove = false;
         }
 
         if (DEBUG) {
