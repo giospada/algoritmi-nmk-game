@@ -89,7 +89,7 @@ class TimingPlayer{
 
 
     private boolean hasTimeRunOut() {
-        return (System.currentTimeMillis() - timeStart) / 1000.0 > TIMEOUT * (90.0 / 100.0);
+        return (System.currentTimeMillis() - timeStart) / 1000.0 > TIMEOUT * (85.0 / 100.0);
     }
 
     public int getMoves() {
@@ -100,6 +100,7 @@ class TimingPlayer{
         return BRANCHING_FACTOR;
     }
     public int getDephtLimit(){
+        if(B.getK() == 10 && moves < 1000000)return 8; 
         return DEPTH_LIMIT;
     }
 

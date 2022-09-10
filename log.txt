@@ -1,0 +1,85 @@
+args.board=(5, 5, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(5, 5, 5)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=11, numeroDiMosse=10000000
+args.board=(6, 5, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(6, 6, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=11, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(6, 6, 5)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=9, numeroDiMosse=10000000
+args.board=(6, 6, 6)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=11, numeroDiMosse=10000000
+args.board=(7, 5, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(7, 6, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=13, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(7, 7, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=13, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(7, 5, 5)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=9, numeroDiMosse=10000000
+args.board=(7, 6, 5)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=9, numeroDiMosse=10000000
+args.board=(7, 7, 5)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=9, numeroDiMosse=10000000
+args.board=(7, 7, 6)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=9, numeroDiMosse=10000000
+args.board=(7, 7, 7)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=11, numeroDiMosse=10000000
+args.board=(8, 8, 4)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=15, numeroDiMosse=10000000
+args.board=(10, 10, 5)
+massimo=5, numeroDiMosse=10000
+massimo=7, numeroDiMosse=100000
+massimo=9, numeroDiMosse=1000000
+massimo=9, numeroDiMosse=10000000
+args.board=(50, 50, 10)
+massimo=8, numeroDiMosse=10000
+massimo=12, numeroDiMosse=100000
+massimo=13, numeroDiMosse=1000000
+massimo=13, numeroDiMosse=10000000

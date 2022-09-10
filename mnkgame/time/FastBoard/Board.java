@@ -409,11 +409,18 @@ public class Board implements IBoard {
         for(; !isValidCell(cI, cJ); cJ += jAdd, cI += iAdd,step += 1) {}
 
         /**
-         * Stora il numero di celle sia mie che avversarie (avversarie sono negative)
+         * Stora il numero di celle, che appartengono a me se sono positive e all'avversario se sono negative
          * se ho 0 non ho celle per nessuno dei due, se ho max ho invalido
          */
-        int numSlidingWindow[] = {0, 0};  // ally, enemy
         QueueFixedInt numeroCelleSlidingWindow = new QueueFixedInt(K + 1);
+        int numSlidingWindow[] = {0, 0};  // ally, enemy
+        /*
+            Devono tenersi il numero di celle (negative per il nemico, positive per l'alleato)
+            deve tenersi l'ultimo index di queste celle
+        */
+        QueueFixedInt unltimoIndexDelleCelleContinue = new QueueFixedInt(K+1);
+        QueueFixedInt numeroDiCelleContinue = new QueueFixedInt(K+1);
+
         QueueMaxFixed maxSlidingWindow [] = { new QueueMaxFixed(K + 1), new QueueMaxFixed(K + 1) };
         for(;!isValidCell(cI, cJ) && step < stepTotali; cJ += jAdd, cI += iAdd,step += 1, celleEsplorate++){
             // eliminazione della cella più vecchia
@@ -463,6 +470,7 @@ public class Board implements IBoard {
             }
 
 
+
             // se esiste una sliding windows
             if(celleEsplorate >= K){
                 // guardiamo se la sliding window è valida per entrambi, uno dei due o per nessuno
@@ -498,6 +506,7 @@ public class Board implements IBoard {
                     B[tI][tJ].allyValue.directions[dirCode].center = maxSlidingWindow[0].getMax();
                     B[tI][tJ].allyValue.directions[dirCode].numMaximumSliding = maxSlidingWindow[0].getMaxCount();
                     B[tI][tJ].allyValue.directions[dirCode].numSliding = numSlidingWindow[0];
+                    B[tI][tJ].allyValue.directions[dirCode].numMyCells =
                     
                     
                     B[tI][tJ].enemyValue.directions[dirCode].center = maxSlidingWindow[1].getMax();

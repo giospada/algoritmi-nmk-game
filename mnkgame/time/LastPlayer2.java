@@ -46,15 +46,22 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         firstMove = true;
         this.M = M;
         this.N = N;
-
-        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
-        timing.findBestTime();
+        
+        
+        DEPTH_LIMIT = DepthValue.Depth;
+        this.maxNumberOfMoves = DepthValue.NumeroDiMosse;
+        if(K>=10){
+            BRANCHING_FACTOR = 3;
+        }
+        //TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
+        //timing.findBestTime();
         // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
         //BRANCHING_FACTOR = timing.getBranchingFactor();
         //DEPTH_LIMIT = timing.getDephtLimit();
-        this.maxNumberOfMoves = timing.getMoves();
+        //this.maxNumberOfMoves = timing.getMoves();
         this.maxMovesCurrentTree = 0;
         this.movesCurrentTree = 0;
+
     }
 
     public int minPlayer(int depth, int alpha, int beta) {
@@ -75,7 +82,8 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
-                break;
+                throw new RuntimeException("max moves reached");
+                
             }
 
             gameState = B.markCell(B.getGreatKCell(i));
@@ -116,7 +124,7 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         
         for (int i = 0; i < len; i++) {
             if (movesCurrentTree + depth >= maxMovesCurrentTree) {
-                break;
+                throw new RuntimeException("max moves reached");
             }
 
             gameState = B.markCell(B.getGreatKCell(i));
