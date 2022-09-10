@@ -17,7 +17,7 @@ Giovanni Spadaccini : 0001021270
 
 Abbiamo utilizzato di un algoritmo di Minimax euristico con alpha-beta pruning per la risoluzione 
 del gioco mnk, una forma generalizzata del tris. L'algoritmo utilizza l'euristica di valutazione per scoprire l'ordine
-di esplorazione di un numero limitato di nodi, le esplora fino a un livello di profondità prefissato, dopo 
+di esplorazione di un numero limitato di nodi e li esplora fino a un livello di profondità prefissato, dopo 
 il quale ritorna un valore euristico o un valore finale, nel caso in cui la board sia terminale.
 
 <!-- 
@@ -25,7 +25,7 @@ TODO: questa parte sotto ha senso che ci sia??
  -->
 
 Dai test fatti in locale, l'algoritmo sembra avere capacità simili o superiori a quelle di un umane per 
-le tavole accessibili ai limiti umani (ossia da 10 in giù).
+le tavole accessibili ai limiti umani (ossia da 19 in giù).
 
 <!-- 
 > Non credo che abbiamo libertà di esprimerci su questo
@@ -37,9 +37,8 @@ della memoria a basso livello per la presenza di un garbage collector.
 
 ## Introduzione
 
-Il gioco proposto è una versione generalizzata del gioco (nought and crosses) conosciuto più generalmente
-in occidente come tris, o gomoku in Giappone: un gioco a due giocatori su una tavola simile 
-a quanto in immagine, a turni, in cui bisogna allineare un certo numero di pedine del prioprio
+Il gioco proposto è una versione generalizzata del gioco tris, o gomoku in Giappone: un gioco a due giocatori a turni alterni su una tavola simile 
+a quanto in immagine, in cui bisogna allineare un certo numero di pedine del proprio
 giocatore al fine di vincere.
 
 \begin{figure}[H]
@@ -51,7 +50,7 @@ giocatore al fine di vincere.
 \end{figure}
 
 Seguendo la caratterizzazione di un ambiente di gioco di [Russel e Norvig$^1$](#refs) possiamo
-definire il gioco come un ambiente deterministico, multigiocatore, con informazioni complete, 
+descrivere il gioco come un ambiente deterministico, multigiocatore, con informazioni complete, 
 sequenziale, statico, conosciuto e discreto. Questa descrizione ci ha permesso di avere una 
 prima idea di quali algoritmi potessero essere utilizzati per la risoluzione del gioco, in 
 quanto in letteratura questo problema, e problemi simili, sono stati risolti con tecniche che ormai possiamo considerare *classiche*.
@@ -60,9 +59,15 @@ Sotto questa logica abbiamo scelto l'implementazione di un minimax euristico.
 
 ## L'algoritmo ad alto livello
 
-Il nostro algoritmo euristico minimax fa una [stima iniziale di quanto può esplorare](#timer-test) e in seguito
-utilizza un ordinamento delle mosse secondo una [euristica](#euristica) per decidere l'ordine di eslorazione delle mosse
-ed esplora un numero limitato di celle fino a una profondità limitata.
+Il nostro algoritmo minimax euristico fa una [stima iniziale di quanto può esplorare](#timer-test) e in seguito
+utilizza un ordinamento delle mosse secondo una [euristica](#euristica) per decidere l'ordine di eslorazione delle mosse inoltre visita un numero limitato di nodi, determinato da due costanti che gli indicano quanti nodi esplorare in ampiezza e quante in profondità.
+
+<!-- 
+TODO:
+Il nostro algoritmo minimax euristico fa una [stima iniziale di quanto può esplorare](#timer-test).
+In seguito utilizza un ordinamento delle mosse secondo una [euristica](#euristica) al fine di decidere un ordine di 
+ricerca delle mosse ed esplora fino a un numero massimo di celle e a una profondità limitata.
+ -->
 
 ### Argomenti trattati
 
@@ -85,80 +90,41 @@ ed esplora un numero limitato di celle fino a una profondità limitata.
 
 **Problema**
 
-Trovare le celle libere e le celle occupate, dopo varie esecuzioni di markCell e unmarkCell.
+Marcare e smarcare le celle nella maniera più veloce possibile.
 
 <!-- Avere una funzione di markCell e unmarkCell che permette -->
 
 **Algoritmi considerati**
 
-1. riallocarci ogni volta un array con le freeCell meno quella appena fatta (nel caso di markCell), 
-    o di crearci un array con tutte le freeCell con anche l'ultima mossa fatta (nel caso di unmarkCell), costo $O(n)$
+1. riallocarci ogni volta un array con le freeCell meno quella appena marcata (nel caso di markCell), 
+    o di crearci un array con tutte le freeCell con anche l'ultima mossa eseguita (nel caso di unmarkCell), costo $O(n)$
 
 2. utilizzo di una linked list per tenerci i valori.  Questo approccio nonostante avesse le 
    operazioni di insert e remove in tempo constante performava peggio di riallocarsi un array 
-   ogni volta (che ha costo $O(n)$) (pensiamo che questo sia dovuto alle ottimizzazioni cache delgli array)
+   ogni volta (che ha costo $O(n)$) (pensiamo che questo sia dovuto alle ottimizzazioni cache degli array)
 
-3. utilzzo di hash table e set  <!-- TODO: da completare -->
+3. utilizzo di hashset: ha un costo lineare nel caso pessimo oltre a delle costanti molto alte nel caso medio.
 
 
 **Algoritmo utilizzato**
 
-Abbiamo ideato un sistema che è in grado di fare `markCell`, `unmarkCell` in tempo costante 
-in caso ottimo, pessimo e medio, senza considerare i checks aggiuntivi per verificare lo stato
+Abbiamo ideato un sistema che è in grado di eseguire le operazioni di `markCell`, `unmarkCell` in tempo costante 
+nel caso ottimo, pessimo e medio, senza considerare i checks aggiuntivi per verificare lo stato
 del gioco e l'aggiornamento dell'euristica. 
 
 Al fine di raggiungere questa velocità, l'insieme delle mosse eseguite è tenuto alla fine 
-di un array che contiene tutte le mosse , in modo simile a quanto fa una heap, studiata durante il corso,
-al momento di rimozione. Queste mosse sono tenute come se fossero uno stack, e possono essere 
-ripristinate con semplici assegnamenti. Questa implementazione migliora rispetto alla board del codice iniziale
+di un array che contiene tutte le mosse, in modo simile a quanto fa una heap, studiata durante il corso,
+al momento di rimozione. 
+
+Mano a mano che le celle vengono utilizzate, esegue uno swap con l'ultima cella dell'array e si memorizza la posizione in cui era, così facendo, quando viene chiamata l'unmarkCell, riesce a riposizionarsi nella sua vecchia posizione.
+Questa implementazione migliora rispetto alla board del codice iniziale
 nel caso pessimo, in quanto non deve più necessitare di un hashtable, il cui caso pessimo è $O(n)$ con n la grandezza della table.
 
-<!-- 
-TODO: scegliere quale versione tenere
- -->
-Al fine di raggiungere questa velocità, l'insieme delle mosse eseguite è tenuto alla fine 
-di un array che contiene tutte le mosse, questo array contiene inizialmente tutte le celle libere.
-Mano a mano che le celle vengono utilizzate fa lo swap con l'ultima cella dell'array e si ricorda la posizione in cui era,
-così facendo quando viene chiamata l'unmarkCell riesce a riposizionarsi nella sua vecchia posizione.
 
 **Nota**: tutte le celle contengono un **index** che indica la posizione dell'array in cui è contenuta la mossa, altrimenti,
 se questa non è ancora stata rimossa indica la posizione di ritorno.
 
-\begin{algorithm}[H]
-    \SetAlgoLined
-    \KwResult{Cella richiesta della tavola è marcata}
-    \SetKwInOut{Input}{Input}
-    \SetKwInOut{Output}{Output}
-    \Input{int freeCellsCount: numero di celle libere, è compreso fra 1 e allCells.length}
-    \Input{int index: l'index della cella da marcare, compresa fra 0 e freeCellsCount}
-    \Input{Cell[] allCells: array tutte le celle, in cui le prime freeCellsCount sono considerate libere}
-    \Output{void: viene modificata allCells}
-    \BlankLine
-
-    allCells[freeCellsCount - 1].index = allCells[index].index\;
-    swap(allCells[freeCellsCount - 1], allCells[index])\;
-    \tcp{marca la cella come occupata dal giocatore}
-    mark(allCells[freeCellsCount - 1])\;
-    freeCellsCount = freeCellsCount - 1\;
-    \caption{markCell senza checks sulla board}
-\end{algorithm}
-
-\begin{algorithm}[H]
-    \SetAlgoLined
-    \KwResult{Viene rimosso l'ultima mossa della tavola}
-    \SetKwInOut{Input}{Input}
-    \SetKwInOut{Output}{Output}
-    \Input{int freeCellsCount: numero di celle libere, è compreso fra 0 e allCells.length - 1}
-    \Input{Cell[] allCells: array tutte le celle, in cui le prime freeCellsCount sono considerate libere}
-    \BlankLine
-
-    \tcp{marca la cella come libera}
-    markFree(allCells[freeCellsCount - 1])\;
-    swap(allCells[allCells[freeCellsCount].index], allCells[freeCellsCount])\;
-    allCells[freeCellsCount].index = freeCellsCount\;
-    freeCellsCount = freeCellsCount + 1\;
-    \caption{unmarkCell senza checks sulla board}
-\end{algorithm}
+Pseudocodici per queste due funzioni sono presenti in [appendice](#appendice)
 
 ## L'Euristica
 
@@ -170,9 +136,9 @@ sia per la scelta delle mosse.
 
 L'euristica del MICS racchiude in sé 3 informazioni principali:
 
-1. Quanto è favorevole una cella secondo aperture e pedine mie e nemiche.
+1. Quanto è favorevole una cella secondo le mie pedine.
    
-2. In modo analogo calcolo stesso valore per il nemico.
+2. Quanto è favorevole .
    
 3. La somma dei due valori precedenti mi dà una stima di criticità della singola cella (senza la presenza di doppi-giochi e fine-giochi)
 
@@ -182,13 +148,34 @@ Questa euristica è una versione modificata dell'euristica proposta da [Nathanie
 
 ### Calcolo del MICS con le sliding window
 
-<!-- 
-TODO: 
- -->
+> Definiamo **Sliding-window** un insieme di celle allineate in una direzione di lunghezza `K`
 
+L'euristica calcola per ogni direzione di una singola cella e per entrambi i player i seguenti valori:
+
+1. Il numero di celle amiche presenti 
+2. Il numero di sliding windows che passano per una cella
+3. Massimo numero delle sliding-window con minor numero di celle necessarie per la vittoria
+4. Il numero di sliding-window massime
+
+Per fare ciò andiamo in tutte `k-1` celle in tutte le direzioni in cui è possibile andare, 
+ed andiamo ad riaggioranre i valori in di queste celle nella direzione attraverso la quale si allineano con la cella modificata.
+Per riaggiornare questi valori chiamiamo la funzione `updateDirectionValue`
+
+
+La funzione che aggiorna una singola cella per una direzione è implementata in `computeCellDirectionValue`. 
+
+Questa funzione esplora la cella attuale, in direzione orizzontale o verticale, e si allarga fin quanto può verso
+una direzione (al massimo di `K - 1`), una volta ragginto il limite in questa direzione, si espande nella direzione opposta, mantenendo
+la sliding window nel caso sia stata creata. Mentre si espande anche dall'altra parte, finchè non va oltre le `k-1` celle o finchè non trova una cella dell'altro player,
+si aggiorna i valori della sliding window corrente, e aggiorna i valori della cella di cui sta facendo l ´update.
+
+Abbiamo tentato di scrivere uno pseudocodice che provasse a rendere in maniera più chiara quest'ultimo algoritmo in 
+[appendice](#appendice).
+
+ 
 ### Rilevamento dei doppio-giochi e fine-giochi
 
-Con il sistema a sliding window possiamo anche rilevare con molta facilità alcune celle particolari *critiche* ossia 
+Con il sistema a sliding window possiamo anche rilevare con molta facilità alcune celle *critiche* ossia 
 situazioni di doppi giochi oppure giochi ad una mossa dalla fine. 
 
 > Definiamo **fine-giochi** le celle per cui esiste almeno una sliding window a cui manca 1 mossa per vincere
@@ -231,33 +218,37 @@ Si possono osservare i valori di questi moltiplicatori `MY_CELL_MULT` e `ADIACEN
 
 Questi valori si sono rilevati fondamentali per il gioco intelligente del player.
 
+
 ## Ordinamento delle mosse
 
 **Problema**
 
-Su un array di `n` celle libre, dobbiamo ordinare le prime `l` che hanno il valore più alto
+Ad ogni momento dalla board abbiamo la necessità di trovare le migliori `q` celle ordinate in modo 
+decrescente, che determineranno l'ordine di ricerca.
+
+Su un array di `n` celle libere, dobbiamo ordinare le prime `q` che hanno il valore più alto
 
 
 **Approcci presi in considerazione**
 
-Ad ogni momento dalla board dobbiamo riuscire a vedere le migliori `l` celle.
-Per farlo abbiamo guardato vari metodi.
-
 1. Il primo sorting normale che andava in $O(n\, \log\, n)$ dove n sono le celle libere
    
-2. Quick select, che non andava bene perchè separa i `l` elementi più grandi ma non sono oridnati, quindi ci sarebbe costato $O(n + l\, \log\, l)$. E tempo d'esecuzione peggiore però sarebbe stato $O(n^2 + l\, \log\, l)$.
+2. Quick select, che non andava bene perchè separa i `q` elementi più grandi ma non sono ordinati, quindi ci sarebbe costato $O(n + q\, \log\, q)$.
+ E tempo d'esecuzione peggiore però sarebbe stato $O(n^2 + q\, \log\, q)$, $O(n^2)$ nel caso peggiore di quick-select 
+ e $O(q\, \log\, q)$ per ordinare le celle.
 
 **Algoritmo Utilizzato**
 
 Il metodo che abbiamo utilizzato sfrutta una leggera variazione dell'algoritmo di heap-select: 
-si scorre l'array delle celle libere tenendosi una heap di massimo `l` elementi di questa, e infine 
-svuota la heap e la mette in un array che contiene le prime `l` celle sortate.
-Costo computazionale $O(n\, \log\, l)$
+si scorre l'array delle celle libere tenendosi una heap di massimo `q` elementi di questa, e infine 
+svuota la heap e la mette in un array che contiene le prime `q` celle sortate.
+
+Costo computazionale $O(n\, \log\, q)$ in quanto eseguiamo una operazione di inserimento di costo $O(\log\, q)$ nella heap, $O(n)$ volte
 
 Questo miglioramento sui primi test è riustito a far esplorare la board 5 o 6 volte più mosse a parità di tempo in input.
 
 Un esempio di utilizzo di questo algoritmo lo si può trovare in `updateCellDataStruct` della Board. In questo caso utilizziamo
-la variabile `branchingFactor` per tenere il valore di `l` molto basso.
+la variabile `branchingFactor` per tenere il valore di `q` molto basso.
 
 \begin{algorithm}[H]
 \SetAlgoLined
@@ -330,17 +321,19 @@ e utilizzeremo questo numero trovato durante l'init per decidere quanti nodi pu�
 
 **Problema**
 
-Come distribuire il numero di mosse, nell'esplorazine del minimax.
+Vorremmo che le celle più promettenti abbiano più tempo a disposizione per l'esplorazione.
+Dobbiamo creare un metodo per distribuire il numero di mosse disponibili durante l'esplorazione del minimax.
 
 **Soluzione utilizzata**
 
-Abbiamo visto che in seguito all'ordering del [MICS](#mics---minimum-incomplete-cell-set) le prime celle sono quelle più importanti
+Abbiamo visto che in seguito all'ordinamento con l'euristica le prime celle sono quelle più importanti
 da esplorare, quindi vogliamo distribuire più mosse alla prima cella, in modo che possa avere una esplorazione più approfondita.
 
 In `findBestMove` vediamo come sono utilizzati il numero di celle trovate in questo modo.
+
 Nel caso in cui la prima cella non utilizzi tutte le celle date, queste saranno affidate alle celle di esplorazione successive.
 La cella di esplorazione successiva può, quindi, esplorare un numero di celle uguale a `numero nodi non utilizzati precedenti + addendo di nuove celle da esplorare`. 
-Così per le prime `branchingFactior * 4` con i valori euristici più grandi.
+Così per le prime `branchingFactor * 3` con i valori euristici più grandi.
 
 ### Scelta del fattore di ramificazione e profondità 
 
@@ -375,28 +368,6 @@ Alcune cose importanti che si dovrebbero fare?
 - [x] spiegazione dei valori euristici per l'esplorazione in depth e in weight
 - [ ] Minimax
 
-<!-- Esempio di algoritmo in MD, che si può compilare con pandoc -->
-## Algorithm 1
-
-Just a sample algorithmn
-\begin{algorithm}[H]
-\SetAlgoLined
-\KwResult{Write here the result}
-\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
-\Input{Write here the input}
-\Output{Write here the output}
-\BlankLine
-\While{While condition}{
-    instructions\;
-    \eIf{condition}{
-        instructions1\;
-        instructions2\;
-    }{
-        instructions3\;
-    }
-}
-\caption{While loop with If/Else condition}
-\end{algorithm}
 
 ## Approcci fallimentari
 1. Simulazione di Montecarlo (MCTS), dato il grande successo di AlphaGo
@@ -423,16 +394,54 @@ Rule 5  Move in a way such as the player may win the most number of possible way
 1. Utilizzare un sistema ad apprendimento automatico per decidere il `BRANCHING_FACTOR` e la `DEPTH_LIMIT` che ora sono
 di valori fissati, secondo l'esperienza umana.
 2. Utilizzare più threads per l'esplorazione parallela dell'albero di ricerca (non possibile per limiti imposti).
+3. Update dell'euristica in $O(k)$ invece dell'attuale $O(k ^2)$, dove $k$ è il numero di celle da allineare.
 
 # Conclusione
 Abbiamo osservato come un classico algoritmo Minimax con alpha-beta pruning possa giocare in modo simile, o superiore 
-rispetto all'essere umano per le board di grandezza adeguata per l'umano ($\leq 10$ per M e N), data una euristica che gli 
+rispetto all'essere umano per le board di grandezza adeguata per l'umano, data una euristica che gli 
 permetta di potare ampi rami di albero.
 
 \pagebreak
 
 # Appendice
 <div id="appendice"></div>
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \KwResult{Cella richiesta della tavola è marcata}
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+    \Input{int $freeCellsCount$ : numero di celle libere, è compreso fra 1 e allCells.length}
+    \Input{int $index$: l'index della cella da marcare, compresa fra 0 e $freeCellsCount$}
+    \Input{Cell[] $allCells$: array tutte le celle, in cui le prime $freeCellsCount$ sono considerate libere}
+    \Output{void: viene modificata allCells}
+    \BlankLine
+
+    $allCells$[$freeCellsCount$ - 1].index = $allCells$[$index$].index\;
+    swap($allCells$[$freeCellsCount$ - 1], $allCells$[$index$])\;
+    \tcp{marca la cella come occupata dal giocatore}
+    mark($allCells$[$freeCellsCount$ - 1])\;
+    $freeCellsCount$ = $freeCellsCount$ - 1\;
+    \caption{markCell senza checks sulla board}
+\end{algorithm}
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \KwResult{Viene rimosso l'ultima mossa della tavola}
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+    \Input{int $freeCellsCount$: numero di celle libere, è compreso fra 0 e allCells.length - 1}
+    \Input{Cell[] $allCells$: array tutte le celle, in cui le prime $freeCellsCount$ sono considerate libere}
+    \BlankLine
+
+    \tcp{marca la cella come libera}
+    markFree($allCells$[$freeCellsCount$ - 1])\;
+    swap($allCells$[$allCells$[$freeCellsCount$].index], $allCells$[$freeCellsCount$])\;
+    allCells[$freeCellsCount$].index = $freeCellsCount$\;
+    $freeCellsCount$ = $freeCellsCount$ + 1\;
+    \caption{unmarkCell senza checks sulla board}
+\end{algorithm}
+
 
 \begin{algorithm}[H]
 \SetAlgoLined
@@ -449,7 +458,7 @@ permetta di potare ampi rami di albero.
 \BlankLine
 
 \SetKwFunction{FMv}{Max-Value}
-\Fn{\FMv{$game$, $state$}}{
+\Fn{\FMv{$game$, $state$, $alpha$, $beta$}}{
     if $game$.terminalTest($state$) then
         \Return $game$.utility($state$), null\;
     \BlankLine
@@ -458,9 +467,14 @@ permetta di potare ampi rami di albero.
 
         
     \For{each $action$ in $game$.actions($state$) limitato da una branching factor}{
-        v, m = Min-Value($game$, $game$.result($state$, $action$))\;
+        v, m = Min-Value($game$, $game$.result($state$, $action$), $alpha$, $beta$)\;
         \If{v > value} {
             value, move = v, $action$\;
+            $alpha$ = Max($alpha$, value)\;
+        }
+
+        \If{v $\geq$ $beta$} {
+            \Return value, move\;
         }
     }
     \BlankLine
@@ -470,7 +484,7 @@ permetta di potare ampi rami di albero.
 \BlankLine
 
 \SetKwFunction{Fmv}{Min-Value}
-\Fn{\Fmv{$game$, $state$}}{
+\Fn{\Fmv{$game$, $state$,$alpha$, $beta$}}{
     if $game$.terminalTest($state$) then
         \Return $game$.utility($state$), null\;
     \BlankLine
@@ -478,9 +492,14 @@ permetta di potare ampi rami di albero.
     value, move = $\infty$\;
 
     \For{each $action$ in $game$.actions($state$) limitato da una branching factor}{
-        v, m = Max-Value($game$, $game$.result($state$, $action$))\;
+        v, m = Max-Value($game$, $game$.result($state$, $action$),$aplha$,$beta$)\;
         \If{v < value}{
             value, move = v, $action$\;
+            $beta$ = Min($beta$, value)\;
+        }
+        \If{v $\leq$ $alpha$}{
+            \Return value, move\;
+            
         }
     }
     
@@ -489,6 +508,49 @@ permetta di potare ampi rami di albero.
 }
 
 \caption{Minimax Euristico riadattato da Norvig e Russel $^1$}
+\end{algorithm}
+
+
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \KwResult{Valori euristici in una singola direzione}
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+    \Input{$cell$, $state$}
+    \Output{$minimumToWin$, $numOfCells$, $numOfWindows$}
+    \BlankLine
+
+    \tcp{right è l'offset di arrivo}
+    \tcp{numOfCells è il numero di celle mie trovate}
+    \tcp{numOfWindows è il numero di sliding windows trovate}
+    right, numOfCells, numOfWindows = Compute-max-right($cell$, $state$)\;
+    \BlankLine
+    
+    left = 1\;
+    minimumToWin = -1\;
+
+    \While{left < K and cellOffsetLeftIsValid(left)}{
+        \uIf{cellOffSetLeftIsEnemy(left)}{
+            break\;
+        }\ElseIf{cellOffsetLeftIsMine(left)}{
+            numOfCells++\;
+        }
+
+        \tcp{L'altra parte della sliding window deve essere alla lunghezza adeguata}
+        right, numOfCells = updateRightWindow(left, right, numOfCells)\;
+
+        \If{left + right == K - 1}{
+            numOfWindows++\;
+        }
+
+        minimumToWin = Min(minimumToWin, K - numOfCells)\;
+
+        left++\;
+    }
+    \Return {minimumToWin, numOfCells, numOfWindows}\;
+
+    \caption{Calcolo di valori utili all'euristica in una direzione}
 \end{algorithm}
 
 
