@@ -51,7 +51,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         this.M = M;
         this.N = N;
 
-        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
+        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
         timing.findBestTime();
         // TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, M, N, K);
         BRANCHING_FACTOR = timing.getBranchingFactor();
