@@ -23,7 +23,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
     // mosse del tree attuale
     private int movesCurrentTree;
 
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
 
     public LastPlayer() {}
 

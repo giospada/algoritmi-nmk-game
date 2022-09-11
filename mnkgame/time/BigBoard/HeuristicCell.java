@@ -25,6 +25,7 @@ public class HeuristicCell implements IHeuristicCell {
     public MNKCellState state;
     private int numAdiacent;
     public static int ADIACENT_MULT = 5;
+    private int adjValue;
 
     public int getAdjents() {
         return numAdiacent;
@@ -43,8 +44,19 @@ public class HeuristicCell implements IHeuristicCell {
     public int getValue() {
         return allyValue.getValue() + enemyValue.getValue();
     }
+    public void calcValueWithAdj(boolean isAlly) {
+        if(isAlly && allyValue.getValue() >= DirectionValue.DOUBLEPLAY_VAL) {
+            adjValue=allyValue.getValue() *2 + enemyValue.getValue() ;
+        }else if(!isAlly && enemyValue.getValue() >= DirectionValue.DOUBLEPLAY_VAL){
+            adjValue=allyValue.getValue() + enemyValue.getValue() *2 ;
+        }else{
+            adjValue=allyValue.getValue() + enemyValue.getValue();
+        }
+        adjValue +=  numAdiacent * ADIACENT_MULT;
+    }
+
     public int getValueWithAdj() {
-        return allyValue.getValue() + enemyValue.getValue()  + numAdiacent * ADIACENT_MULT;
+        return adjValue;
     }
 
     public void addAdiacent(int v) {

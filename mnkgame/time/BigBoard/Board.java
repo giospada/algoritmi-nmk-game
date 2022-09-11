@@ -116,15 +116,16 @@ public class Board implements IBoard {
      */
     public void updateCellDataStruct() {
         int len = Math.min(freeCellsCount, branchingFactor);
+        boolean isAllayPlayer = Player[currentPlayer] == allyPlayer;
         PriorityQueue<HeuristicCell> pq = new PriorityQueue<HeuristicCell>(Math.max(len,1),Collections.reverseOrder()); 
         for (int i = 0; i < freeCellsCount; i++) {
+            allCells[i].calcValueWithAdj(isAllayPlayer);
             if(pq.size() < len) {
                 pq.add(allCells[i]);
             } else if(pq.peek().compareTo(allCells[i]) > 0) {   // se il minimo è minore di allCells[i]
                 pq.poll();
                 pq.add(allCells[i]);
             }
-            assert allCells[i].state == MNKCellState.FREE;
         }
         int i = len - 1;
         while(!pq.isEmpty()){
@@ -178,9 +179,10 @@ public class Board implements IBoard {
 
         updateCellValue(i, j);
         addAdjiacentCells(i, j, 1);
-        updateCellDataStruct();
         
         currentPlayer = 1 - currentPlayer;
+
+        updateCellDataStruct();
 
         return gameState;
     }
@@ -225,8 +227,8 @@ public class Board implements IBoard {
         gameState = MNKGameState.OPEN;
         updateCellValue(cell.i, cell.j);
         addAdjiacentCells(cell.i, cell.j, -1);
-        updateCellDataStruct();
         currentPlayer = 1 - currentPlayer;
+        updateCellDataStruct();
     }
 
 
