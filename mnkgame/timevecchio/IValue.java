@@ -1,4 +1,4 @@
-package mnkgame.time;
+package mnkgame.timevecchio;
 
 /**
  * Questa classe è un modo per rappresentare il valore di una cella

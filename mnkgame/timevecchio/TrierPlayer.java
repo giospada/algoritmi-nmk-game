@@ -1,4 +1,4 @@
-package mnkgame.time;
+package mnkgame.timevecchio;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -42,7 +42,7 @@ public class TrierPlayer implements mnkgame.MNKPlayer {
         this.myState = first ? MNKCellState.P1 : MNKCellState.P2;
         this.yourState = first ? MNKCellState.P2 : MNKCellState.P1;
 
-        this.B = new mnkgame.time.BigBoard.Board(M, N, K, myState);
+        this.B = new mnkgame.timevecchio.BigBoard.Board(M, N, K, myState);
 
         this.myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         this.yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;

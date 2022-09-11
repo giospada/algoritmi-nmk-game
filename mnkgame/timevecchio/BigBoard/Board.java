@@ -1,4 +1,4 @@
-package mnkgame.time.BigBoard;
+package mnkgame.timevecchio.BigBoard;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
@@ -7,10 +7,9 @@ import java.util.PriorityQueue;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-
-import mnkgame.time.IBoard;
-import mnkgame.time.IHeuristicCell;
-import mnkgame.time.IValue;
+import mnkgame.timevecchio.IBoard;
+import mnkgame.timevecchio.IHeuristicCell;
+import mnkgame.timevecchio.IValue;
 
 public class Board implements IBoard {
     public final int M;

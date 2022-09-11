@@ -1,10 +1,10 @@
-package mnkgame.time;
+package mnkgame.timevecchio;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import mnkgame.time.SmallBoard.Board;
-import mnkgame.time.SmallBoard.HeuristicCell;
-import mnkgame.time.SmallBoard.Value;
+import mnkgame.timevecchio.SmallBoard.Board;
+import mnkgame.timevecchio.SmallBoard.HeuristicCell;
+import mnkgame.timevecchio.SmallBoard.Value;
 
 import org.junit.jupiter.api.*;
 

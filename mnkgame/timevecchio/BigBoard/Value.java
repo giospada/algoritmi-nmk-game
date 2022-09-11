@@ -1,6 +1,6 @@
-package mnkgame.time.BigBoard;
+package mnkgame.timevecchio.BigBoard;
 
-import mnkgame.time.IValue;
+import mnkgame.timevecchio.IValue;
 
 /**
  * Questa classe è un modo per rappresentare il valore di una cella

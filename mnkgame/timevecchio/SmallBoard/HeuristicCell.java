@@ -1,8 +1,8 @@
-package mnkgame.time.SmallBoard;
+package mnkgame.timevecchio.SmallBoard;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
-import mnkgame.time.IHeuristicCell;
+import mnkgame.timevecchio.IHeuristicCell;
 
 // IDEA che deve essere valutata:
 // se invece di contare quanti pezzi hai,

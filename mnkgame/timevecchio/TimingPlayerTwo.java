@@ -1,8 +1,8 @@
-package mnkgame.time;
+package mnkgame.timevecchio;
 
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import mnkgame.time.SmallBoard.Board;
+import mnkgame.timevecchio.SmallBoard.Board;
 
 /**
  * Questa classe è utilizzata per fare una stima della capacità di esecuzione del computer remoto

@@ -1,4 +1,4 @@
-package mnkgame.time.BigBoard;
+package mnkgame.timevecchio.BigBoard;
 
 public class DirectionValue {
     // numero minimo di celle per vincere andando solo a sinistra 

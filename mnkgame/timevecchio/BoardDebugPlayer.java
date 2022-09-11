@@ -1,4 +1,4 @@
-package mnkgame.time;
+package mnkgame.timevecchio;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -21,7 +21,7 @@ public class BoardDebugPlayer implements mnkgame.MNKPlayer {
         long timeStart = System.currentTimeMillis();
         this.myState = first ? MNKCellState.P1 : MNKCellState.P2;
 
-        this.B = new mnkgame.time.BigBoard.Board(M, N, K, myState);
+        this.B = new mnkgame.timevecchio.BigBoard.Board(M, N, K, myState);
 
         firstMove = true;
         this.M = M;

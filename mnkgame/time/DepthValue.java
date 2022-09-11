@@ -1,1 +1,0 @@
-package mnkgame.time;public class DepthValue {public static final int Depth = 10; public static final int NumeroDiMosse= 60000;}
