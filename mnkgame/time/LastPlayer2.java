@@ -33,7 +33,7 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         this.myState = first ? MNKCellState.P1 : MNKCellState.P2;
         this.yourState = first ? MNKCellState.P2 : MNKCellState.P1;
 
-        this.B = new mnkgame.time.HeappedBoard.Board(M, N, K, myState);
+        this.B = new mnkgame.time.BigBoard.Board(M, N, K, myState);
 
         this.myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         this.yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
@@ -44,7 +44,7 @@ public class LastPlayer2 implements mnkgame.MNKPlayer {
         // if(K>=10){
         //     BRANCHING_FACTOR = 3;
         // }
-        TimingPlayer timing = new TimingPlayer(timeStart, timeout_in_secs, B);
+        TimingPlayerTwo timing = new TimingPlayerTwo(timeStart, timeout_in_secs, B);
         timing.findBestTime();
         BRANCHING_FACTOR = timing.getBranchingFactor();
         DEPTH_LIMIT = timing.getDephtLimit();
