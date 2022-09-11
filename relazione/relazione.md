@@ -16,16 +16,16 @@ Giovanni Spadaccini : 0001021270
 ## Riassunto
 
 Abbiamo utilizzato di un algoritmo di Minimax euristico con alpha-beta pruning per la risoluzione 
-del gioco mnk, una forma generalizzata del tris. L'algoritmo utilizza l'euristica di valutazione per scoprire l'ordine
+del *gioco mnk*, una forma generalizzata del tris. L'algoritmo utilizza l'euristica di valutazione per scoprire l'ordine
 di esplorazione di un numero limitato di nodi e li esplora fino a un livello di profondità prefissato, dopo 
-il quale ritorna un valore euristico o un valore finale, nel caso in cui la board sia terminale.
+il quale ritorna un valore euristico, nel caso la board non sia terminale, o un valore finale, nel caso in cui la board sia terminale.
 
 <!-- 
 TODO: questa parte sotto ha senso che ci sia??
  -->
 
 Dai test fatti in locale, l'algoritmo sembra avere capacità simili o superiori a quelle di un umane per 
-le tavole accessibili ai limiti umani (ossia da 19 in giù).
+le tavole accessibili ai limiti umani (ossia minori di ~15).
 
 <!-- 
 > Non credo che abbiamo libertà di esprimerci su questo
@@ -59,8 +59,10 @@ Sotto questa logica abbiamo scelto l'implementazione di un minimax euristico.
 
 ## L'algoritmo ad alto livello
 
-Il nostro algoritmo minimax euristico fa una [stima iniziale di quanto può esplorare](#timer-test) e in seguito
-utilizza un ordinamento delle mosse secondo una [euristica](#euristica) per decidere l'ordine di eslorazione delle mosse inoltre visita un numero limitato di nodi, determinato da due costanti che gli indicano quanti nodi esplorare in ampiezza e quante in profondità.
+Il nostro algoritmo minimax euristico fa una [stima iniziale di quanto può esplorare](#timer-test) e dopodiché
+utilizza una [euristica](#euristica) per decidere l'ordine di eslorazione di un numero limitato di mosse. Quest'ultime saranno
+visitate in un numero limitato di nodi, determinato da due costanti che indicano rispettivamente il numero di nodi da esplorare
+in ampiezza e la profondità di esplorazione.
 
 <!-- 
 TODO:
@@ -98,15 +100,14 @@ Marcare e smarcare le celle nella maniera più veloce possibile.
 
 **Algoritmi considerati**
 
-1. riallocarci ogni volta un array con le freeCell meno quella appena marcata (nel caso di markCell), 
-    o di crearci un array con tutte le freeCell con anche l'ultima mossa eseguita (nel caso di unmarkCell), costo $O(n)$
+1. Riallocazione ad ogni nodo di esplorazione un array con le `freeCell` meno quella appena marcata (nel caso di markCell), 
+    o di creazione di un array con tutte le `freeCell` con anche l'ultima mossa eseguita (nel caso di unmarkCell), costo $O(n)$
 
-2. utilizzo di una linked list per tenerci i valori.  Questo approccio nonostante avesse le 
-   operazioni di insert e remove in tempo constante performava peggio di riallocarsi un array 
-   ogni volta (che ha costo $O(n)$) (pensiamo che questo sia dovuto alle ottimizzazioni cache degli array)
+2. utilizzo di una linked list che contenga le celle libere.  Questo approccio nonostante avesse le 
+   operazioni di insert e remove in tempo constante performava peggio rispetto al riallocamento in un array ad ogni nodo di esplorazione
+   (che ha costo $O(n)$) (pensiamo che questo sia dovuto alle ottimizzazioni cache degli array)
 
 3. utilizzo di hashset: ha un costo lineare nel caso pessimo oltre a delle costanti molto alte nel caso medio.
-
 
 **Algoritmo utilizzato**
 
@@ -136,12 +137,21 @@ sia per la scelta delle mosse.
 
 ### MICS - Minimum Incomplete Cell Set
 
+<!-- 
+TODO: finire questa parte di rinominazione del mics ovunque
+-->
+
 L'euristica del MICS racchiude in sé 3 informazioni principali:
 
 1. Quanto è favorevole una cella secondo le mie pedine.
    
 2. Quanto è favorevole .
    
+
+<!-- 
+TODO: finire questa parte di rinominazione del mics ovunque
+-->
+
 3. La somma dei due valori precedenti mi dà una stima di criticità della singola cella (senza la presenza di doppi-giochi e fine-giochi)
 
 Con questo valore numerico è possibile ordinare le mosse secondo un ordine di priorità.
@@ -160,16 +170,15 @@ L'euristica calcola per ogni direzione di una singola cella e per entrambi i pla
 4. Il numero di sliding-window massime
 
 Per fare ciò andiamo in tutte `k-1` celle in tutte le direzioni in cui è possibile andare, 
-ed andiamo ad riaggioranre i valori in di queste celle nella direzione attraverso la quale si allineano con la cella modificata.
+ed andiamo ad riaggiornare i valori in di queste celle nella direzione attraverso la quale si allineano con la cella modificata.
 Per riaggiornare questi valori chiamiamo la funzione `updateDirectionValue`
-
 
 La funzione che aggiorna una singola cella per una direzione è implementata in `computeCellDirectionValue`. 
 
 Questa funzione esplora la cella attuale, in direzione orizzontale o verticale, e si allarga fin quanto può verso
 una direzione (al massimo di `K - 1`), una volta ragginto il limite in questa direzione, si espande nella direzione opposta, mantenendo
 la sliding window nel caso sia stata creata. Mentre si espande anche dall'altra parte, finchè non va oltre le `k-1` celle o finchè non trova una cella dell'altro player,
-si aggiorna i valori della sliding window corrente, e aggiorna i valori della cella di cui sta facendo l ´update.
+si aggiorna i valori della sliding window corrente, e aggiorna i valori della cella di cui sta facendo l'update.
 
 Abbiamo tentato di scrivere uno pseudocodice che provasse a rendere in maniera più chiara quest'ultimo algoritmo in 
 [appendice](#appendice).
@@ -182,7 +191,7 @@ situazioni di doppi giochi oppure giochi ad una mossa dalla fine.
 
 > Definiamo **fine-giochi** le celle per cui esiste almeno una sliding window a cui manca 1 mossa per vincere
 
-È chiaro come queste celle siano molto importanti sia per noi, al fine della vittoria, sia per il nemico, al fine di bloccarli.
+È chiaro come queste celle siano molto importanti sia per noi, al fine della vittoria, sia per il nemico, al fine del blocco.
 
 > Definiamo **doppi-giochi banali** le celle per cui 
 esistono due o più sliding window per cui mancano 2 mosse per vincere
@@ -373,7 +382,7 @@ Ognuno di questi esegue operazioni che dipendono da `BRANCHING_FACTOR` e `DEPTH`
 
 Sia quindi $C(k)$ il costo di markCell e unmarkCell, queste operazioni sono eseguite ad ogni nodo fino alla depth fissata.
 Si ha un costo di  $(C(k) \cdot branchingFactor) ^ {DEPTH - depthRaggiunta}$ per questi due algoritmi nel caso pessimo in cui vengono 
-visitati tutti i nodi 
+visitati tutti i nodi e il pruning non viene mai eseguito.
 
 
 ### SelectCell e findBestMove
@@ -398,6 +407,27 @@ Quindi il costo nel caso peggiore del nostro algoritmo è $O(nm\, \log\, branchi
 Se consideriamo `branchingFactor` come se fosse una costante, allora abbiamo che il costo nel caso pessimo
 è $O(nm) + O((O(mn) + O(k^2)) + O(mn) + O(k^2)) ^ {DEPTH} = O(nm) + O(nm + k^2) ^ {DEPTH} = O(mn + k^2)^ {DEPTH}$
 
+### Analisi dello costo in memoria
+
+Il nostro algoritmo è molto efficiente dal punto di vista dello spazio utilizzato: $\Theta(mn) + O(DEPTH)$.
+
+Gli unici oggetti che sono memorizzati sono le `HeuristicCell` che rimangono sempre le stesse per una intera partita, senza essere mai distrutte o ricreate
+nel mezzo.
+
+All'inizio del gioco vengono creati un numero di celle uguale a $MN$ che vengono memorizzate in 3 strutture di dati differenti di grandezza $MN$.
+
+Rispettivamente sono:
+
+1. `Board`, che contiene tutte le celle in un array bidimensionale di dimensione $M \cdot N$.
+2. `allCells`, che contiene le stesse celle in un array unidimensionale di dimensione $MN$. Questo array è utilizzato per markCell e unmarkCell
+3. `sortedAllCells`, che contiene una parte delle celle ordinate in base all'euristica. Questo array è utilizzato per decidere un ordine di esplorazione.
+
+Durante l'esplorazione con la minimax, la board non viene mai ricreata, ma viene modificata e ripristinata ad ogni mossa, garantendo grande efficienza in
+termini di memoria.
+Durante questa esplorazione sono aggiunti alla stack del programma dei frame di chiamata, che influiscono leggermente sul costo in spazio. Ma essendo la
+`DEPTH` un valore costante, si potrebbe considerare questo apporto ininfluente rispetto al resto.
+
+Per cui possiamo affermare che il costo in memoria sia $\Theta(mn) + O(1) = \Theta(mn)$.
 
 
 ## Approcci fallimentari
@@ -437,6 +467,9 @@ permetta di potare ampi rami di albero.
 # Appendice
 <div id="appendice"></div>
 
+
+## Markcelle e unmarkCell 
+
 \begin{algorithm}[H]
     \SetAlgoLined
     \KwResult{Cella richiesta della tavola è marcata}
@@ -473,6 +506,7 @@ permetta di potare ampi rami di albero.
     \caption{unmarkCell senza checks sulla board}
 \end{algorithm}
 
+## pseudocodice di un minimax
 
 \begin{algorithm}[H]
 \SetAlgoLined
@@ -542,6 +576,7 @@ permetta di potare ampi rami di albero.
 \end{algorithm}
 
 
+## Calcolo di una euristica in una direzione
 
 \begin{algorithm}[H]
     \SetAlgoLined
