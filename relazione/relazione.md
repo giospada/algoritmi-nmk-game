@@ -85,6 +85,8 @@ ricerca delle mosse ed esplora fino a un numero massimo di celle e a una profond
   di nodi esplorabili
   - Sui metodi di allocazione di un numero di mosse preciso alle celle scelte per l'esplorazione
   - Sulla scelta dei valori di ramificazione e profondità
+- [*Analisi del costo*](#analisi-del-costo)
+  - Sulla complessità temporale e spaziale dell'algoritmo
 
 ## Markcell e unmarkCell
 
@@ -351,22 +353,51 @@ su cui veniva eseguito il programma.
 
 Abbiamo quindi deciso di utilizzare alcuni valori fissati, che abbiamo trovato in base a delle prove empiriche.
 
-# TODOS
+## Analisi del costo
 
-Alcune cose importanti che si dovrebbero fare?
+in questa sezione proviamo a fare un'analisi del costo computazionale del nostro algoritmo passo dopo passo.
 
-- [x] pseudocodice di markCell
-- [x] pseudocodice di unmarkCell
-- [X] spiegazione delle FreeCell
-- [ ] Spiegazione dell'euristica
-  - [ ] 1. Spiegazione dell'ordering delle mosse -> cenno a Late Move reduction (o citazione del paper di MICS)
-  - [ ] 2. Spiegazine dell'eval della board
-  - [ ] 3. Note: sul pruning utile grazie a questo ordering
-- [X] algoritmo di sorting delle celle
-- [ ] spiegazione calcolo dell'euristica
-- [X] spiegazione del timer test (numero dei nodi cercati)
-- [x] spiegazione dei valori euristici per l'esplorazione in depth e in weight
-- [ ] Minimax
+### markCell e unmarkCell 
+
+Sia il mark e l'unmarkCell come prima cosa devono [aggiornare le celle libere](#markcell-e-umarkcell), cosa che entrambe le funzioni fanno in $O(1)$.
+Poi devono aggiornare tutti le celle vicine alla cella modificata $O(k^2)$.
+Dopo di che aggiornare le celle sortate $O(nm \log branchingFactor)$ (il branching factor è una costante che va da 7 nei casi piccoli a 3 in quelli grandi).
+
+Quindi mark e unmark cell hanno un costo computazionele di $O(mn \log branchingFactor) + O(k^2)$.
+
+### minPlayer e maxPlayer
+
+Questi due metodi sono i giocatori della minimax, rispettivamente il player minimo e massimo.
+
+Ognuno di questi esegue operazioni che dipendono da `BRANCHING_FACTOR` e `DEPTH` che sono costanti e dal costo di markCell e unmarkCell.
+
+Sia quindi $C(k)$ il costo di markCell e unmarkCell, queste operazioni sono eseguite ad ogni nodo fino alla depth fissata.
+Si ha un costo di  $(C(k) \cdot branchingFactor) ^ {DEPTH - depthRaggiunta}$ per questi due algoritmi nel caso pessimo in cui vengono 
+visitati tutti i nodi 
+
+
+### SelectCell e findBestMove
+
+`SelectCell` chiama in primo momento `findBestMove` per trovare la mossa migliore.
+
+findBestMove esegue delle operazioni costanti e chiama `updateCellDataStruct` che riordina le celle 
+in $O(n\, \log\, q)$ come descritto nella sezione [riordinamento mosse](#ordinamento-mosse).
+
+
+
+findBestMove [riordina le mosse](#ordinamento-mosse) in attraverso l'euristica e chiama il minimax  con
+alpha beta pruning in ordine su quelle che hanno un valore maggiore. 
+Il costo di questo algoritmo è $O(nm\, \log\, branchingFactor + branchingFactor \cdot (Costo(minPlayer) + Costo(marckCell) + Costo(unmarkCell))$ 
+
+il costo del minPlayer nel caso peggiore è $(O(mn \log branchingFactor + k^2) \cdot branchingFactor) ^ {DEPTH - depthRaggiunta}$
+
+Il costo sia di markCell che unmarkCell nel caso peggiore è $O(mn \log branchingFactor + k^2)$
+
+Quindi il costo nel caso peggiore del nostro algoritmo è $O(nm\, \log\, branchingFactor) + O(branchingFactor \cdot ((O(mn \log branchingFactor) + O(k^2)) \cdot branchingFactor + O(mn \log branchingFactor) + O(k^2)) ^ {DEPTH}$
+
+Se consideriamo `branchingFactor` come se fosse una costante, allora abbiamo che il costo nel caso pessimo
+è $O(nm) + O((O(mn) + O(k^2)) + O(mn) + O(k^2)) ^ {DEPTH} = O(nm) + O(nm + k^2) ^ {DEPTH} = O(mn + k^2)^ {DEPTH}$
+
 
 
 ## Approcci fallimentari
