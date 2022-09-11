@@ -83,3 +83,7 @@ massimo=8, numeroDiMosse=10000
 massimo=12, numeroDiMosse=100000
 massimo=13, numeroDiMosse=1000000
 massimo=13, numeroDiMosse=10000000
+args.board=(70, 70, 10)
+massimo=9, numeroDiMosse=10000
+massimo=12, numeroDiMosse=100000
+massimo=12, numeroDiMosse=1000000

@@ -1,4 +1,4 @@
-package mnkgame.time.BigBoard;
+package mnkgame.time.HeappedBoard;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -52,13 +52,7 @@ public class HeuristicCell implements IHeuristicCell {
     }
 
     public int compareTo(IHeuristicCell other){
-        int res = other.getValueWithAdj() - this.getValueWithAdj();
-        if(res == 0) { // ordinato secondo coordinate (solo per avere un ordine preciso)
-            res = other.getI() - this.getI();
-            if(res== 0)
-                res = other.getJ() - this.getJ();
-        }
-        return res;
+        return other.getValueWithAdj() - this.getValueWithAdj();
     }
 
     public MNKCell toMNKCell() {

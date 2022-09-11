@@ -21,14 +21,14 @@
             "name": "DebugPlayer vs LastPlayer",
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
-            "args": "3 3 3 mnkgame.debugPlayer.DebugPlayer   mnkgame.time.LastPlayer  -r 1 -t 1000000 -v"
+            "args": "7 7 5 mnkgame.debugPlayer.DebugPlayer   mnkgame.time.LastPlayer  -r 1 -t 1000000 -v"
         },
         {
             "type": "java",
             "name": "LastPlayer vs DebugPlayer",
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
-            "args": "3 3 3  mnkgame.time.LastPlayer  mnkgame.debugPlayer.DebugPlayer  -r 1 -t 1000000 -v"
+            "args": "7 7 5  mnkgame.time.LastPlayer  mnkgame.debugPlayer.DebugPlayer  -r 1 -t 1000000 -v"
         },
         {
             "type": "java",
@@ -40,6 +40,13 @@
         {
             "type": "java",
             "name": "random 10 10 5",
+            "request": "launch",
+            "mainClass": "mnkgame.MNKPlayerTester",
+            "args": "10 10 5  mnkgame.time.LastPlayer  mnkgame.RandomPlayer  -r 1 -t 1000000 -v"
+        },
+        {
+            "type": "java",
+            "name": "timout check 7 7 5",
             "request": "launch",
             "mainClass": "mnkgame.MNKPlayerTester",
             "args": "10 10 5  mnkgame.time.LastPlayer  mnkgame.RandomPlayer  -r 1 -t 1000000 -v"

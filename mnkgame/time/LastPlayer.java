@@ -199,6 +199,7 @@ public class LastPlayer implements mnkgame.MNKPlayer {
         if (DEBUG) {
             // B.print();
             // B.printHeuristics(true);
+            
             // B.printHeuristics(false);
         }
 

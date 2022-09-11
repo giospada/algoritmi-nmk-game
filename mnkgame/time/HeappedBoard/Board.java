@@ -1,4 +1,4 @@
-package mnkgame.time.BigBoard;
+package mnkgame.time.HeappedBoard;
 
 import java.lang.IllegalStateException;
 import java.lang.IndexOutOfBoundsException;
@@ -35,7 +35,7 @@ public class Board implements IBoard {
      * Rappresenta una sottoparte sortata secondo la compareTo di
      * Heuristic cells di tutte le celle
      */
-    public final HeuristicCell[] sortedAllCells;
+    public final IHeuristicCell[] sortedAllCells;
     
 
     private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
@@ -116,19 +116,19 @@ public class Board implements IBoard {
      */
     public void updateCellDataStruct() {
         int len = Math.min(freeCellsCount, branchingFactor);
-        PriorityQueue<HeuristicCell> pq = new PriorityQueue<HeuristicCell>(len,Collections.reverseOrder()); 
+        Heap<IHeuristicCell> pq = new Heap<IHeuristicCell>(len); 
         for (int i = 0; i < freeCellsCount; i++) {
             if(pq.size()<len) {
-                pq.add(allCells[i]);
-            } else if(pq.peek().compareTo(allCells[i]) > 0) {   // se il minimo è minore di allCells[i]
-                pq.poll();
-                pq.add(allCells[i]);
+                pq.insert(allCells[i]);
+            } else if(pq.findMin().compareTo(allCells[i]) > 0) {   // se il minimo è minore di allCells[i]
+                pq.deleteTop();
+                pq.insert(allCells[i]);
             }
             assert allCells[i].state == MNKCellState.FREE;
         }
         int i = len - 1;
         while(!pq.isEmpty()){
-            sortedAllCells[i] = pq.poll();
+            sortedAllCells[i] = pq.deleteTop();
             i--;
         }
     }

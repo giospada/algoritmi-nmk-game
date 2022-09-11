@@ -36,7 +36,7 @@ e puoi andare ad incollare questo per debug
 import argparse
 def make_line(inp: list[str], name = "B"):
     # una coppia di interi in input
-    return f"{name}.markCell({inp[0]}, {inp[1]});\n"
+    return f" new MNKCell({inp[0]}, {inp[1]});\n"
 
 def main():
     parser = argparse.ArgumentParser()
@@ -50,11 +50,17 @@ def main():
 
     xInput = []
     yInput = []
+
+    i = 0
     while inp != "":
         inp = inp.split()[-1]
         xInput.append(eval(inp)[0])
         yInput.append(eval(inp)[1])
-        buffer += make_line(eval(inp), args.name)
+
+        if i % 2 == 0:
+            buffer += make_line(eval(inp), args.name)
+
+        i += 1
         buffer2 += make_line(eval(inp), "Board")
 
         inp = input().strip()
@@ -63,7 +69,7 @@ def main():
     print("let yMosse = {};".format(yInput))
     print(f"let lenMosse = {len(yInput)};")
 
-
+    print(buffer)
 
 if __name__ == "__main__":
     main()
