@@ -15,7 +15,7 @@ Giovanni Spadaccini : 0001021270
 
 ## Riassunto
 
-Abbiamo utilizzato di un algoritmo di Minimax euristico con alpha-beta pruning per la risoluzione 
+Abbiamo utilizzato un algoritmo di Minimax euristico con alpha-beta pruning per la risoluzione 
 del *gioco mnk*, una forma generalizzata del tris. L'algoritmo utilizza l'euristica di valutazione per scoprire l'ordine
 di esplorazione di un numero limitato di nodi e li esplora fino a un livello di profondità prefissato, dopo 
 il quale ritorna un valore euristico, nel caso la board non sia terminale, o un valore finale, nel caso in cui la board sia terminale.
@@ -59,9 +59,9 @@ Sotto questa logica abbiamo scelto l'implementazione di un minimax euristico.
 
 ## L'algoritmo ad alto livello
 
-Il nostro algoritmo minimax euristico fa una [stima iniziale di quanto può esplorare](#timer-test) e dopodiché
+Il nostro algoritmo minimax euristico fa una [stima iniziale di quanto può esplorare](#timer-test), dopodiché
 utilizza una [euristica](#euristica) per decidere l'ordine di eslorazione di un numero limitato di mosse. Quest'ultime saranno
-visitate in un numero limitato di nodi, determinato da due costanti che indicano rispettivamente il numero di nodi da esplorare
+visitate in un numero limitato di nodi, determinato da due costanti che indicano rispettivamente il numero di nodi da espandere
 in ampiezza e la profondità di esplorazione.
 
 <!-- 
@@ -116,10 +116,11 @@ nel caso ottimo, pessimo e medio, senza considerare i checks aggiuntivi per veri
 del gioco e l'aggiornamento dell'euristica. 
 
 Al fine di raggiungere questa velocità, l'insieme delle mosse eseguite è tenuto alla fine 
-di un array che contiene tutte le mosse, in modo simile a quanto fa una heap, studiata durante il corso,
+di un array che contiene tutte le mosse, in modo simile a quanto fa una heap
 al momento di rimozione. 
 
-Mano a mano che le celle vengono utilizzate, esegue uno swap con l'ultima cella dell'array e si memorizza la posizione in cui era, così facendo, quando viene chiamata l'unmarkCell, riesce a riposizionarsi nella sua vecchia posizione.
+Mano a mano che le celle vengono utilizzate, esegue uno swap con l'ultima cella dell'array marcata come libera e 
+si memorizza la posizione in cui era, così facendo, quando viene chiamata l'unmarkCell, riesce a riposizionarsi nella sua vecchia posizione.
 Questa implementazione migliora rispetto alla board del codice iniziale
 nel caso pessimo, in quanto non deve più necessitare di un hashtable, il cui caso pessimo è $O(n)$ con n la grandezza della table.
 
@@ -135,30 +136,19 @@ In questo progetto sono fondamentali le euristiche utilizzate al fine del succes
 Esiste una unica euristica che viene utilizzata, in modi diversi, sia per la valutazione della board
 sia per la scelta delle mosse.
 
-### MICS - Minimum Incomplete Cell Set
+### Cosa rappresenta
 
-<!-- 
-TODO: finire questa parte di rinominazione del mics ovunque
--->
+L'euristica utilizzata mi restituisce un valore di importanza della singola cella sia per me sia per il mio avversario.
 
-L'euristica del MICS racchiude in sé 3 informazioni principali:
-
-1. Quanto è favorevole una cella secondo le mie pedine.
-   
-2. Quanto è favorevole .
-   
-
-<!-- 
-TODO: finire questa parte di rinominazione del mics ovunque
--->
-
-3. La somma dei due valori precedenti mi dà una stima di criticità della singola cella (senza la presenza di doppi-giochi e fine-giochi)
+La somma dei due valori di importanza mi dà una stima di criticità della singola cella.
 
 Con questo valore numerico è possibile ordinare le mosse secondo un ordine di priorità.
 
-Questa euristica è una versione modificata dell'euristica proposta da [Nathaniel Hayes and Teig Loge $^3$](#refs) 
+Questa euristica è una versione modificata dell'euristica proposta da [Nathaniel Hayes and Teig Loge $^3$](#refs) adattata per board di dimensione
+maggiore di 3x3 o 4x4, insieme a una versione, sempre modificata, dell'euristica di [Chua Hock Chuan $^4$](#refs), per la valutazione 
+di allineamenti critici di K - 1 e K - 2.
 
-### Calcolo del MICS con le sliding window
+### Calcolo dell'euristica con le sliding window
 
 > Definiamo **Sliding-window** un insieme di celle allineate in una direzione di lunghezza `K`
 
@@ -169,9 +159,9 @@ L'euristica calcola per ogni direzione di una singola cella e per entrambi i pla
 3. Massimo numero delle sliding-window con minor numero di celle necessarie per la vittoria
 4. Il numero di sliding-window massime
 
-Per fare ciò andiamo in tutte `k-1` celle in tutte le direzioni in cui è possibile andare, 
+Per fare ciò aggiorniamo tutte celle nelle 4 direzioni possibili fino a una distanza massima `K`, 
 ed andiamo ad riaggiornare i valori in di queste celle nella direzione attraverso la quale si allineano con la cella modificata.
-Per riaggiornare questi valori chiamiamo la funzione `updateDirectionValue`
+Per riaggiornare questi valori chiamiamo la funzione `updateDirectionValue`.
 
 La funzione che aggiorna una singola cella per una direzione è implementata in `computeCellDirectionValue`. 
 
@@ -180,10 +170,6 @@ una direzione (al massimo di `K - 1`), una volta ragginto il limite in questa di
 la sliding window nel caso sia stata creata. Mentre si espande anche dall'altra parte, finchè non va oltre le `k-1` celle o finchè non trova una cella dell'altro player,
 si aggiorna i valori della sliding window corrente, e aggiorna i valori della cella di cui sta facendo l'update.
 
-Abbiamo tentato di scrivere uno pseudocodice che provasse a rendere in maniera più chiara quest'ultimo algoritmo in 
-[appendice](#appendice).
-
- 
 ### Rilevamento dei doppio-giochi e fine-giochi
 
 Con il sistema a sliding window possiamo anche rilevare con molta facilità alcune celle *critiche* ossia 
@@ -207,8 +193,8 @@ capacità del minimax di scovarli, non siamo riusciti a trovare un modo per codi
 
 Sono assegnati alcuni punteggi speciali alle celle di doppio-gioco o fine-gioco.
 
-Queste configurazioni non sono espressamente visibili al MICS, per cui abbiamo assegnato dei valori fissi a *gradini*,
-ossia in qualunque modo si calcoli il MICS, il valore euristico di questo non può superare il valore assegnato da
+Queste configurazioni non sono espressamente visibili dall'euristica ispirata da Nathaniel Hayes and Teig Loge, per cui abbiamo assegnato dei valori fissi a *gradini*,
+ossia in qualunque modo si calcoli l'euristica precedentemente nominata, il valore euristico calcolato da quest'ultimo non può superare il valore assegnato da
 una cella di doppio gioco, e quest'ultima non può superare il valore di una cella di fine-gioco.
 
 Quindi in ordine di importanza abbiamo:
@@ -217,11 +203,11 @@ Quindi in ordine di importanza abbiamo:
    
 2. Cella di doppio-gioco banale
    
-3. Cella valutata dall'euristica del MICS + punteggi allineamento e vicinanza.
+3. Cella valutata dall'euristica di Nathaniel Hayes and Teig Loge + punteggi allineamento e vicinanza.
 
 ### Punteggi per allineamento e vicinanza
 
-Con prove empiriche abbiamo notato che l'euristica del [MICS](#mics---minimum-incomplete-cell-set) non è in grado di valutare
+Con prove empiriche abbiamo notato che l'euristica come spiegata fino a ora non è in grado di valutare
 correttamente alcune situazioni di allineamento, per cui abbiamo aggiunto dei moltiplicatori di punteggi per l'allineamento di celle
 e per favorire le mosse vicine ad alcune celle già allineate.
 
@@ -244,8 +230,12 @@ Su un array di `n` celle libere, dobbiamo ordinare le prime `q` che hanno il val
 
 1. Il primo sorting normale che andava in $O(n\, \log\, n)$ dove n sono le celle libere
    
-2. Quick select, che non andava bene perchè separa i `q` elementi più grandi ma non sono ordinati, quindi ci sarebbe costato $O(n + q\, \log\, q)$.
+<!-- 2. Quick select, che non andava bene perchè separa i `q` elementi più grandi ma non sono ordinati, quindi ci sarebbe costato $O(n + q\, \log\, q)$.
  E tempo d'esecuzione peggiore però sarebbe stato $O(n^2 + q\, \log\, q)$, $O(n^2)$ nel caso peggiore di quick-select 
+ e $O(q\, \log\, q)$ per ordinare le celle. -->
+
+2. Quick select, che separa correttamente i `q` elementi più grandi, ma non li ordina. Questo sarebbe costato $O(n + q\, \log\, q)$ nel caso medio e 
+e tempo d'esecuzione peggiore però sarebbe stato $O(n^2 + q\, \log\, q)$ dove $O(n^2)$ nel caso peggiore di quick-select 
  e $O(q\, \log\, q)$ per ordinare le celle.
 
 **Algoritmo Utilizzato**
@@ -301,8 +291,8 @@ un metodo che permettesse di esplorare i nodi interessanti sfruttando al meglio 
 
 **Approcci provati**
 
-1. timer su ogni nodo del minimax, questo approccio non funzionava perché c'era il rischio che al primo livello
-venisse esplorato un singolo nodo, dato che si andava in profondità subito. 
+1. Un check di timeout su ogni nodo del minimax: questo approccio non funzionava perché era presente il rischio che al primo livello
+venissero esplorati pochi nodi, a causa dell'esplorazione in profondità.
 2. Esplorazione di una parte di albero di ampiezza e profondità prefissata: questo approccio portava il rischio del tuning
 dei parametri di profondità e ampiezza, che potevano cambiare a seconda del calcolatore.
 
@@ -311,8 +301,9 @@ dei parametri di profondità e ampiezza, che potevano cambiare a seconda del cal
 Alla fine abbiamo utilizzato idee da entrambi i metodi, creando una simulazione del processo di decisione che esplorasse
 quanti nodi più possibili e dasse una stima di quanti era possibile visitare, mantenendo sempre delle costanti di profondità e ampiezza prefissati per le varie tipologie di board.
 
-Al fine di avere una stima di quanti nodi di ricerca una macchina remota con un limite di tempo prefissato abbiamo
-utilizziamo la classe `TimingPlayer`,
+Al fine di avere una stima di quanti nodi di ricerca un qualunque calcolatore potesse elaborare con un limite di tempo prefissato abbiamo
+utilizziamo la classe `TimingPlayer`, che simula il processo di decisione del nostro algoritmo, 
+tenendosi conto di quanti nodi è riuscito a visitare entro la fine del tempo concesso.
 
 <!--- 
 TODO: finere
@@ -320,13 +311,11 @@ che simula il nostro algoritmo di minimax tenendosi quandi nodi è riuscito a vi
 
 che simula il tempo di computazione dell'intero processo per la scelta di una mossa.
 
-che simula il processo di decisione del nostro algoritmo, 
-tenendosi conto di quanti nodi è riuscito a visitare entro la fine del tempo concesso.
  --->
 
  <!-- ANG: questa parte è spiegata sotto potremmo toglierla -->
-Dopo l'esecuzione di questa, avremo un numero di nodi esplorati nel limite di tempo dato, 
-e utilizzeremo questo numero trovato durante l'init per decidere quanti nodi può esplorare il player vero.
+<!-- Dopo l'esecuzione di questa, avremo un numero di nodi esplorati nel limite di tempo dato, 
+e utilizzeremo questo numero trovato durante l'init per decidere quanti nodi può esplorare il player vero. -->
 
 ### Spartizione e utilizzo del numero di mosse
 
@@ -338,9 +327,11 @@ Dobbiamo creare un metodo per distribuire il numero di mosse disponibili durante
 **Soluzione utilizzata**
 
 Abbiamo visto che in seguito all'ordinamento con l'euristica le prime celle sono quelle più importanti
-da esplorare, quindi vogliamo distribuire più mosse alla prima cella, in modo che possa avere una esplorazione più approfondita.
+da esplorare, dato che favorisce la potatura di altri nodi di ricerca grazie ad alpha-beta pruning.
+Quindi vogliamo distribuire più mosse alla prima cella, in modo che possa avere una esplorazione più approfondita e 
+una più alta probabilità di potatura.
 
-In `findBestMove` vediamo come sono utilizzati il numero di celle trovate in questo modo.
+In `findBestMove` vediamo come sono utilizzati il numero di celle trovate in questo modo:
 
 Nel caso in cui la prima cella non utilizzi tutte le celle date, queste saranno affidate alle celle di esplorazione successive.
 La cella di esplorazione successiva può, quindi, esplorare un numero di celle uguale a `numero nodi non utilizzati precedenti + addendo di nuove celle da esplorare`. 
@@ -364,13 +355,13 @@ Abbiamo quindi deciso di utilizzare alcuni valori fissati, che abbiamo trovato i
 
 ## Analisi del costo
 
-in questa sezione proviamo a fare un'analisi del costo computazionale del nostro algoritmo passo dopo passo.
+In questa sezione esponiamo un'analisi del costo computazionale del nostro algoritmo passo dopo passo.
 
 ### markCell e unmarkCell 
 
 Sia il mark e l'unmarkCell come prima cosa devono [aggiornare le celle libere](#markcell-e-umarkcell), cosa che entrambe le funzioni fanno in $O(1)$.
-Poi devono aggiornare tutti le celle vicine alla cella modificata $O(k^2)$.
-Dopo di che aggiornare le celle sortate $O(nm \log branchingFactor)$ (il branching factor è una costante che va da 7 nei casi piccoli a 3 in quelli grandi).
+Poi devono aggiornare tutti le celle vicine alla cella modificata in $O(k^2)$.
+Dopodiché aggiornare le celle sortate $O(nm \log branchingFactor)$ (il branching factor è una costante che va da 7 nei casi piccoli a 3 in quelli grandi).
 
 Quindi mark e unmark cell hanno un costo computazionele di $O(mn \log branchingFactor) + O(k^2)$.
 
@@ -378,7 +369,7 @@ Quindi mark e unmark cell hanno un costo computazionele di $O(mn \log branchingF
 
 Questi due metodi sono i giocatori della minimax, rispettivamente il player minimo e massimo.
 
-Ognuno di questi esegue operazioni che dipendono da `BRANCHING_FACTOR` e `DEPTH` che sono costanti e dal costo di markCell e unmarkCell.
+Ognuno di questi esegue operazioni che dipendono dal costo di markCell e unmarkCell, e da `BRANCHING_FACTOR` e `DEPTH` che sono costanti.
 
 Sia quindi $C(k)$ il costo di markCell e unmarkCell, queste operazioni sono eseguite ad ogni nodo fino alla depth fissata.
 Si ha un costo di  $(C(k) \cdot branchingFactor) ^ {DEPTH - depthRaggiunta}$ per questi due algoritmi nel caso pessimo in cui vengono 
@@ -431,7 +422,7 @@ Per cui possiamo affermare che il costo in memoria sia $\Theta(mn) + O(1) = \The
 
 
 ## Approcci fallimentari
-1. Simulazione di Montecarlo (MCTS), dato il grande successo di AlphaGo
+1. Simulazione di Montecarlo (MCTS), che abbiamo provato dato il grande successo di AlphaGo
    1. Guardava celle che avevano poco valore per la vittoria
    2. Guardava tutti gli stati ad ogni livello, il che pesava molto anche sulla memoria (poichè si teneva tutto il game tree)
    3. Il limite di tempo era troppo basso per avere un numero di simulazioni sufficenti
@@ -449,7 +440,7 @@ Rule 3  If the player can create a fork (two winning ways) after this move, take
 Rule 4  Do not let the opponent create a fork after the player’s move. 
 Rule 5  Move in a way such as the player may win the most number of possible ways. 
    1. Queste regole sono state molto importanti come guida del nostro progetto, nonostante non siano applicate in modo esplicito, hanno guidato il valore fisso per le celle di doppio-gioco e fine-gioco.
-5. Iterative Deeping
+5. Iterative Deepening, come l'alpha-beta pruning non era in grado di esplorare una parte sufficiente dell'albero di ricerca.
 
 ## Miglioramenti possibili
 1. Utilizzare un sistema ad apprendimento automatico per decidere il `BRANCHING_FACTOR` e la `DEPTH_LIMIT` che ora sono
@@ -459,7 +450,7 @@ di valori fissati, secondo l'esperienza umana.
 
 # Conclusione
 Abbiamo osservato come un classico algoritmo Minimax con alpha-beta pruning possa giocare in modo simile, o superiore 
-rispetto all'essere umano per le board di grandezza adeguata per l'umano, data una euristica che gli 
+rispetto a un giocatore umano medio per le board di grandezza adeguata per l'umano, data una euristica che gli 
 permetta di potare ampi rami di albero.
 
 \pagebreak
@@ -468,7 +459,7 @@ permetta di potare ampi rami di albero.
 <div id="appendice"></div>
 
 
-## Markcelle e unmarkCell 
+## Markcell e unmarkCell 
 
 \begin{algorithm}[H]
     \SetAlgoLined
@@ -506,7 +497,7 @@ permetta di potare ampi rami di albero.
     \caption{unmarkCell senza checks sulla board}
 \end{algorithm}
 
-## pseudocodice di un minimax
+## Pseudocodice di un minimax euristico
 
 \begin{algorithm}[H]
 \SetAlgoLined
@@ -576,50 +567,6 @@ permetta di potare ampi rami di albero.
 \end{algorithm}
 
 
-## Calcolo di una euristica in una direzione
-
-\begin{algorithm}[H]
-    \SetAlgoLined
-    \KwResult{Valori euristici in una singola direzione}
-    \SetKwInOut{Input}{Input}
-    \SetKwInOut{Output}{Output}
-    \Input{$cell$, $state$}
-    \Output{$minimumToWin$, $numOfCells$, $numOfWindows$}
-    \BlankLine
-
-    \tcp{right è l'offset di arrivo}
-    \tcp{numOfCells è il numero di celle mie trovate}
-    \tcp{numOfWindows è il numero di sliding windows trovate}
-    right, numOfCells, numOfWindows = Compute-max-right($cell$, $state$)\;
-    \BlankLine
-    
-    left = 1\;
-    minimumToWin = -1\;
-
-    \While{left < K and cellOffsetLeftIsValid(left)}{
-        \uIf{cellOffSetLeftIsEnemy(left)}{
-            break\;
-        }\ElseIf{cellOffsetLeftIsMine(left)}{
-            numOfCells++\;
-        }
-
-        \tcp{L'altra parte della sliding window deve essere alla lunghezza adeguata}
-        right, numOfCells = updateRightWindow(left, right, numOfCells)\;
-
-        \If{left + right == K - 1}{
-            numOfWindows++\;
-        }
-
-        minimumToWin = Min(minimumToWin, K - numOfCells)\;
-
-        left++\;
-    }
-    \Return {minimumToWin, numOfCells, numOfWindows}\;
-
-    \caption{Calcolo di valori utili all'euristica in una direzione}
-\end{algorithm}
-
-
 \pagebreak
 
 # References
@@ -630,3 +577,5 @@ permetta di potare ampi rami di albero.
 2. Development of Tic-Tac-Toe Game Using Heuristic Search IOP Publishing, 2nd Joint Conference on Green Engineering Technology & Applied Computing 2020, Zain AM, Chai CW, Goh CC, Lim BJ, Low CJ, Tan SJ
 
 3. Developing a Memory Efficient Algorithm for Playing m, n, k Games, Nathaniel Hayes and Teig Loge, 2016.
+
+4. Chua Hock Chuan, Java games, [https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaGame_TicTacToe_AI.html](https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaGame_TicTacToe_AI.html), 2017
