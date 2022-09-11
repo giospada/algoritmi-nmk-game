@@ -116,9 +116,9 @@ public class Board implements IBoard {
      */
     public void updateCellDataStruct() {
         int len = Math.min(freeCellsCount, branchingFactor);
-        PriorityQueue<HeuristicCell> pq = new PriorityQueue<HeuristicCell>(len,Collections.reverseOrder()); 
+        PriorityQueue<HeuristicCell> pq = new PriorityQueue<HeuristicCell>(Math.max(len,1),Collections.reverseOrder()); 
         for (int i = 0; i < freeCellsCount; i++) {
-            if(pq.size()<len) {
+            if(pq.size() < len) {
                 pq.add(allCells[i]);
             } else if(pq.peek().compareTo(allCells[i]) > 0) {   // se il minimo è minore di allCells[i]
                 pq.poll();
